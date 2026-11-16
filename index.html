@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Éther, exploration liminale</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=VT323&display=swap">
+<style>
+:root{
+  /* layout : un canvas plein cadre, un voile de titre aligné en bas à gauche, un HUD discret */
+  --sky-deep:#1f4ea8;
+  --sky-pale:#d3e2f4;
+  --ink:#16305e;
+  --ink-soft:#4a6591;
+  --white:#fbfcff;
+  --font-display:"Jost","Avenir Next","Century Gothic",sans-serif;
+  --font-body:"Jost","Avenir Next","Helvetica Neue",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--sky-pale);color:var(--ink);font-family:var(--font-body);overflow:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
+#vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 52%,rgba(6,10,24,.36) 100%)}
+#under{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .25s;background:linear-gradient(rgba(40,170,180,.34),rgba(8,70,100,.62));backdrop-filter:blur(1.5px)}
+/* filtres d'ambiance, choisis dans le menu */
+.fx{position:fixed;inset:0;pointer-events:none;display:none}
+#fx-lines{background:repeating-linear-gradient(to bottom,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+#fx-grain{inset:-64px;background-size:160px 160px;opacity:.17;mix-blend-mode:overlay;animation:grain .5s steps(5) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-31px,17px)}40%{transform:translate(23px,-41px)}60%{transform:translate(-47px,-9px)}80%{transform:translate(13px,37px)}}
+#fx-bar{height:14%;top:-14%;bottom:auto;background:linear-gradient(transparent,rgba(255,255,255,.08),transparent);animation:bar 7s linear infinite}
+@keyframes bar{to{top:110%}}
+#fx-glow{background:radial-gradient(ellipse at 28% 22%,rgba(255,170,220,.22),transparent 60%),radial-gradient(ellipse at 76% 80%,rgba(120,220,255,.20),transparent 60%);mix-blend-mode:screen}
+#osd{position:fixed;top:44px;left:22px;font:400 1.35rem/1.15 "VT323","Courier New",monospace;letter-spacing:.1em;color:#fff;text-shadow:1px 0 rgba(255,0,200,.8),-1px 0 rgba(0,230,255,.8);display:none;pointer-events:none;white-space:pre}
+body[data-fx="vhs"] canvas{filter:saturate(1.3) contrast(1.1) blur(.5px)}
+body[data-fx="vhs"] #fx-lines,body[data-fx="vhs"] #fx-grain,body[data-fx="vhs"] #fx-bar,body[data-fx="vhs"] #osd{display:block}
+body[data-fx="grain"] #fx-grain{display:block;opacity:.28}
+body[data-fx="back"] canvas{filter:sepia(.42) saturate(.85) contrast(1.16) brightness(.94)}
+body[data-fx="back"] #fx-grain,body[data-fx="back"] #fx-lines,body[data-fx="back"] #osd{display:block}
+body[data-fx="back"] #fx-lines{opacity:.5}
+body[data-fx="dream"] canvas{filter:saturate(1.42) brightness(1.07) contrast(.9) blur(.7px)}
+body[data-fx="dream"] #fx-glow,body[data-fx="dream"] #fx-grain{display:block}
+body[data-fx="dream"] #fx-grain{opacity:.10}
+@media (prefers-reduced-motion:reduce){#fx-grain,#fx-bar{animation:none}}
+#veil{position:fixed;inset:0;background:var(--white);opacity:0;pointer-events:none}
+#menu{position:fixed;inset:0;display:flex;align-items:flex-end;padding:clamp(20px,6vw,72px);
+  overflow-y:auto;
+  background:linear-gradient(to top,rgba(251,252,255,.94) 0%,rgba(251,252,255,.80) 55%,rgba(251,252,255,.35) 100%);transition:opacity .9s}
+#menu.off{opacity:0;pointer-events:none}
+#menu .inner{display:flex;flex-direction:column;gap:16px;max-width:44rem;margin-top:auto}
+h1{font-family:var(--font-display);font-weight:200;font-size:clamp(2.6rem,9vw,5rem);letter-spacing:.32em;margin:0;line-height:1;color:var(--ink)}
+.sub{font-weight:300;font-size:1.05rem;letter-spacing:.08em;color:var(--ink-soft);margin:0}
+button{font:inherit;font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:.85rem;
+  padding:14px 30px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:background .3s,color .3s}
+button:hover{background:var(--ink);color:var(--white)}
+button:focus-visible{outline:2px solid var(--sky-deep);outline-offset:4px}
+.actions{display:flex;flex-wrap:wrap;gap:12px}
+.music{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+.music button{padding:9px 16px;font-size:.72rem;letter-spacing:.16em;min-width:13.5em}
+.music input[type=range]{width:150px;accent-color:var(--ink);cursor:pointer}
+.music input[type=range]:focus-visible{outline:2px solid var(--sky-deep);outline-offset:4px}
+#trk{flex-basis:100%;text-transform:none;letter-spacing:.04em;font-weight:300;color:var(--ink-soft);min-height:1.2em}
+#menu.title .pauseOnly,#menu.pause .titleOnly{display:none}
+.spaces{display:flex;flex-wrap:wrap;gap:8px}
+.spaces button{padding:8px 14px;font-size:.7rem;letter-spacing:.14em}
+.spaces button[aria-pressed="true"]{background:var(--ink);color:var(--white)}
+.spaces button:disabled{opacity:.35;cursor:default;background:transparent;color:var(--ink)}
+#where{font-weight:400;color:var(--ink)}
+#menu.pause h1{font-size:clamp(2rem,6vw,3.2rem)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;margin:0;font-size:.85rem;font-weight:300;color:var(--ink-soft)}
+dt{letter-spacing:.12em;text-transform:uppercase;font-weight:400;color:var(--ink)}
+dd{margin:0}
+#hud{position:fixed;left:20px;bottom:16px;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:300;
+  color:var(--white);text-shadow:0 0 8px rgba(22,48,94,.55);font-variant-numeric:tabular-nums;pointer-events:none;opacity:0;transition:opacity 1.2s;
+  display:flex;gap:22px}
+#hud.on{opacity:.85}
+#obj{position:fixed;top:18px;left:0;right:0;text-align:center;font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;font-weight:400;
+  color:var(--white);text-shadow:0 0 10px rgba(22,48,94,.6);pointer-events:none;opacity:0;transition:opacity 1.2s;font-variant-numeric:tabular-nums}
+#obj.on{opacity:.9}
+#toast{position:fixed;top:24%;left:16px;right:16px;text-align:center;font-family:var(--font-display);font-weight:300;font-size:clamp(1rem,2.6vw,1.5rem);letter-spacing:.34em;
+  text-transform:uppercase;color:var(--white);text-shadow:0 0 14px rgba(22,48,94,.7);pointer-events:none;opacity:0;transition:opacity .8s}
+#toast.on{opacity:1}
+#err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;background:var(--white)}
+@media (max-width:480px){dl{font-size:.78rem}}
+</style>
+</head>
+<body>
+<canvas id="c" tabindex="0"></canvas>
+<div id="vig"></div>
+<div id="under"></div>
+<div class="fx" id="fx-glow"></div><div class="fx" id="fx-grain"></div><div class="fx" id="fx-lines"></div><div class="fx" id="fx-bar"></div><div id="osd"></div>
+<div id="veil"></div>
+<div id="hud"><span id="alt"></span><span id="shards"></span><span id="summits"></span><span id="doors"></span></div>
+<div id="obj"></div>
+<div id="toast"></div>
+<div id="menu" class="title">
+  <div class="inner">
+    <h1 id="ttl">ÉTHER</h1>
+    <p class="sub titleOnly">Huit espaces liminaux. Chacun a son objectif ; une fois rempli, un seuil doré s'ouvre vers le suivant.</p>
+    <p class="sub" id="where"></p>
+    <div class="spaces titleOnly" id="spaces" aria-label="Espaces débloqués"></div>
+    <div class="actions">
+      <button id="go" type="button">Entrer</button>
+      <button id="restart" type="button" class="pauseOnly">Recommencer</button>
+      <button id="tomenu" type="button" class="pauseOnly">Retour au menu</button>
+    </div>
+    <div class="music">
+      <button id="mus" type="button" aria-pressed="true">Musique activée</button>
+      <label for="vol">Volume</label>
+      <input id="vol" type="range" min="0" max="100" step="1" value="60">
+      <button id="fxb" type="button">Filtre : aucun</button>
+      <span id="trk"></span>
+    </div>
+    <dl class="titleOnly">
+      <dt>ZQSD / flèches</dt><dd>marcher</dd>
+      <dt>Souris</dt><dd>regarder</dd>
+      <dt>Espace · Maj</dt><dd>sauter · courir (les grands sauts demandent de l'élan)</dd>
+      <dt>E</dt><dd>écouter un œil ailé, biper la voiture</dd>
+      <dt>C</dt><dd>s'accroupir (maintenir), pour les passages bas</dd>
+      <dt>Dalles bleues · vertes</dt><dd>tremplins · départ d'une course chronométrée</dd>
+      <dt>Dans l'eau</dt><dd>Espace pour remonter, Maj pour plonger, regardez où vous nagez</dd>
+      <dt>Métro</dt><dd>montez dans une rame à quai, elle repart toute seule</dd>
+      <dt>Échap · M</dt><dd>menu · couper la musique</dd>
+      <dt>Tactile</dt><dd>moitié gauche pour marcher, droite pour regarder</dd>
+    </dl>
+  </div>
+</div>
+<div id="err"><p>Ce jeu a besoin de WebGL 2, que ce navigateur ne fournit pas. Essayez avec une version récente de Chrome, Firefox ou Safari.</p></div>
+
+<script src="js/core.js"></script>
+<script src="js/gen.js"></script>
+<script src="js/sprite.js"></script>
+<script src="js/render.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
