@@ -1,6 +1,6 @@
 "use strict";
 /* =====================================================================
-   ÉTHER — jeu : joueur, rames, objectifs, menus, son, boucle de rendu
+   DREAM IT — jeu : joueur, rames, objectifs, menus, son, boucle de rendu
    ===================================================================== */
 let time=0,last=performance.now(),hudT=0;
 let start=cellInfo(0,0);
@@ -488,7 +488,7 @@ function resume(){
   started=true;paused=false;menu.classList.add('off');hud.classList.add('on');objEl.classList.add('on');startAudio();playMusic();canvas.focus();lockPointer();
 }
 function showMenu(mode){
-  menu.className=mode;ttl.textContent=mode==='pause'?'PAUSE':'ÉTHER';btn.textContent=mode==='pause'?'Reprendre':'Entrer';
+  menu.className=mode;ttl.textContent=mode==='pause'?'PAUSE':'DREAM IT';btn.textContent=mode==='pause'?'Reprendre':'Entrer';
   toastEl.classList.remove('on');toastT=0;
   if(mode==='title'){hud.classList.remove('on');objEl.classList.remove('on');}
 }
