@@ -123,7 +123,7 @@ function icosphere(sub){
 const ICO1=icosphere(1),ICO2=icosphere(2),ICO3=icosphere(3),ICO5=icosphere(5);
 
 class Geo{
-  constructor(ox,oz,y){this.v=[];this.col=[];this.items=[];this.pads=[];this.gr=[];this.ng=[];this.sit=null;this.conv=[];this.lifts=[];this.swings=[];this.hdoors=[];this.notes=[];this.phones=[];this.watch=[];this.npcs=[];this.wat=[];this.pearls=[];this.course=null;this.car=null;this.ox=ox;this.oz=oz;this.y=y;this.m=SYM[0];}
+  constructor(ox,oz,y){this.v=[];this.col=[];this.items=[];this.pads=[];this.gr=[];this.ng=[];this.sit=null;this.conv=[];this.lifts=[];this.swings=[];this.hdoors=[];this.crabs=[];this.notes=[];this.phones=[];this.watch=[];this.npcs=[];this.wat=[];this.pearls=[];this.course=null;this.car=null;this.ox=ox;this.oz=oz;this.y=y;this.m=SYM[0];}
   P(a,y,b){const m=this.m;return [this.ox+m[0]*a+m[1]*b,this.y+y,this.oz+m[2]*a+m[3]*b];}
   N(a,y,b){const m=this.m;return [m[0]*a+m[1]*b,y,m[2]*a+m[3]*b];}
   quad(p0,p1,p2,p3,n0,n1,n2,n3,mat){const v=this.v;
@@ -161,6 +161,7 @@ class Geo{
     for(let a=0;a<n;a++)for(let b=0;b<n;b++)for(const q of[H[a][b],H[a][b+1],H[a+1][b+1],H[a][b],H[a+1][b+1],H[a+1][b]])v.push(q[0],q[1],q[2],q[3][0],q[3][1],q[3][2],mat);}
   /* pose l'origine locale sur le relief */
   put(cx,cz,a,b){this.ox=cx+a;this.oz=cz+b;this.y=HF(cx+a,cz+b);}
+  crab(a,b){const p=this.P(a,0,b);this.crabs.push(p[0],p[1],p[2]);}
   note(a,y,b){const p=this.P(a,y,b);this.notes.push(p[0],p[1],p[2]);}
   phone(a,y,b){const p=this.P(a,y,b);this.phones.push(p[0],p[1],p[2]);}
   watchAt(a,b){const p=this.P(a,0,b);this.watch.push(p[0],p[1],p[2]);}

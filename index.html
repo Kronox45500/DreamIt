@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>Éther, exploration liminale</title>
+<title>Dream It</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=VT323&display=swap">
 <style>
 :root{
@@ -90,6 +90,15 @@ body[data-mode="obs"] #story{display:none!important}
 #toast.on{opacity:1}
 #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;background:var(--white)}
 @media (max-width:480px){dl{font-size:.78rem}}
+/* textes du jeu : noirs, cernés d'un fin trait blanc, lisibles sur tous les fonds */
+#hud,#obj,#toast,#story,#story.ink{color:#050506;font-weight:700;
+  text-shadow:.6px 0 0 #fff,-.6px 0 0 #fff,0 .6px 0 #fff,0 -.6px 0 #fff}
+#obj{font-size:.86rem}#hud{font-size:.8rem}#story,#story.ink{font-weight:600}
+#hud.on,#obj.on{opacity:1}
+#jump{position:fixed;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:50;pointer-events:none}
+#jump.on{display:flex;animation:jumpk .09s steps(2) infinite}
+#jump img{height:150vh;filter:contrast(2) drop-shadow(0 0 40px #000);transform:scale(1.25)}
+@keyframes jumpk{0%{transform:translate(-8px,5px);background:#f2e9e9}35%{transform:translate(9px,-6px);background:#9a0000}70%{transform:translate(-4px,-8px);background:#fff}100%{transform:translate(5px,4px);background:#5a0000}}
 </style>
 </head>
 <body>
@@ -104,7 +113,7 @@ body[data-mode="obs"] #story{display:none!important}
 <div id="story"></div>
 <div id="menu" class="title">
   <div class="inner">
-    <h1 id="ttl">ÉTHER</h1>
+    <h1 id="ttl">DREAM IT</h1>
     <p class="sub titleOnly">Un rêve en neuf lieux, de l'enfance à maintenant. Chaque lieu a son objectif, puis sa propre façon d'en sortir.</p>
     <p class="sub" id="where"></p>
     <div class="spaces titleOnly" id="spaces" aria-label="Espaces débloqués"></div>

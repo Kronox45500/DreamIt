@@ -629,6 +629,13 @@ const FIG=(function(){const g=new Geo(0,0,0),E=(x,y,z,rx,ry,rz)=>g.ell(x,y,z,rx,
   for(const s of[-1,1]){E(s*0.255,1.29,0,0.05,0.26,0.052);E(s*0.268,0.90,0.012,0.04,0.25,0.042);E(s*0.272,0.63,0.02,0.036,0.075,0.028);
     E(s*0.092,0.71,0,0.076,0.30,0.08);E(s*0.088,0.27,-0.005,0.056,0.27,0.058);E(s*0.088,0.035,0.05,0.048,0.035,0.115);}
   return mesh7(new Float32Array(g.v));})();
+/* crabe : une carapace, deux pinces, des yeux sur pédoncules, six pattes */
+const CRAB=(function(){const g=new Geo(0,0,0),E=(x,y,z,a,b,c,m)=>g.ell(x,y,z,a,b,c,m||48,ICO2);
+  E(0,0.13,0,0.2,0.075,0.15);E(0,0.1,0.02,0.17,0.05,0.13,36);
+  for(const s of[-1,1]){E(s*0.17,0.12,0.17,0.035,0.03,0.07);E(s*0.2,0.14,0.27,0.075,0.05,0.06);E(s*0.17,0.15,0.32,0.03,0.03,0.04);
+    g.cyl(s*0.055,0.12,0.012,0.17,0.25,48,false,5);g.sphere(s*0.055,0.26,0.12,0.026,28,ICO1);
+    for(let k=0;k<3;k++){const z=-0.09+k*0.075,x0=s*0.16,x1=s*0.31;g.box(Math.min(x0,x1),0.13,z-0.012,Math.max(x0,x1),0.16,z+0.012,48,false);g.box(Math.min(x1,x1+s*0.025),0,z-0.012,Math.max(x1,x1+s*0.025),0.16,z+0.012,48,false);}}
+  return mesh7(new Float32Array(g.v));})();
 /* balançoire : deux cordes et une assise, suspendues à l'origine */
 const SWING_L=2.35;
 const SWING=(function(){const g=new Geo(0,0,0);

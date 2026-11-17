@@ -586,8 +586,12 @@ function playKit(g,k,r){ /* une structure, posée autour de l'origine courante *
     if(r()<0.6)g.item(0,1.5,0);
   }
 }
-function toy(g,r){ /* jouets géants : rares, immenses */
-  const k=Math.floor(r()*3);g.m=SYM[Math.floor(r()*4)]; /* symétries sans échange d'axes : les ellipsoïdes gardent leur sens */
+function toy(G0,r){ /* jouets géants : rares, immenses (deux fois plus grands qu'avant) */
+  const S=2.1,g={ /* même interface que Geo, toutes les mesures multipliées par S */
+    box:(x0,y0,z0,x1,y1,z1,m,s)=>G0.box(x0*S,y0*S,z0*S,x1*S,y1*S,z1*S,m,s),cyl:(a,b,R,y0,y1,m,s,n)=>G0.cyl(a*S,b*S,R*S,y0*S,y1*S,m,s,n),
+    ell:(a,y,b,ra,ry,rb,m,ic)=>G0.ell(a*S,y*S,b*S,ra*S,ry*S,rb*S,m,ic),sphere:(a,y,b,R,m,ic,e)=>G0.sphere(a*S,y*S,b*S,R*S,m,ic,e),
+    solid:(x0,y0,z0,x1,y1,z1)=>G0.solid(x0*S,y0*S,z0*S,x1*S,y1*S,z1*S),nog:(a0,b0,a1,b1)=>G0.nog(a0*S,b0*S,a1*S,b1*S)};
+  const k=Math.floor(r()*3);G0.m=SYM[Math.floor(r()*4)]; /* symétries sans échange d'axes : les ellipsoïdes gardent leur sens */
   if(k===0){ /* briques emboîtables */
     const brick=(a,y,b,la,lb,h,mt)=>{g.box(a-la,y,b-lb,a+la,y+h,b+lb,mt);
       for(let u=-la+2;u<la;u+=4)for(let v=-lb+2;v<lb;v+=4)g.cyl(a+u,b+v,1.25,y+h,y+h+0.9,mt,false,14);};
@@ -615,7 +619,7 @@ function playCell(g,c,i,j,r){
   }
   /* rien n'est aligné : chaque structure est décalée et tournée au hasard, certaines cases en ont deux, d'autres rien */
   const ox=g.ox,oz=g.oz;
-  if(T===9){g.ox=ox+(r()-0.5)*14;g.oz=oz+(r()-0.5)*14;toy(g,r);g.ox=ox;g.oz=oz;g.m=SYM[0];return;}
+  if(T===9){g.ox=ox+(r()-0.5)*4;g.oz=oz+(r()-0.5)*4;toy(g,r);g.ox=ox;g.oz=oz;g.m=SYM[0];return;}
   const n=T===6?(r()<0.5?1:0):(r()<0.3?2:1),sx=r()<0.5?-1:1,sz=r()<0.5?-1:1;
   for(let s=0;s<n;s++){
     const k=T===6?6:s===0?T:1+Math.floor(r()*4),sp=n>1?9+r()*5:r()*13;
@@ -795,7 +799,7 @@ function hospitalCell(g,c,i,j,r){
   const T=c.type,H=3;g.m=SYM[0];
   g.box(-24,-0.8,-24,24,0,24,59);
   if(T===3){hospHall(g,r);return;}
-  g.box(-24,H,-24,24,H+0.4,24,32,false);
+  g.box(-24,H,-24,24,H+0.4,24,32); /* plafond plein : on ne passe plus au travers */
   const dark=T===5,lamp=(a0,b0,a1,b1)=>g.box(a0,H-0.05,b0,a1,H,b1,(dark||r()<0.16)?12:17,false);
   for(let k=-24;k<=24;k+=6){if(k===0)continue;lamp(k-0.6,-0.3,k+0.6,0.3);lamp(-0.3,k-0.6,0.3,k+0.6);}
   g.box(-0.55,2.45,-0.05,0.55,2.75,0.05,29,false);g.box(-0.02,2.75,-0.02,0.02,H,0.02,12,false);
@@ -811,10 +815,13 @@ function hospitalCell(g,c,i,j,r){
   let q=0,noteQ=r()<0.6?Math.floor(r()*4):-1;
   for(const sa of[-1,1])for(const sb of[-1,1]){const kind=kinds[q],gc=sa*(6+Math.floor(r()*15)),hasNote=q===noteQ;q++;
     wall(true,sa*2,sa*24,sb*2.1,gc);wall(false,sb*2.1,sb*24,sa*2.1);wall(true,sa*2,sa*24,sb*23.9);wall(false,sb*2,sb*24,sa*23.9);
-    g.box(Math.min(sa*2.2,sa*24),0.86,Math.min(sb*1.92,sb*2),Math.max(sa*2.2,sa*24),0.93,Math.max(sb*1.92,sb*2),16,false);
-    g.box(Math.min(sa*1.92,sa*2),0.86,Math.min(sb*2.2,sb*24),Math.max(sa*1.92,sa*2),0.93,Math.max(sb*2.2,sb*24),16,false);
+    /* main courante : interrompue à chaque porte, vraie ou close */
+    const fd=[6,12,18].map(u=>sb*u+(r()-0.5));
+    const rail=(alongA,u0,u1,w0,w1,gaps)=>{const lo=Math.min(u0,u1),hi=Math.max(u0,u1),cut=gaps.map(c=>[c-0.75,c+0.75]).sort((p,q)=>p[0]-q[0]);let s=lo;
+      for(const [c0,c1] of cut.concat([[hi,hi]])){const e=Math.min(c0,hi);if(e-s>0.1){if(alongA)g.box(s,0.86,Math.min(w0,w1),e,0.93,Math.max(w0,w1),16,false);else g.box(Math.min(w0,w1),0.86,s,Math.max(w0,w1),0.93,e,16,false);}s=Math.max(s,c1);}};
+    rail(true,sa*2.2,sa*24,sb*1.92,sb*2,[gc]);rail(false,sb*2.2,sb*24,sa*1.92,sa*2,fd);
     /* couloir : portes closes, accessoires contre les murs */
-    for(const u of[6,12,18])fdoor(false,sb*u+(r()-0.5),sa*2.1);
+    for(const u of fd)fdoor(false,u,sa*2.1);
     {const used=[gc];for(let k=0;k<2;k++){const u=sa*(4+r()*18);if(used.some(v=>Math.abs(v-u)<2.6))continue;used.push(u);if(r()<0.85)hprop(g,true,u,sb*1.45,Math.floor(r()*6),r);}}
     {const u=sb*(4+r()*18);if(r()<0.7)hprop(g,false,u,sa*1.45,Math.floor(r()*6),r);}
     for(const k of[6,12,18])for(const l of[6,12,18])lamp(sa*k-0.6,sb*l-0.6,sa*k+0.6,sb*l+0.6);
@@ -858,14 +865,14 @@ function hospitalCell(g,c,i,j,r){
       for(const l of[8,13,18]){g.box(Math.min(sa*5,sa*20),0,sb*l-0.3,Math.max(sa*5,sa*20),2.4,sb*l+0.3,50);
         for(let k=0;k<6;k++){if(r()<0.3)continue;const a=sa*(6+k*2.4);g.box(a-0.6,2.4,sb*l-0.28,a+0.6,2.4+0.3+r()*0.3,sb*l+0.28,41,false);}}
       for(let k=0;k<3;k++)hprop(g,true,sa*(7+k*5),sb*21.5,k%2?1:0,r);
-      g.item(sa*12,2.95,sb*13);if(hasNote)g.note(sa*21.5,1.1,sb*10.5);
+      g.item(sa*12,1.1,sb*10.5);if(hasNote)g.note(sa*21.5,1.1,sb*10.5);
     }else{
       for(let k=0;k<3;k++){const a=sa*(8+k*5),b=sb*14;g.box(a-0.7,0,b-0.7,a+0.7,0.5,b+0.7,34+k);
         for(const d of[[-1,0],[1,0],[0,-1],[0,1]])g.box(a+d[0]*1.05-0.18,0,b+d[1]*1.05-0.18,a+d[0]*1.05+0.18,0.3,b+d[1]*1.05+0.18,35+(k+d[0]+3)%3,false);}
       for(let k=0;k<5;k++){const a=sa*(5+k*3.5);g.box(a-1.2,1.0,Math.min(sb*23.76,sb*23.78),a+1.2,2.2,Math.max(sb*23.76,sb*23.78),34+k%4,false);}
       for(let k=0;k<5;k++)g.box(sa*18-0.4,k*0.5,sb*6-0.4+(k%2)*0.2,sa*18+0.4,(k+1)*0.5,sb*6+0.4,34+k%4);
       g.sphere(sa*20,0.6,sb*19,0.6,36,ICO2);g.ell(sa*6,0.35,sb*20,0.5,0.35,0.4,34,ICO2);g.sphere(sa*6,0.85,sb*20,0.28,34,ICO2);
-      g.item(sa*18,3.3,sb*6);if(r()<0.6)g.npc(sa*10,0,sb*19,r()*6.28);if(hasNote)g.note(sa*8,0.6,sb*14);
+      g.item(sa*18,1.1,sb*8);if(r()<0.6)g.npc(sa*10,0,sb*19,r()*6.28);if(hasNote)g.note(sa*8,0.6,sb*14);
     }
   }
   if(r()<0.3)g.npc(-22,0,0.6,0,22,0.6);else if(r()<0.25)g.npc(0.6,0,-22,0,0.6,22);
@@ -999,6 +1006,21 @@ function beachCell(g,c,i,j,r){
     if(j<=3){const n=j===1?2:1;for(let k=0;k<n;k++){g.put(cx,cz,(r()-0.5)*38,(r()-0.5)*38);g.pearl(0,0.45,0);}}
     if(r()<0.45){const a=(r()-0.5)*34,b=(r()-0.5)*34;g.ox=cx+a;g.oz=cz+b;g.y=0;g.sphere(0,-0.05,0,0.62,16,ICO2);g.cyl(0,0,0.04,0.4,1.5,12,false,6);if(j<=2)g.item(0,0.75,0);}
   }
+  /* la vie du rivage : crabes sur le sable mouillé, étoiles de mer, coquillages ; algues et rochers sous l'eau */
+  let crabs=0;
+  const star=m=>{g.sphere(0,0.03,0,0.075,m,ICO1,0.45);for(let q=0;q<5;q++){const t=q/5*6.283+0.3;for(const [d,R] of[[0.08,0.05],[0.14,0.04],[0.2,0.028]])g.sphere(Math.cos(t)*d,0.025,Math.sin(t)*d,R,m,ICO1,0.5);}};
+  for(let k=0;k<(T===2||T===1?18:12);k++){const a=(r()-0.5)*44,b=(r()-0.5)*44,h=HF(cx+a,cz+b);if(T===T_DOOR&&Math.hypot(a,b)<4)continue;g.put(cx,cz,a,b);const x=r();
+    if(h<-0.75){ /* fond marin */
+      if(x<0.55){const n=3+Math.floor(r()*4),top=Math.min(1.8,-h-0.25);for(let q=0;q<n;q++){const hh=top*(0.45+r()*0.55),u=(r()-0.5)*0.7,v=(r()-0.5)*0.7;g.ell(u,hh/2,v,0.05,hh/2,0.025,15,ICO1);g.ell(u+0.06,hh*0.75,v,0.03,hh*0.3,0.05,15,ICO1);}}
+      else if(x<0.75)star(r()<0.5?34:36);
+      else if(x<0.9){const R=0.3+r()*0.6;g.ell(0,R*0.3,0,R,R*0.65,R*0.85,18,ICO2);g.ell(R*0.3,R*0.75,0.1,0.12,0.4,0.03,15,ICO1);}
+      else g.ell(0,0.04,0,0.1,0.05,0.08,0,ICO1);
+    }else if(h<0.6&&j>=-1){ /* sable mouillé, laisse de mer */
+      if(x<0.3&&crabs<3){crabs++;g.crab(0,0);}
+      else if(x<0.55)star(r()<0.5?36:34);
+      else if(x<0.85){for(let q=0;q<1+Math.floor(r()*3);q++)g.ell((r()-0.5)*0.6,0.035,(r()-0.5)*0.6,0.07+r()*0.05,0.04,0.055,r()<0.6?0:34,ICO1);}
+      else{for(let q=0;q<3;q++)g.ell((r()-0.5)*0.8,0.02,(r()-0.5)*0.4,0.22,0.02,0.04,15,ICO1);}
+    }}
   g.ox=cx;g.oz=cz;g.y=0;
 }
 
@@ -1085,6 +1107,6 @@ function genCell(i,j){
     if(r()<0.5){const q2=q*0.5,H2=H+8+r()*30;g.box(-q2,H+0.7,-q2,q2,H2,q2,2,false);}
   }
   const hasAsc=c.exists&&c.type===T_ASC;
-  return {verts:new Float32Array(g.v),col:new Float32Array(g.col),door,items:g.items,pads:g.pads,npcs:g.npcs,wat:g.wat,pearls:g.pearls,course:g.course,car:g.car,sit:g.sit,lifts:g.lifts,swings:g.swings,hdoors:g.hdoors,conv:g.conv,notes:g.notes,phones:g.phones,watch:g.watch,blades:g.gr.length?g.blades(r):null,
+  return {verts:new Float32Array(g.v),col:new Float32Array(g.col),door,items:g.items,pads:g.pads,npcs:g.npcs,wat:g.wat,pearls:g.pearls,course:g.course,car:g.car,sit:g.sit,lifts:g.lifts,swings:g.swings,hdoors:g.hdoors,conv:g.conv,crabs:g.crabs,notes:g.notes,phones:g.phones,watch:g.watch,blades:g.gr.length?g.blades(r):null,
           asc:hasAsc?{x:cx,z:cz,top:c.h+ascLayout(i,j).H}:null};
 }
