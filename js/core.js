@@ -86,10 +86,54 @@ const WORLDS=[
   pal:{sun:[0.62,0.30,0.55],zen:[.36,.48,.74],mid:[.70,.74,.88],hor:[1.0,.86,.78],seaC:[1.0,.86,.78],ambUp:[.70,.72,.84],ambDn:[.64,.62,.64],sunC:[.50,.40,.28],
        indoor:[.40,.40,.46],fogD:420,cl0:[.80,.78,.88],cl1:[1,.96,.92],se0:[.7,.74,.72],se1:[.8,.82,.8],accent:[.40,.62,.80],glow:[1,.86,.72],
        water:0,night:0,stripe:[0,0],cloud:.45,lampC:[0,0,0],lampP:[1,1,0,0],lampO:[0,0],ground:[.70,.75,.72]}},
+ /* ===== chapitre 3 : ce qu'on a perdu ===== */
+ {name:'La pièce aux souvenirs',gen:15,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{},music:[13],spawn:[0,0,-2.5],hub:true,
+  pal:{sun:[0.3,0.85,0.4],zen:[.02,.02,.03],mid:[.02,.02,.03],hor:[.02,.02,.03],seaC:[.02,.02,.03],ambUp:[.30,.27,.25],ambDn:[.22,.19,.17],sunC:[0,0,0],
+       indoor:[.20,.17,.14],fogD:40,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.55,.45,.40],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[1.0,.72,.42],lampP:[48,48,2.5,6.5],lampO:[0,0],ground:null}},
+ {name:'Centre commercial',gen:16,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,notes:3,talks:1,shards:3},music:[14],spawn:[0,0,3.5],
+  souv:{n:'la petite voiture rouge',k:0,t:2,r:3},
+  notes:{L:'Tickets de caisse',s:'ticket de caisse',c:[1,1,0.9],t:['Ticket de caisse · 1 café, 1 grenadine, 1 petite voiture. Samedi, 15 h 12.','Ticket de caisse · Piles AA ×4. « Pour la lampe de ta chambre. »','Ticket de caisse · 2 cornets vanille. Il avait pris vanille pour faire comme toi.']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.20,.22,.26],mid:[.20,.22,.26],hor:[.18,.19,.21],seaC:[.18,.19,.21],ambUp:[.40,.42,.44],ambDn:[.31,.31,.31],sunC:[0,0,0],
+       indoor:[.24,.25,.26],fogD:90,cl0:[.3,.3,.3],cl1:[.5,.5,.5],se0:[.3,.3,.3],se1:[.4,.4,.4],accent:[.62,.50,.40],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.62,.64,.60],lampP:[12,12,8.4,7],lampO:[0,0],ground:null}},
+ {name:'Cinéma',gen:17,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,phones:3,shards:3},music:[15],spawn:[0,0,8],
+  souv:{n:'les deux tickets',k:1,t:6,r:3},
+  acts:{L:'Projecteurs',s:'projecteur',verb:'E · rallumer le projecteur',snd:'proj',lines:['Le projecteur cliquette. Sur l\'écran, une plage, un homme qui court vers la mer.','Le film reprend là où il s\'était endormi. Tu regardes pour deux.','Tu entends quelqu\'un rire, trois rangs derrière toi. Tu ne te retournes pas.']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.04,.03,.04],mid:[.04,.03,.04],hor:[.04,.03,.04],seaC:[.04,.03,.04],ambUp:[.20,.16,.17],ambDn:[.15,.11,.12],sunC:[0,0,0],
+       indoor:[.13,.09,.10],fogD:60,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.60,.12,.16],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.95,.62,.38],lampP:[12,12,3.2,4.2],lampO:[0,0],ground:null}},
+ {name:'Salle d\'arcade',gen:18,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,phones:4,talks:1,shards:3},music:[16],spawn:[0,0,4],
+  souv:{n:'le ticket gagnant',k:2,t:3,r:3},
+  acts:{L:'Bornes',s:'borne',verb:'E · jouer',snd:'arcade',lines:['Joueur 2 : prêt ? Personne ne répond. Tu joues pour lui.','HIGH SCORE : TOI ET THOMAS. Les initiales sont encore là.','Game over. Insert coin. Papa en avait toujours une de plus, dans sa poche gauche.','Continue ? 9… 8… 7… Tu appuies. Tu appuies toujours.']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.02,.01,.04],mid:[.02,.01,.04],hor:[.02,.01,.04],seaC:[.02,.01,.04],ambUp:[.16,.12,.22],ambDn:[.11,.08,.15],sunC:[0,0,0],
+       indoor:[.10,.08,.14],fogD:55,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.75,.20,.80],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.62,.30,.90],lampP:[8,8,3.4,3.6],lampO:[4,4],ground:null}},
+ {name:'Bowling',gen:19,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,phones:3,shards:3},music:[17],spawn:[0,0,21],
+  souv:{n:'la photo du gâteau',k:3,t:3,r:3},
+  acts:{L:'Lancers',s:'piste',verb:'E · lancer la boule',snd:'strike',lines:['Strike. Il aurait levé les deux bras, comme toujours.','La boule part de travers, exprès. Tu ris tout seul, dans le noir.','Dix quilles tombent. Sur l\'écran : « Joyeux anniversaire ». Il n\'y a que ton prénom.']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.03,.02,.05],mid:[.03,.02,.05],hor:[.03,.02,.05],seaC:[.03,.02,.05],ambUp:[.22,.18,.26],ambDn:[.16,.13,.18],sunC:[0,0,0],
+       indoor:[.15,.12,.18],fogD:70,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.25,.55,.95],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.80,.62,.95],lampP:[9,10,3.6,4.4],lampO:[2.25,0],ground:null}},
+ {name:'Parc aquatique',gen:20,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,notes:3,talks:1,shards:3},music:[18],spawn:[0,0,20],
+  souv:{n:'la serviette rayée',k:4,t:1,r:3},
+  notes:{L:'Bracelets',s:'bracelet d\'entrée',c:[0.6,0.95,1.1],t:['Bracelet d\'entrée · Adulte. Il le gardait au poignet jusqu\'au soir.','Bracelet d\'entrée · Enfant, moins de 12 ans. Le tien.','Bracelet d\'entrée · Le dernier été. La date est effacée, et c\'est mieux comme ça.']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.10,.14,.16],mid:[.10,.14,.16],hor:[.09,.12,.13],seaC:[.09,.12,.13],ambUp:[.34,.40,.42],ambDn:[.26,.30,.30],sunC:[0,0,0],
+       indoor:[.20,.24,.25],fogD:80,cl0:[.3,.3,.3],cl1:[.5,.5,.5],se0:[.3,.3,.3],se1:[.4,.4,.4],accent:[.25,.62,.72],glow:[0,0,0],
+       water:1,night:0,stripe:[0.2,0.4],cloud:.2,lampC:[.55,.70,.72],lampP:[12,12,7,7.5],lampO:[0,0],ground:null}},
+ {name:'La maison vendue',gen:21,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,phones:5},music:[19],spawn:[1,0,1],
+  souv:{n:'les clés',k:5,t:4,r:3},
+  acts:{L:'Cartons',s:'carton ouvert',verb:'E · fermer le carton',snd:'box',lines:['Ses pulls. Ils sentent encore la lessive qu\'il achetait toujours.','Des cassettes, avec son écriture : « Vacances », « Noël », « À garder ».','Ta première chaussure. Il l\'avait gardée. Tu ne le savais pas.','Des factures, des clés de rien, un ticket de cinéma. Le tien.','Le carton est lourd. Tu le fermes quand même.']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.34,.30,.30],mid:[.34,.30,.30],hor:[.40,.32,.28],seaC:[.40,.32,.28],ambUp:[.52,.46,.42],ambDn:[.40,.34,.30],sunC:[0,0,0],
+       indoor:[.34,.29,.25],fogD:70,cl0:[.3,.3,.3],cl1:[.5,.5,.5],se0:[.3,.3,.3],se1:[.4,.4,.4],accent:[.62,.52,.42],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[1.0,.75,.48],lampP:[8,8,2.5,3.6],lampO:[4,4],ground:null}},
 ];
 /* les chapitres : tranches de la liste des espaces */
-const CHAPS=[[0,9,'Le rêve'],[9,15,'Le long sommeil']];
-function chOf(w){return w>=CHAPS[1][0]?1:0;}
+const CHAPS=[[0,9,'Le rêve'],[9,15,'Le long sommeil'],[15,22,'Ce qu\'on a perdu']];
+function chOf(w){return w>=CHAPS[2][0]?2:w>=CHAPS[1][0]?1:0;}
+/* chapitre 3 : les souvenirs rapportés dans la pièce (niveaux 16 à 20), gardés d'une partie à l'autre */
+const C3=new Set((()=>{try{return JSON.parse(localStorage.getItem('dream-c3')||'[]');}catch(e){return [];}})());
+function c3save(){try{localStorage.setItem('dream-c3',JSON.stringify([...C3]));}catch(e){}}
 /* relief : rivage (13) */
 function HF(x,z){
   if(GEN===13){const n=vnoise(x/23+1.7,z/23+4.2);
@@ -98,8 +142,9 @@ function HF(x,z){
   return 0;
 }
 let SUN=[0,1,0],PAL=null,W=0,WSALT=0,level=0,maxLevel=0,GEN=0;
-let max2=CHAPS[1][0];
-try{level=Math.max(0,parseInt(localStorage.getItem('ether-level'))||0);if(level>=WORLDS.length)level=0;maxLevel=Math.min(8,Math.max(level<9?level:0,parseInt(localStorage.getItem('ether-max'))||0));max2=Math.max(9,level,parseInt(localStorage.getItem('ether-max2'))||0);}catch(e){}
+let max2=CHAPS[1][0],max3=CHAPS[2][0];
+try{level=Math.max(0,parseInt(localStorage.getItem('ether-level'))||0);if(level>=WORLDS.length)level=0;maxLevel=Math.min(8,Math.max(level<9?level:0,parseInt(localStorage.getItem('ether-max'))||0));max2=Math.min(14,Math.max(9,level<15?level:9,parseInt(localStorage.getItem('ether-max2'))||0));}catch(e){}
+try{max3=Math.min(21,Math.max(15,parseInt(localStorage.getItem('dream-max3'))||15));}catch(e){}
 function applyWorld(){W=level%WORLDS.length;WSALT=level*977;PAL=WORLDS[W].pal;SUN=norm(PAL.sun);GEN=WORLDS[W].gen;}
 applyWorld();
 
@@ -123,7 +168,7 @@ function icosphere(sub){
 const ICO1=icosphere(1),ICO2=icosphere(2),ICO3=icosphere(3),ICO5=icosphere(5);
 
 class Geo{
-  constructor(ox,oz,y){this.v=[];this.col=[];this.items=[];this.pads=[];this.gr=[];this.ng=[];this.sit=null;this.conv=[];this.lifts=[];this.swings=[];this.hdoors=[];this.crabs=[];this.notes=[];this.phones=[];this.watch=[];this.npcs=[];this.wat=[];this.pearls=[];this.course=null;this.car=null;this.ox=ox;this.oz=oz;this.y=y;this.m=SYM[0];}
+  constructor(ox,oz,y){this.v=[];this.col=[];this.items=[];this.pads=[];this.gr=[];this.ng=[];this.sit=null;this.conv=[];this.lifts=[];this.swings=[];this.hdoors=[];this.crabs=[];this.statues=[];this.guards=[];this.visitors=[];this.souvs=[];this.scr=[];this.notes=[];this.phones=[];this.watch=[];this.npcs=[];this.wat=[];this.pearls=[];this.course=null;this.car=null;this.ox=ox;this.oz=oz;this.y=y;this.m=SYM[0];}
   P(a,y,b){const m=this.m;return [this.ox+m[0]*a+m[1]*b,this.y+y,this.oz+m[2]*a+m[3]*b];}
   N(a,y,b){const m=this.m;return [m[0]*a+m[1]*b,y,m[2]*a+m[3]*b];}
   quad(p0,p1,p2,p3,n0,n1,n2,n3,mat){const v=this.v;
@@ -161,6 +206,11 @@ class Geo{
     for(let a=0;a<n;a++)for(let b=0;b<n;b++)for(const q of[H[a][b],H[a][b+1],H[a+1][b+1],H[a][b],H[a+1][b+1],H[a+1][b]])v.push(q[0],q[1],q[2],q[3][0],q[3][1],q[3][2],mat);}
   /* pose l'origine locale sur le relief */
   put(cx,cz,a,b){this.ox=cx+a;this.oz=cz+b;this.y=HF(cx+a,cz+b);}
+  statue(a,b){const p=this.P(a,0,b);this.statues.push(p[0],p[1],p[2]);}
+  guard(a0,b0,a1,b1){const p=this.P(a0,0,b0),q=this.P(a1,0,b1);this.guards.push([p[0],p[1],p[2],q[0],q[2]]);}
+  visitor(a,b){const p=this.P(a,0,b);this.visitors.push(p[0],p[1],p[2]);}
+  souv(a,y,b){const p=this.P(a,y,b);this.souvs.push(p[0],p[1],p[2]);}
+  screen(a,y,b,big){const p=this.P(a,y,b);this.scr.push([p[0],p[1],p[2],big?1:0,this.phones.length/3]);}
   crab(a,b){const p=this.P(a,0,b);this.crabs.push(p[0],p[1],p[2]);}
   note(a,y,b){const p=this.P(a,y,b);this.notes.push(p[0],p[1],p[2]);}
   phone(a,y,b){const p=this.P(a,y,b);this.phones.push(p[0],p[1],p[2]);}
@@ -246,6 +296,13 @@ const TYPES=[
   [[.08,0],[.38,1],[.52,3],[.64,4],[.80,5],[1.01,6]],
   [[1.01,1]],
   [[.06,0],[.26,1],[.42,2],[.56,3],[.70,4],[.84,5],[1.01,6]],
+  [[1.01,7]],
+  [[.06,0],[.40,1],[.55,2],[.63,3],[.75,4],[.88,5],[1.01,6]],
+  [[.06,0],[.42,1],[.56,2],[.63,3],[.75,4],[.88,5],[1.01,6]],
+  [[.06,0],[.40,1],[.54,2],[.66,3],[.76,4],[.88,5],[1.01,6]],
+  [[.06,0],[.42,1],[.56,2],[.66,3],[.78,4],[.86,5],[1.01,6]],
+  [[.06,0],[.36,1],[.52,2],[.62,3],[.74,4],[.86,5],[1.01,6]],
+  [[.06,0],[.30,1],[.48,2],[.64,3],[.78,4],[.90,5],[1.01,6]],
 ];
 /* monde-anneau : le lotissement se répète tous les RING_N îlots et se referme au-dessus de vous */
 const RING_N=48,RING_R=RING_N*48/(2*Math.PI);

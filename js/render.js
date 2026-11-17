@@ -71,6 +71,11 @@ void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
   if(m==4){col=uDoorC;fogK=.3;emi=1.;}
   else if(m==17){col=vec3(1.05,1.03,.97);fogK=.5;emi=1.;}
   else if(m==25){col=vec3(1.1,.72,.30);fogK=.4;emi=1.;}
+  else if(m==73){ /* l'écran de cinéma : un vieux film en noir et blanc, qui tremble */
+    vec2 q=vW.xy*.35+vec2(uTime*.05,0.);float fl=.86+.14*sin(uTime*41.)*sin(uTime*13.),sc=step(.995,fract(sin(floor(vW.x*7.+uTime*3.)*91.7)*4375.));
+    col=vec3(.92,.88,.80)*(.35+.55*vn(q*1.3+floor(uTime*.4)*7.)+.15*vn(q*6.))*fl+sc*.4;fogK=.6;emi=.9;}
+  else if(m==71){col=vec3(1.15,.22,.85);fogK=.35;emi=1.;} /* néon magenta */
+  else if(m==72){col=vec3(.2,.95,1.15);fogK=.35;emi=1.;} /* néon cyan */
   else if(m==28){float rim=pow(1.-max(dot(n,V),0.),3.);col=vec3(.005,.005,.008)+uHor*rim*.05;fogK=.9;}
   else if(m==39){ /* œil : la pupille est toujours tournée vers vous */
     float e=dot(n,V);vec3 sc=mix(vec3(.80,.40,.38),vec3(.97,.95,.93),smoothstep(.12,.55,e));
@@ -288,6 +293,15 @@ void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
         float u=abs(n.x)>abs(n.z)?vW.z:vW.x,hh=h21(vec2(floor((vW.x+24.)/6.),floor(vW.z/48.+.5)));
         vec3 pc=hh<.25?vec3(.86,.30,.28):hh<.5?vec3(.24,.46,.70):hh<.75?vec3(.94,.74,.28):vec3(.30,.62,.56);
         alb=mix(vec3(.93,.91,.86),pc,step(.5,fract(u/.52)))*(.92+.08*vn(uv*vec2(3.,30.)));
+      }else if(m==69){ /* moquette de salle d'arcade : confettis fluo sur fond nuit */
+        vec2 c=floor(uv/.55),f=fract(uv/.55)-.5;float h1=fract(sin(dot(c,vec2(12.9,78.2)))*43758.5),h2=fract(h1*91.7);
+        vec2 p=f-vec2(h1-.5,h2-.5)*.5;float sh=h1<.33?length(p)-.12:h1<.66?max(abs(p.x),abs(p.y))-.09:abs(p.y+p.x*.6)-.035;
+        float fw=fwidth(uv.x)*2.;float on=smoothstep(fw+.01,0.,sh)*clamp(1.-fw*3.,0.,1.);
+        vec3 nc=h2<.25?vec3(1.,.2,.8):h2<.5?vec3(.2,.9,1.):h2<.75?vec3(1.,.9,.2):vec3(.4,1.,.3);
+        alb=mix(vec3(.025,.02,.06),nc*.9,on)*(.85+.15*vn(uv*40.));em=nc*on*.35;hgt=vn(uv*50.);bump=.02;
+      }else if(m==70){ /* carton kraft, une bande d'adhésif */
+        float tp=smoothstep(.02,.0,abs(fract(uv.x*.5+.25)-.5)-.07);
+        alb=mix(vec3(.58,.43,.27),vec3(.68,.57,.40),tp*.8)*(.9+.1*fbm3(uv*3.))*(.94+.06*vn(vec2(uv.x*60.,uv.y*2.)));gloss=.15+tp*.4;hgt=vn(uv*30.)*.5;bump=.01;
       }else if(m==68){ /* linoléum d'hôpital, des dalles larges comme des places */
         vec2 g=uv/14.;vec2 fw=fwidth(g);vec2 f=abs(fract(g)-.5);vec2 l=smoothstep(.5-fw*1.2-.004,vec2(.5),f);
         float line=max(l.x,l.y)*clamp(1.-max(fw.x,fw.y)*3.,0.,1.);
@@ -531,7 +545,7 @@ function imgTex(src){const o={tex:gl.createTexture(),ready:false,asp:1};
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);o.asp=im.height/im.width;o.ready=true;}catch(e){}};
   im.src=src;return o;}
-const STAR=imgTex(STAR_IMG),MAN=imgTex(MAN_IMG),LONG=imgTex(LONG_IMG);
+const STAR=imgTex(STAR_IMG),MAN=imgTex(MAN_IMG),LONG=imgTex(LONG_IMG),ANGEL=imgTex(ANGEL_IMG),EYES2=imgTex(EYES2_IMG),COAT=imgTex(COAT_IMG);
 
 /* ---------- post-traitement : occlusion ambiante, halo des lumières, anticrénelage, aberration légère ---------- */
 const FS_AO=HEAD+`in vec2 vP;out vec4 o;uniform sampler2D uD;uniform vec2 uTan,uNF,uPx;
@@ -629,6 +643,9 @@ const FIG=(function(){const g=new Geo(0,0,0),E=(x,y,z,rx,ry,rz)=>g.ell(x,y,z,rx,
   for(const s of[-1,1]){E(s*0.255,1.29,0,0.05,0.26,0.052);E(s*0.268,0.90,0.012,0.04,0.25,0.042);E(s*0.272,0.63,0.02,0.036,0.075,0.028);
     E(s*0.092,0.71,0,0.076,0.30,0.08);E(s*0.088,0.27,-0.005,0.056,0.27,0.058);E(s*0.088,0.035,0.05,0.048,0.035,0.115);}
   return mesh7(new Float32Array(g.v));})();
+/* écrans de cinéma, allumés quand on relance un projecteur */
+const SCREENM=(function(){const g=new Geo(0,0,0);g.box(-SCREEN_W/2,0,0,SCREEN_W/2,SCREEN_H,0.02,73,false);return mesh7(new Float32Array(g.v));})();
+const SCREENB=(function(){const g=new Geo(0,0,0);g.box(-SCREEN_BW/2,0,0,SCREEN_BW/2,SCREEN_BH,0.02,73,false);return mesh7(new Float32Array(g.v));})();
 /* crabe : une carapace, deux pinces, des yeux sur pédoncules, six pattes */
 const CRAB=(function(){const g=new Geo(0,0,0),E=(x,y,z,a,b,c,m)=>g.ell(x,y,z,a,b,c,m||48,ICO2);
   E(0,0.13,0,0.2,0.075,0.15);E(0,0.1,0.02,0.17,0.05,0.13,36);
