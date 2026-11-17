@@ -41,20 +41,65 @@ const WORLDS=[
        indoor:[.30,.27,.15],fogD:58,cl0:[.6,.55,.3],cl1:[.7,.65,.4],se0:[.5,.45,.28],se1:[.55,.5,.3],accent:[.85,.20,.15],glow:[0,0,0],
        water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.70,.63,.35],lampP:[8,8,2.6,3.3],lampO:[4,4],ground:null}},
  {name:'Galerie',gen:6,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{courses:1,shards:7},music:[5],
-  pal:{sun:[0.38,0.80,0.46],zen:[.40,.55,.90],mid:[.72,.74,.95],hor:[.96,.84,.88],seaC:[.96,.84,.88],ambUp:[.86,.80,.86],ambDn:[.82,.76,.80],sunC:[.36,.30,.20],
-       indoor:[.50,.45,.50],fogD:170,cl0:[.80,.70,.82],cl1:[1,.95,.96],se0:[.8,.7,.75],se1:[.9,.8,.85],accent:[.20,.72,.70],glow:[1,.92,.86],
-       water:1,night:0,stripe:[0,0],cloud:.4,lampC:[.30,.27,.28],lampP:[12,12,9.3,7],lampO:[6,6],ground:null}},
+  pal:{sun:[0.38,0.80,0.46],zen:[.13,.08,.30],mid:[.30,.20,.48],hor:[.40,.30,.54],seaC:[.40,.30,.54],ambUp:[.50,.42,.64],ambDn:[.44,.36,.56],sunC:[.30,.20,.36],
+       indoor:[.27,.21,.38],fogD:115,cl0:[.80,.70,.82],cl1:[1,.95,.96],se0:[.8,.7,.75],se1:[.9,.8,.85],accent:[.86,.12,.74],glow:[.8,.6,1],
+       water:1,night:0,stripe:[0,0],cloud:.4,lampC:[.24,.17,.32],lampP:[12,12,9.3,7],lampO:[6,6],ground:null}},
  {name:'Aire de jeux',gen:7,full:true,megas:false,step:'grass',cloudY:-1000,goal:{summits:1,courses:1,shards:6},music:[6],
   pal:{sun:[0.62,0.34,0.50],zen:[.34,.36,.72],mid:[.78,.60,.82],hor:[1.0,.80,.74],seaC:[1.0,.80,.74],ambUp:[.66,.60,.80],ambDn:[.66,.56,.62],sunC:[.44,.28,.16],
-       indoor:[.40,.36,.46],fogD:300,cl0:[.66,.52,.74],cl1:[1,.84,.78],se0:[.30,.50,.24],se1:[.40,.58,.30],accent:[.96,.62,.70],glow:[1,.78,.62],
+       indoor:[.40,.36,.46],fogD:78,cl0:[.66,.52,.74],cl1:[1,.84,.78],se0:[.30,.50,.24],se1:[.40,.58,.30],accent:[.96,.62,.70],glow:[1,.78,.62],
        water:0,night:0,stripe:[0,0],cloud:.5,lampC:[0,0,0],lampP:[1,1,0,0],lampO:[0,0],ground:[.34,.54,.26]}},
- {name:'Nocturne',gen:4,full:true,megas:true,cloudY:-1000,goal:{car:1,summits:1,shards:4},music:[2,6],
+ {name:'Lotissement',gen:8,full:true,megas:false,ring:true,step:'grass',cloudY:-1000,goal:{shards:8,talks:1},music:[5,0],
+  pal:{sun:[0.25,0.90,0.35],zen:[.40,.55,.82],mid:[.66,.76,.90],hor:[.84,.87,.90],seaC:[.84,.87,.90],ambUp:[.72,.76,.82],ambDn:[.66,.68,.70],sunC:[.30,.27,.19],
+       indoor:[.40,.42,.46],fogD:1500,cl0:[.70,.74,.80],cl1:[1,1,.98],se0:[.42,.52,.36],se1:[.50,.58,.42],accent:[.80,.22,.18],glow:[1,.96,.88],
+       water:0,night:0,stripe:[0,0],cloud:.75,lampC:[0,0,0],lampP:[1,1,0,0],lampO:[0,0],ground:[.36,.52,.28]}},
+ {name:'Nocturne',gen:4,full:true,megas:true,cloudY:-1000,goal:{car:1},music:[2,6],
   pal:{sun:[0.40,0.62,0.55],zen:[.008,.014,.040],mid:[.024,.034,.085],hor:[.070,.080,.135],seaC:[.070,.080,.135],ambUp:[.088,.102,.155],ambDn:[.060,.066,.100],sunC:[.085,.100,.150],
        indoor:[.034,.037,.050],fogD:270,cl0:[.02,.025,.05],cl1:[.13,.15,.22],se0:[.030,.032,.040],se1:[.040,.042,.052],accent:[.90,.16,.14],glow:[.75,.82,1],
        water:0,night:1,stripe:[0,0],cloud:.25,lampC:[1.0,.58,.22],lampP:[24,24,8,12.5],lampO:[12,12],ground:[.034,.036,.044]}},
+ /* ===== chapitre 2 : le long sommeil ===== */
+ {name:'Hôpital',gen:10,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{notes:4,talks:1,shards:4},music:[7],
+  notes:{L:'Dossiers',s:'dossier',c:[1,1,0.94],t:['Dossier · Admis à 23 h 47. Accident de la route, au retour de vacances.','Dossier · Ne répond pas à la voix. Réagit parfois à la musique.','Dossier · Les proches demandent s\'il entend. Réponse : peut-être.','Dossier · Chambre 214. Visites autorisées jour et nuit.']},
+  pal:{sun:[0.30,0.85,0.40],zen:[.10,.13,.14],mid:[.10,.13,.14],hor:[.09,.12,.12],seaC:[.09,.12,.12],ambUp:[.36,.42,.42],ambDn:[.30,.35,.35],sunC:[0,0,0],
+       indoor:[.25,.30,.30],fogD:72,cl0:[.3,.35,.35],cl1:[.5,.55,.55],se0:[.3,.35,.35],se1:[.4,.45,.45],accent:[.36,.62,.58],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.56,.64,.62],lampP:[6,6,2.9,3.2],lampO:[0,0],ground:null}},
+ {name:'Hôtel',gen:9,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{phones:3,shards:4},music:[8],spawn:[0,0,-12.4],
+  calls:['« Allô ? … Il a bougé la main. Je vous jure qu\'il a bougé la main. »','« Réception. Votre chambre est prête. Elle l\'est depuis longtemps. »','« C\'est moi. Si tu m\'entends, ne raccroche pas. Reste encore un peu. »','« … on dirait qu\'il sourit. Regarde. »','« Vous avez un message. Il dit : reviens. »'],
+  pal:{sun:[0.30,0.85,0.40],zen:[.20,.12,.08],mid:[.20,.12,.08],hor:[.17,.10,.07],seaC:[.17,.10,.07],ambUp:[.24,.17,.12],ambDn:[.20,.14,.10],sunC:[0,0,0],
+       indoor:[.15,.11,.08],fogD:74,cl0:[.3,.2,.15],cl1:[.5,.4,.3],se0:[.3,.2,.15],se1:[.4,.3,.2],accent:[.56,.10,.13],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.88,.63,.36],lampP:[8,8,2.1,2.9],lampO:[4,4],ground:null}},
+ {name:'Aéroport',gen:12,full:true,megas:false,step:'hall',cloudY:-1000,goal:{notes:3,talks:1,shards:4},music:[9],
+  notes:{L:'Cartes d\'embarquement',s:'carte d\'embarquement',c:[0.75,0.9,1.1],t:['Carte d\'embarquement · Vol 214. Destination : —. Porte : fermée.','Carte d\'embarquement · Passager : toi. Siège : près du hublot. Bagage : aucun.','Carte d\'embarquement · Embarquement immédiat. Rien ne t\'oblige à partir.']},
+  pal:{sun:[0.34,0.80,0.50],zen:[.30,.48,.76],mid:[.62,.75,.90],hor:[.90,.91,.90],seaC:[.90,.91,.90],ambUp:[.74,.80,.90],ambDn:[.66,.68,.72],sunC:[.36,.32,.22],
+       indoor:[.40,.44,.50],fogD:250,cl0:[.72,.78,.88],cl1:[1,1,.98],se0:[.6,.62,.64],se1:[.66,.68,.70],accent:[.98,.72,.10],glow:[1,.96,.86],
+       water:0,night:0,stripe:[0,0],cloud:.45,lampC:[.26,.28,.32],lampP:[12,12,9,13],lampO:[6,6],ground:[.60,.62,.64]}},
+ {name:'Parking',gen:11,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{car:1,talks:1,shards:3},music:[10],
+  pal:{sun:[0.30,0.85,0.40],zen:[.05,.06,.06],mid:[.05,.06,.06],hor:[.05,.06,.055],seaC:[.05,.06,.055],ambUp:[.22,.24,.22],ambDn:[.17,.18,.17],sunC:[0,0,0],
+       indoor:[.13,.14,.13],fogD:64,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.92,.72,.14],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.62,.66,.54],lampP:[8,8,2.5,4.2],lampO:[0,0],ground:null}},
+ {name:'Plage',gen:13,full:true,megas:true,hf:true,step:'grass',cloudY:-1000,goal:{pearls:4,notes:3,shards:3},music:[11],
+  notes:{L:'Bouteilles',s:'bouteille',c:[0.55,1.0,0.75],t:['Message dans une bouteille · « On est là. On ne bouge pas. »','Message dans une bouteille · « Ta chambre est comme tu l\'as laissée. »','Message dans une bouteille · « Reviens quand tu veux. Mais reviens. »']},spawn:[0,0,-16],
+  pal:{sun:[0.10,0.26,0.96],zen:[.15,.13,.40],mid:[.60,.36,.54],hor:[1.0,.64,.38],seaC:[1.0,.64,.38],ambUp:[.50,.42,.62],ambDn:[.60,.44,.38],sunC:[.66,.36,.17],
+       indoor:[.34,.28,.36],fogD:620,cl0:[.50,.30,.46],cl1:[1,.70,.50],se0:[.3,.3,.4],se1:[.5,.4,.4],accent:[.92,.36,.30],glow:[1,.62,.30],
+       water:0,night:0,stripe:[0,0],cloud:.5,lampC:[0,0,0],lampP:[1,1,0,0],lampO:[0,0],ground:null}},
+ {name:'Chambre 214',gen:14,full:true,megas:false,cloudY:-1000,goal:{notes:5,shards:3},music:[12],
+  notes:{L:'Cartes',s:'carte',c:[1.1,0.8,0.9],t:['Carte · « Bon rétablissement ! » Toutes les signatures se ressemblent.','Carte · « Le chat dort sur ton lit tous les soirs. Il t\'attend. »','Carte · « On a gardé ta place à table. »','Carte · « Je te lis ton livre préféré, chaque soir. Tu entends ? »','Carte · « Ouvre les yeux. Doucement. On est là. »']},
+  pal:{sun:[0.62,0.30,0.55],zen:[.36,.48,.74],mid:[.70,.74,.88],hor:[1.0,.86,.78],seaC:[1.0,.86,.78],ambUp:[.70,.72,.84],ambDn:[.64,.62,.64],sunC:[.50,.40,.28],
+       indoor:[.40,.40,.46],fogD:420,cl0:[.80,.78,.88],cl1:[1,.96,.92],se0:[.7,.74,.72],se1:[.8,.82,.8],accent:[.40,.62,.80],glow:[1,.86,.72],
+       water:0,night:0,stripe:[0,0],cloud:.45,lampC:[0,0,0],lampP:[1,1,0,0],lampO:[0,0],ground:[.70,.75,.72]}},
 ];
+/* les chapitres : tranches de la liste des espaces */
+const CHAPS=[[0,9,'Le rêve'],[9,15,'Le long sommeil']];
+function chOf(w){return w>=CHAPS[1][0]?1:0;}
+/* relief : rivage (13) */
+function HF(x,z){
+  if(GEN===13){const n=vnoise(x/23+1.7,z/23+4.2);
+    if(z<0){const t=Math.min(1,-z/60);return 0.2+t*t*(3-2*t)*5.5+n*t*3.2-z*0.012;}
+    return 0.2-Math.min(z,170)*0.05-n*Math.min(1,z/30)*0.9;}
+  return 0;
+}
 let SUN=[0,1,0],PAL=null,W=0,WSALT=0,level=0,maxLevel=0,GEN=0;
-try{level=Math.max(0,parseInt(localStorage.getItem('ether-level'))||0);maxLevel=Math.max(level,parseInt(localStorage.getItem('ether-max'))||0);}catch(e){}
+let max2=CHAPS[1][0];
+try{level=Math.max(0,parseInt(localStorage.getItem('ether-level'))||0);if(level>=WORLDS.length)level=0;maxLevel=Math.min(8,Math.max(level<9?level:0,parseInt(localStorage.getItem('ether-max'))||0));max2=Math.max(9,level,parseInt(localStorage.getItem('ether-max2'))||0);}catch(e){}
 function applyWorld(){W=level%WORLDS.length;WSALT=level*977;PAL=WORLDS[W].pal;SUN=norm(PAL.sun);GEN=WORLDS[W].gen;}
 applyWorld();
 
@@ -78,7 +123,7 @@ function icosphere(sub){
 const ICO1=icosphere(1),ICO2=icosphere(2),ICO3=icosphere(3),ICO5=icosphere(5);
 
 class Geo{
-  constructor(ox,oz,y){this.v=[];this.col=[];this.items=[];this.pads=[];this.gr=[];this.ng=[];this.npcs=[];this.wat=[];this.pearls=[];this.course=null;this.car=null;this.ox=ox;this.oz=oz;this.y=y;this.m=SYM[0];}
+  constructor(ox,oz,y){this.v=[];this.col=[];this.items=[];this.pads=[];this.gr=[];this.ng=[];this.sit=null;this.conv=[];this.lifts=[];this.swings=[];this.hdoors=[];this.notes=[];this.phones=[];this.watch=[];this.npcs=[];this.wat=[];this.pearls=[];this.course=null;this.car=null;this.ox=ox;this.oz=oz;this.y=y;this.m=SYM[0];}
   P(a,y,b){const m=this.m;return [this.ox+m[0]*a+m[1]*b,this.y+y,this.oz+m[2]*a+m[3]*b];}
   N(a,y,b){const m=this.m;return [m[0]*a+m[1]*b,y,m[2]*a+m[3]*b];}
   quad(p0,p1,p2,p3,n0,n1,n2,n3,mat){const v=this.v;
@@ -107,6 +152,22 @@ class Geo{
   water(a0,b0,a1,b1,ys,yb){const r=this.rect(a0,b0,a1,b1);this.wat.push([r[0],r[1],r[2],r[3],this.y+ys,this.y+yb]);}
   pearl(a,y,b){const p=this.P(a,y,b);this.pearls.push(p[0],p[1],p[2]);}
   courseSet(a,b,pts,T,y){y=y||0;this.box(a-0.9,y,b-0.9,a+0.9,y+0.06,b+0.9,29);this.course={s:this.P(a,y+0.06,b),pts:pts.map(p=>this.P(p[0],p[1],p[2])),T};}
+  swingAt(a,y,b){const p=this.P(a,y,b),d=this.N(0,0,1);this.swings.push([p[0],p[1],p[2],Math.atan2(-d[0],d[2]),this.swings.length*1.7+p[0]*0.13]);}
+  /* tapis roulant : une bande au sol qui emporte ce qui s'y tient */
+  belt(a0,b0,a1,b1,y,va){const r=this.rect(a0,b0,a1,b1),d=this.N(va,0,0);this.box(a0,y-0.12,b0,a1,y,b1,64);this.conv.push([r[0],r[1],r[2],r[3],this.y+y,d[0],d[2]]);}
+  /* terrain en relief de la cellule, facettes de 3 m */
+  terrain(mat){const v=this.v,n=16,s=CELL/n,x0=this.ox-24,z0=this.oz-24,H=[],e=0.6;
+    for(let a=0;a<=n;a++){H.push([]);for(let b=0;b<=n;b++){const x=x0+a*s,z=z0+b*s;H[a].push([x,HF(x,z),z,norm([HF(x-e,z)-HF(x+e,z),2*e,HF(x,z-e)-HF(x,z+e)])]);}}
+    for(let a=0;a<n;a++)for(let b=0;b<n;b++)for(const q of[H[a][b],H[a][b+1],H[a+1][b+1],H[a][b],H[a+1][b+1],H[a+1][b]])v.push(q[0],q[1],q[2],q[3][0],q[3][1],q[3][2],mat);}
+  /* pose l'origine locale sur le relief */
+  put(cx,cz,a,b){this.ox=cx+a;this.oz=cz+b;this.y=HF(cx+a,cz+b);}
+  note(a,y,b){const p=this.P(a,y,b);this.notes.push(p[0],p[1],p[2]);}
+  phone(a,y,b){const p=this.P(a,y,b);this.phones.push(p[0],p[1],p[2]);}
+  watchAt(a,b){const p=this.P(a,0,b);this.watch.push(p[0],p[1],p[2]);}
+  hdoor(a,b){const p=this.P(a,0,b);this.hdoors.push(p[0],p[2]);}
+  sitAt(a,y,b,s){this.sit=this.P(a,y,b);this.sit.push(s||1);}
+  /* ascenseur : un point, ses niveaux, et le côté où l'on sort */
+  liftAt(a,b,ys,ea,eb){const p=this.P(a,0,b),e=this.N(ea,0,eb);this.lifts.push([p[0],p[2],ys.map(y=>this.y+y),e[0],e[2]]);}
   carAt(a,b){const p=this.P(a,0,b);this.car=[p[0],p[2]];}
   grass(a0,b0,a1,b1,y,dens,flow){const r=this.rect(a0,b0,a1,b1);this.gr.push([r[0],r[1],r[2],r[3],this.y+y,dens,flow||0]);}
   nog(a0,b0,a1,b1){this.ng.push(this.rect(a0,b0,a1,b1));}
@@ -152,14 +213,14 @@ class Geo{
   }
   /* brins d'herbe : une instance = x,y,z, lacet, hauteur, hasard, type (0 brin, 1 fleur) */
   blades(r){
-    const out=[];let total=0;
+    const out=[],hfw=WORLDS[W].hf;let total=0;
     for(const g of this.gr){
       const n=Math.min(26000-total,Math.floor((g[2]-g[0])*(g[3]-g[1])*g[5]));
       for(let k=0;k<n;k++){const x=g[0]+r()*(g[2]-g[0]),z=g[1]+r()*(g[3]-g[1]);let ok=true;
         for(const e of this.ng)if(x>e[0]&&x<e[2]&&z>e[1]&&z<e[3]){ok=false;break;}
         if(!ok)continue;
         const fl=r()<g[6]?1:0,patch=vnoise(x*0.21,z*0.21);
-        out.push(x,g[4],z,r()*6.2832,(fl?0.34+r()*0.3:0.16+r()*0.26+patch*0.26),r(),fl);total++;}
+        out.push(x,hfw?HF(x,z):g[4],z,r()*6.2832,(fl?0.34+r()*0.3:0.16+r()*0.26+patch*0.26),r(),fl);total++;}
     }
     return new Float32Array(out);
   }
@@ -173,11 +234,20 @@ const TYPES=[
   null,
   [[.10,0],[.30,1],[.50,2],[.62,3],[.74,4],[.82,5],[.90,6],[1.01,8]],
   [[.08,0],[.22,1],[.36,2],[.50,3],[.80,5],[.90,6],[1.01,8]],
-  [[.10,0],[.34,1],[.52,2],[.64,3],[.76,4],[.88,5],[1.01,8]],
+  [[.10,0],[.34,1],[.50,2],[.60,3],[.71,4],[.81,5],[.90,6],[1.01,8]],
   [[.08,0],[.66,1],[.75,2],[1.01,3]],
   [[.08,0],[.38,1],[.55,2],[.80,3],[1.01,4]],
-  [[.07,0],[.25,1],[.43,2],[.58,3],[.72,4],[.88,5],[1.01,8]],
+  [[.07,0],[.21,1],[.34,2],[.48,3],[.58,4],[.67,5],[.84,6],[.92,9],[1.01,8]],
+  [[1.01,1]],
+  [[.08,0],[.56,1],[.70,2],[.82,3],[1.01,4]],
+  [[.08,0],[.42,1],[.56,2],[.63,3],[.76,4],[.88,5],[1.01,6]],
+  [[.08,0],[.42,1],[.55,2],[.64,3],[.76,4],[.88,5],[1.01,6]],
+  [[.08,0],[.38,1],[.52,3],[.64,4],[.80,5],[1.01,6]],
+  [[1.01,1]],
+  [[.06,0],[.26,1],[.42,2],[.56,3],[.70,4],[.84,5],[1.01,6]],
 ];
+/* monde-anneau : le lotissement se répète tous les RING_N îlots et se referme au-dessus de vous */
+const RING_N=48,RING_R=RING_N*48/(2*Math.PI);
 const infoCache=new Map(),ascCache=new Map(),megaCache=new Map();
 function megaInfo(I,J){
   const key=I+','+J;let M=megaCache.get(key);if(M)return M;
@@ -185,7 +255,7 @@ function megaInfo(I,J){
   if(I===0&&J===-1)t=2;else if(I===-1&&J===-1)t=1;else if(I===0&&J===0)t=4;else if(I===-1&&J===0)t=3;
   if(!WORLDS[W].megas)t=0;
   const cx=(I+0.5)*MEGA+(hash(I,J,51)-0.5)*120,cz=(J+0.5)*MEGA+(hash(I,J,52)-0.5)*120;
-  const base=WORLDS[W].full?-2:-300,g=new Geo(cx,cz,base),r=rng(Math.floor(hash(I,J,54)*4294967296)),feet=[],o=-base;
+  const base=WORLDS[W].full?(WORLDS[W].hf?-40:-2):-300,g=new Geo(cx,cz,base),r=rng(Math.floor(hash(I,J,54)*4294967296)),feet=[],o=-base;
   g.m=SYM[Math.floor(hash(I,J,53)*8)];
   const foot=(a0,b0,a1,b1)=>feet.push(g.rect(a0,b0,a1,b1));
   if(t===1){const L=800+r()*200,th=70+r()*30,H=1800+r()*900;g.box(-L,0,-th,L,H,th,6,false);foot(-L,-th,L,th);}
@@ -213,8 +283,13 @@ function cellInfo(i,j){
     exists=true;P=24;
     if(blocked)type=T_FOOT;
     else if(gen===2&&(mod(i,3)===1||mod(j,3)===1))type=T_ROAD;
+    else if(gen===8)type=1;
+    else if(gen===13)type=j<0?1:j===0?2:3;
+    else if(gen===12&&mod(j,3)===0)type=2;
+    else if(gen===14&&mod(i,3)===0&&mod(j,3)===0)type=8;
+    else if(gen===14&&mod(i,3)===1&&mod(j,3)===1&&hash(i,j,96)<0.6)type=7;
     else{for(const e of TYPES[gen])if(t<e[0]){type=e[1];break;}}
-    if(i===0&&j===0)type=T_DOOR;
+    if((WORLDS[W].ring?mod(i,RING_N)===0:i===0)&&j===0&&gen!==13)type=T_DOOR;
   }else{
     exists=!blocked&&(nearO||hash(i,j,1)<0.8);
     h=Math.round((vnoise(i*0.31,j*0.31)*2-1)*3+(vnoise(i*0.11+7.3,j*0.11+3.1)*2-1)*4)*3;if(h<-6)h=-6;

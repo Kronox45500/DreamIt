@@ -41,6 +41,9 @@ body[data-fx="dream"] canvas{filter:saturate(1.42) brightness(1.07) contrast(.9)
 body[data-fx="dream"] #fx-glow,body[data-fx="dream"] #fx-grain{display:block}
 body[data-fx="dream"] #fx-grain{opacity:.10}
 @media (prefers-reduced-motion:reduce){#fx-grain,#fx-bar{animation:none}}
+body[data-mode="obs"] #hud,body[data-mode="obs"] #obj,body[data-mode="obs"] #toast,body[data-mode="obs"] #osd{display:none!important}
+body[data-mode="classic"] #vig{box-shadow:inset 0 0 260px 60px rgba(0,0,0,.72)}
+#modeD{font-size:.9rem}
 #veil{position:fixed;inset:0;background:var(--white);opacity:0;pointer-events:none}
 #menu{position:fixed;inset:0;display:flex;align-items:flex-end;padding:clamp(20px,6vw,72px);
   overflow-y:auto;
@@ -63,6 +66,7 @@ button:focus-visible{outline:2px solid var(--sky-deep);outline-offset:4px}
 .spaces{display:flex;flex-wrap:wrap;gap:8px}
 .spaces button{padding:8px 14px;font-size:.7rem;letter-spacing:.14em}
 .spaces button[aria-pressed="true"]{background:var(--ink);color:var(--white)}
+.spaces .chl{flex-basis:100%;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;opacity:.75;margin-top:6px}
 .spaces button:disabled{opacity:.35;cursor:default;background:transparent;color:var(--ink)}
 #where{font-weight:400;color:var(--ink)}
 #menu.pause h1{font-size:clamp(2rem,6vw,3.2rem)}
@@ -76,6 +80,11 @@ dd{margin:0}
 #obj{position:fixed;top:18px;left:0;right:0;text-align:center;font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;font-weight:400;
   color:var(--white);text-shadow:0 0 10px rgba(22,48,94,.6);pointer-events:none;opacity:0;transition:opacity 1.2s;font-variant-numeric:tabular-nums}
 #obj.on{opacity:.9}
+#story{position:fixed;left:8%;right:8%;bottom:17%;text-align:center;font-family:var(--font-body);font-weight:300;font-style:italic;font-size:clamp(1.05rem,2.3vw,1.55rem);
+  line-height:1.5;letter-spacing:.03em;color:var(--white);text-shadow:0 0 12px rgba(10,20,45,.9),0 0 3px rgba(10,20,45,.8);pointer-events:none;opacity:0;transition:opacity 1.1s}
+#story.on{opacity:1}
+#story.ink{color:var(--ink);text-shadow:none}
+body[data-mode="obs"] #story{display:none!important}
 #toast{position:fixed;top:24%;left:16px;right:16px;text-align:center;font-family:var(--font-display);font-weight:300;font-size:clamp(1rem,2.6vw,1.5rem);letter-spacing:.34em;
   text-transform:uppercase;color:var(--white);text-shadow:0 0 14px rgba(22,48,94,.7);pointer-events:none;opacity:0;transition:opacity .8s}
 #toast.on{opacity:1}
@@ -92,12 +101,15 @@ dd{margin:0}
 <div id="hud"><span id="alt"></span><span id="shards"></span><span id="summits"></span><span id="doors"></span></div>
 <div id="obj"></div>
 <div id="toast"></div>
+<div id="story"></div>
 <div id="menu" class="title">
   <div class="inner">
     <h1 id="ttl">ÉTHER</h1>
-    <p class="sub titleOnly">Huit espaces liminaux. Chacun a son objectif ; une fois rempli, un seuil doré s'ouvre vers le suivant.</p>
+    <p class="sub titleOnly">Un rêve en neuf lieux, de l'enfance à maintenant. Chaque lieu a son objectif, puis sa propre façon d'en sortir.</p>
     <p class="sub" id="where"></p>
     <div class="spaces titleOnly" id="spaces" aria-label="Espaces débloqués"></div>
+    <div class="spaces titleOnly" id="modes" aria-label="Mode de jeu"></div>
+    <p class="sub titleOnly" id="modeD"></p>
     <div class="actions">
       <button id="go" type="button">Entrer</button>
       <button id="restart" type="button" class="pauseOnly">Recommencer</button>
@@ -114,7 +126,7 @@ dd{margin:0}
       <dt>ZQSD / flèches</dt><dd>marcher</dd>
       <dt>Souris</dt><dd>regarder</dd>
       <dt>Espace · Maj</dt><dd>sauter · courir (les grands sauts demandent de l'élan)</dd>
-      <dt>E</dt><dd>écouter un œil ailé, biper la voiture</dd>
+      <dt>E</dt><dd>écouter un œil ailé, klaxon de la voiture, s'asseoir sur une balançoire</dd>
       <dt>C</dt><dd>s'accroupir (maintenir), pour les passages bas</dd>
       <dt>Dalles bleues · vertes</dt><dd>tremplins · départ d'une course chronométrée</dd>
       <dt>Dans l'eau</dt><dd>Espace pour remonter, Maj pour plonger, regardez où vous nagez</dd>

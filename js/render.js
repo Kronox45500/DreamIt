@@ -49,20 +49,24 @@ vec3 lamps(vec3 wp,vec3 n){
 }
 `;
 const HEAD='#version 300 es\nprecision highp float;\nprecision highp sampler2DShadow;\n';
-const VS_MAIN=HEAD+`layout(location=0)in vec3 aP;layout(location=1)in vec3 aN;layout(location=2)in float aM;
-uniform mat4 uVP;uniform vec3 uOff;uniform vec2 uRot;out vec3 vW;out vec3 vN;flat out float vM;
-void main(){vW=vec3(aP.x*uRot.x-aP.z*uRot.y,aP.y,aP.x*uRot.y+aP.z*uRot.x)+uOff;vN=vec3(aN.x*uRot.x-aN.z*uRot.y,aN.y,aN.x*uRot.y+aN.z*uRot.x);vM=aM;gl_Position=uVP*vec4(vW,1.);}`;
-const FS_MAIN=HEAD+`in vec3 vW;in vec3 vN;flat in float vM;out vec4 o;
+const BENDF=`uniform vec3 uBend;vec3 wbend(vec3 w){if(uBend.z<.5)return w;float th=(w.x-uBend.x)/uBend.y,rr=uBend.y-w.y;return vec3(uBend.x+rr*sin(th),uBend.y-rr*cos(th),w.z);}
+`;
+let BENDV=[0,1,0];
+const VS_MAIN=HEAD+`out float vWd;layout(location=0)in vec3 aP;layout(location=1)in vec3 aN;layout(location=2)in float aM;
+uniform mat4 uVP;uniform vec3 uOff;uniform vec2 uRot,uTilt;out vec3 vW;out vec3 vN;flat out float vM;
+${BENDF}void main(){vec3 p=vec3(aP.x,aP.y*uTilt.x-aP.z*uTilt.y,aP.y*uTilt.y+aP.z*uTilt.x),q=vec3(aN.x,aN.y*uTilt.x-aN.z*uTilt.y,aN.y*uTilt.y+aN.z*uTilt.x);
+  vW=vec3(p.x*uRot.x-p.z*uRot.y,p.y,p.x*uRot.y+p.z*uRot.x)+uOff;vN=vec3(q.x*uRot.x-q.z*uRot.y,q.y,q.x*uRot.y+q.z*uRot.x);vM=aM;gl_Position=uVP*vec4(wbend(vW),1.);vWd=gl_Position.w;}`;
+const FS_MAIN=HEAD+`in float vWd;in vec3 vW;in vec3 vN;flat in float vM;out vec4 o;
 uniform vec3 uAmbUp,uAmbDn,uSunC,uAccent,uDoorC,uIndoor;uniform float uCloudY,uSunK,uFogD,uWater;uniform vec2 uStripe;
 ${COMMON}${LIGHT}
 /* distance au bord de cellule de Voronoï : fissures */
 float crack(vec2 p){vec2 i=floor(p),f=fract(p);float d1=9.,d2=9.;
   for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 g=vec2(x,y),o=vec2(h21(i+g),h21(i+g+31.7));float d=length(g+o-f);if(d<d1){d2=d1;d1=d;}else if(d<d2)d2=d;}
   return d2-d1;}
-void main(){
+void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
   vec3 n=normalize(vN);int m=int(vM+.5);
   vec3 V=normalize(uCam-vW);float d=length(uCam-vW);
-  vec2 uv=abs(n.y)>.5?vW.xz:(abs(n.x)>.5?vW.zy:vW.xy);
+  vec3 wq=abs(n);wq*=wq;wq*=wq;wq/=(wq.x+wq.y+wq.z);vec2 uv=wq.y*vW.xz+wq.x*vW.zy+wq.z*vW.xy;
   vec3 col;float fogK=1.,emi=0.;
   if(m==4){col=uDoorC;fogK=.3;emi=1.;}
   else if(m==17){col=vec3(1.05,1.03,.97);fogK=.5;emi=1.;}
@@ -78,6 +82,14 @@ void main(){
     float f=.76+.24*vn(vec2((vW.x+vW.z)*10.,vW.y*34.));
     col=mix(vec3(.88,.78,.83),vec3(1.,.98,.98),f)*max(min(mix(uAmbDn,uAmbUp,.7)+uSunC*.5,vec3(1.)),vec3(.42));fogK=.8;
   }
+  else if(m==53){col=mix(vec3(.66,.86,.93),vec3(1.),vn(vec2((vW.x+vW.z)*44.,vW.y*3.+uTime*9.)))*max(min(uAmbUp+uIndoor,vec3(1.)),vec3(.5));fogK=.7;}
+  else if(m>=54&&m<=56){ /* bureaux la nuit : moquette, cloisons, mobilier sous les néons */
+    vec3 al=m==54?vec3(.24,.27,.33)*(.86+.28*vn(uv*34.)):m==55?vec3(.66,.67,.66)*(.95+.05*vn(uv*3.)):vec3(.44,.37,.30)*(.9+.1*vn(uv*vec2(2.,14.)));
+    col=al*(.50+.26*n.y)*vec3(.94,1.,.98);fogK=.5;}
+  else if(m==61){ /* tableau des départs : des lignes de points ambrés qui changent */
+    vec2 g=vec2((abs(n.x)>abs(n.z)?vW.z:vW.x)/.42,vW.y/.72);vec2 id=floor(g);float row=h21(vec2(id.y,3.)),tk=floor(uTime*.25+row*7.);
+    float on=step(.42,h21(id+tk*vec2(0.,13.)))*step(fract(id.x*.071+row),.78)*step(.28,fract(g.y))*smoothstep(.5,.3,abs(fract(g.x)-.5));
+    on=mix(on,.3,clamp(fwidth(g.x)*1.5,0.,1.));col=vec3(.012,.013,.016)+vec3(1.1,.66,.16)*on;fogK=.6;emi=on*.8;}
   else if(m==29){float ck=step(.5,fract((vW.x+vW.z)*.9+uTime*.8));col=mix(vec3(.08,.72,.38),vec3(.72,1.,.84),ck);fogK=.5;}
   else if(m==8){
     vec2 q=fract(vW.xz*.625);float ring=abs(fract(length(q-.5)*3.-uTime*1.2)-.5)*2.;
@@ -176,19 +188,30 @@ void main(){
         alb=mix(vec3(.10,.30,.10),vec3(.36,.62,.18),vn(vW.xz*2.1+vW.y*1.7)*.6+vn(vW.xy*9.)*.4);ndl=dot(n,uSun)*.5+.5;sh=mix(sh,1.,.45);
       }else if(m==16){alb=uAccent*(.92+.08*vn(uv*6.));gloss=.25;}
       else if(m==28){alb=vec3(.070,.075,.095);}
+      else if(m==41){alb=vec3(.50,.34,.19)*(.78+.34*vn(uv*1.4))*(.9+.1*vn(uv*9.));}
+      else if(m>=42&&m<=45){ /* bardage */
+        alb=(m==42?vec3(.90,.87,.78):m==43?vec3(.66,.76,.84):m==44?vec3(.70,.78,.66):vec3(.84,.74,.72))*(.95+.05*fbm3(uv*.6));
+        if(abs(n.y)<.5){float f=fract(vW.y/.24);alb*=1.-.16*smoothstep(.84,1.,f)*clamp(1.-d/60.,0.,1.);}
+      }else if(m==46){ /* bardeaux */
+        vec2 g=uv*vec2(2.2,4.);g.x+=floor(g.y)*.5;alb=vec3(.21,.185,.18)*(.78+.3*h21(floor(g)))*(1.-.18*smoothstep(.8,1.,fract(g.y))*clamp(1.-d/50.,0.,1.));
+      }else if(m==47){alb=vec3(.07,.09,.13);gloss=.8;refl=.55;}
+      else if(m>=48&&m<=51){alb=(m==48?vec3(.50,.05,.06):m==49?vec3(.06,.12,.30):m==50?vec3(.60,.62,.65):vec3(.07,.24,.15));gloss=.9;refl=.30;}
       else if(m==30){ /* papier peint */
         alb=vec3(.80,.71,.36)*(.92+.08*fbm3(uv*.8))*(1.-.07*step(.5,fract(uv.x/.24)))*(1.-.05*step(.9,fract(uv.x/.24+uv.y/.48)));
-        alb=mix(alb,alb*vec3(.62,.52,.36),smoothstep(.52,.80,fbm3(uv*.33+3.))*.6);alb*=.94+.06*vn(uv*26.);
+        alb=mix(alb,alb*vec3(.62,.52,.36),smoothstep(.52,.80,fbm3(uv*.33+3.))*.6);alb*=mix(1.,.94+.06*vn(uv*26.),clamp(1.-d/20.,0.,1.));
         if(abs(n.y)<.5&&vW.y<.13)alb=vec3(.40,.32,.17);
       }else if(m==31){ /* moquette */
-        alb=vec3(.56,.49,.27)*(.74+.5*vn(uv*55.))*(.88+.12*fbm3(uv*.5));alb=mix(alb,alb*vec3(.55,.48,.38),smoothstep(.60,.82,fbm3(uv*.27+8.))*.7);hgt=vn(uv*50.);bump=.02;
+        alb=vec3(.56,.49,.27)*mix(1.,.74+.5*vn(uv*55.),clamp(1.-d/16.,0.,1.))*(.88+.12*fbm3(uv*.5));alb=mix(alb,alb*vec3(.55,.48,.38),smoothstep(.60,.82,fbm3(uv*.27+8.))*.7);hgt=vn(uv*50.);bump=.02;
       }else if(m==32){ /* dalles de plafond */
         vec2 g=uv/.6;vec2 fw=fwidth(g);vec2 f=abs(fract(g)-.5);vec2 l=smoothstep(.5-fw*1.2-.03,vec2(.5),f);
         alb=vec3(.83,.81,.70)*(1.-.28*max(l.x,l.y)*clamp(1.-max(fw.x,fw.y)*2.5,0.,1.))*(.92+.08*vn(uv*25.));
       }else if(m==33){ /* marbre en damier */
         vec2 g=floor(uv/1.2);float ck=mod(g.x+g.y,2.);
-        alb=mix(vec3(.93,.88,.85),vec3(.86,.63,.67),ck)*(.90+.10*fbm3(uv*1.1+g*3.));
+        alb=mix(vec3(.72,.66,.84),vec3(.34,.19,.50),ck)*(.90+.10*fbm3(uv*1.1+g*3.));
         {float v=abs(sin(uv.x*1.7+uv.y*2.3+fbm3(uv*1.3+g)*7.));alb*=1.-.20*smoothstep(.07,0.,v);}gloss=.6;refl=.20;
+        {float hb=h21(floor(uv/4.8+.37)+3.7);
+          if(hb>.93){vec2 q=floor(uv/.3);alb=mod(q.x+q.y,2.)<.5?vec3(.90,.0,.85):vec3(.015);gloss=0.;refl=0.;}
+          else if(hb>.85)alb=alb.brg*1.15;}
       }else if(m>=34&&m<=37){ /* peinture pastel */
         alb=(m==34?vec3(.96,.60,.69):m==35?vec3(.58,.88,.76):m==36?vec3(.98,.85,.48):vec3(.58,.76,.96))*(.93+.07*vn(uv*5.));gloss=.3;
       }
@@ -217,7 +240,65 @@ void main(){
       }else if(m==26){ /* carrosserie */
         float hh=h21(floor(vW.xz/7.));alb=hh<.33?vec3(.10,.12,.18):hh<.66?vec3(.30,.05,.05):vec3(.42,.43,.45);gloss=.9;refl=.25;
       }else if(m==27){alb=vec3(.22,.16,.11)*(.7+.6*vn(vec2(uv.x*14.,uv.y*2.)));}
+      else if(m==57||m==67){ /* hôtel : soubassement de bois, papier peint à rayures, portes numérotées */
+        float fy=mod(vW.y,3.2),u=abs(n.x)>abs(n.z)?vW.z:vW.x,near=clamp(1.-d/38.,0.,1.);
+        alb=vec3(.70,.57,.39)*(.93+.07*fbm3(uv*.6))*(1.-.07*step(.5,fract(u/.16))*near);
+        alb=mix(alb,alb*vec3(.72,.60,.48),smoothstep(.55,.85,fbm3(uv*.21+4.))*.5);
+        if(abs(n.y)<.5){
+          if(fy<.95)alb=vec3(.215,.115,.065)*(.8+.4*vn(vec2(u*1.5,fy*14.)))*(1.-.25*step(.93,fract(u/.5))*near);
+          else if(fy<1.02)alb=vec3(.13,.07,.04);
+          if(m==57){float fu=abs(mod(u,4.)-2.);
+            if(fu<.6&&fy<2.14){alb=vec3(.12,.065,.04);
+              if(fu<.5&&fy<2.05){alb=vec3(.33,.185,.10)*(.82+.3*vn(vec2(u*3.,fy*22.)));gloss=.3;
+                vec2 pn=vec2(fu,fy);if((pn.x>.12&&pn.x<.4)&&((pn.y>.2&&pn.y<.9)||(pn.y>1.08&&pn.y<1.9)))alb*=.82;
+                if(fu<.085&&fy>1.5&&fy<1.62)alb=mix(alb,vec3(.80,.62,.25),near);
+                float hs=mod(u,4.)-2.;if(hs>.36&&hs<.43&&fy>1.&&fy<1.07)alb=mix(alb,vec3(.85,.68,.30),near);}}}
+        }
+      }else if(m==58){ /* moquette d'hôtel : losanges dorés sur fond lie-de-vin */
+        vec2 q=abs(fract(uv/.9)-.5);float dm=q.x+q.y,fw=fwidth(uv.x)+fwidth(uv.y),ln=smoothstep(.06+fw,.02,abs(dm-.5))+smoothstep(.07+fw,.03,dm);
+        ln*=clamp(1.-fw*2.2,0.,1.);alb=mix(vec3(.30,.045,.065),vec3(.52,.36,.13),ln*.8)*(.86+.14*fbm3(uv*.5))*mix(1.,.78+.44*vn(uv*52.),clamp(1.-d/16.,0.,1.));
+        alb=mix(alb,alb*vec3(.5,.5,.55),smoothstep(.62,.85,fbm3(uv*.24+2.))*.6);hgt=vn(uv*50.);bump=.02;
+      }else if(m==59){ /* sol clair poli, grandes dalles mouchetées */
+        vec2 g=uv/1.2;vec2 fw=fwidth(g);vec2 f=abs(fract(g)-.5);vec2 l=smoothstep(.5-fw*1.2-.006,vec2(.5),f);
+        float line=max(l.x,l.y)*clamp(1.-max(fw.x,fw.y)*3.,0.,1.);
+        alb=vec3(.80,.805,.80)*(1.-.25*line)*(.95+.05*vn(floor(g)*5.7))*mix(1.,.90+.16*vn(uv*70.),clamp(1.-d/14.,0.,1.));
+        alb=mix(alb,alb*vec3(.84,.82,.78),smoothstep(.6,.9,fbm3(uv*.13+6.))*.5);gloss=.75;refl=.24;
+      }else if(m==60){ /* rayonnage garni */
+        if(abs(n.y)>.5)alb=vec3(.62,.63,.64);
+        else{float u=abs(n.x)>abs(n.z)?vW.z:vW.x;vec2 g=vec2(u/.26,vW.y/.4);vec2 id=floor(g);float fade=clamp(fwidth(g.x)*1.6,0.,1.);
+          float fam=h21(vec2(floor(id.x/5.),id.y)),hh=h21(id+fam*17.);
+          vec3 pc=.5+.5*cos(6.2832*(fam+hh*.16+vec3(0.,.33,.67)));pc=mix(pc,vec3(.9),step(.75,hh)*.7)*(.55+.45*h21(id+3.3));
+          pc*=1.-.5*smoothstep(.42,.5,abs(fract(g.x)-.5));pc=mix(pc,vec3(.9,.9,.86),step(.3,fract(g.y))*step(fract(g.y),.5)*step(.3,fract(g.x))*step(fract(g.x),.7)*.5*step(.5,h21(id+9.)));
+          alb=mix(pc,vec3(.42,.40,.40),fade);
+          float sf=fract(g.y);if(sf>.90)alb=mix(vec3(.82,.83,.84),alb,fade);else if(sf<.10)alb*=.45;
+        }
+      }else if(m==62){ /* sable : rides du vent, mouillé près de l'eau */
+        float rp=sin(uv.y*7.+fbm3(uv*.4)*7.);alb=vec3(.84,.71,.53)*(.90+.10*fbm3(uv*.5))*(.94+.06*vn(uv*45.));
+        float wet=smoothstep(.42,.02,vW.y);alb=mix(alb,alb*vec3(.50,.47,.46),wet);gloss=wet*.6;refl=wet*.22;
+        hgt=rp*.5*(1.-wet)+vn(uv*30.)*.4;bump=.03;
+      }else if(m==63){ /* parquet : des lames larges comme des routes */
+        vec2 g=vec2(uv.x/2.6,uv.y/17.+floor(uv.x/2.6)*.37);vec2 id=floor(g);vec2 fw=fwidth(g);
+        float lx=smoothstep(.5-fw.x*1.5-.012,.5,abs(fract(g.x)-.5)),ly=smoothstep(.5-fw.y*1.5-.002,.5,abs(fract(g.y)-.5));
+        alb=vec3(.47,.305,.165)*(.78+.34*h21(id))*(.86+.14*vn(vec2(uv.x*7.,uv.y*.45)))*(.93+.07*fbm3(vec2(uv.x*1.5,uv.y*.12)));
+        alb*=1.-.6*max(lx,ly)*clamp(1.-fw.x*4.,0.,1.);hgt=-max(lx,ly)+vn(vec2(uv.x*9.,uv.y*.6))*.3;bump=.03;gloss=.45;refl=.10;
+      }else if(m==64){ /* tapis roulant : caoutchouc strié qui défile */
+        float dir=mod(vW.z+24.,48.)<24.?1.:-1.;float rb=step(.5,fract((vW.x-dir*2.3*uTime)*2.2));
+        alb=vec3(.055,.057,.062)*(1.+.9*rb*clamp(1.-d/40.,0.,1.));if(abs(n.y)<.5)alb=vec3(.42,.43,.45);gloss=.3;
+      }else if(m==65){ /* cabine de plage rayée */
+        float u=abs(n.x)>abs(n.z)?vW.z:vW.x,hh=h21(vec2(floor((vW.x+24.)/6.),floor(vW.z/48.+.5)));
+        vec3 pc=hh<.25?vec3(.86,.30,.28):hh<.5?vec3(.24,.46,.70):hh<.75?vec3(.94,.74,.28):vec3(.30,.62,.56);
+        alb=mix(vec3(.93,.91,.86),pc,step(.5,fract(u/.52)))*(.92+.08*vn(uv*vec2(3.,30.)));
+      }else if(m==68){ /* linoléum d'hôpital, des dalles larges comme des places */
+        vec2 g=uv/14.;vec2 fw=fwidth(g);vec2 f=abs(fract(g)-.5);vec2 l=smoothstep(.5-fw*1.2-.004,vec2(.5),f);
+        float line=max(l.x,l.y)*clamp(1.-max(fw.x,fw.y)*3.,0.,1.);
+        alb=vec3(.70,.75,.72)*(1.-.22*line)*(.95+.05*vn(floor(g)*5.7))*(.92+.08*fbm3(uv*.05))*mix(1.,.93+.1*vn(uv*6.),clamp(1.-d/20.,0.,1.));
+        hgt=-line;bump=.02;gloss=.7;refl=.2;
+      }else if(m==66){ /* couverture matelassée */
+        vec2 q=abs(fract(uv/2.6)-.5);float dm=abs(q.x+q.y-.5),st=smoothstep(.07,0.,dm);
+        alb=vec3(.27,.38,.62)*(.88+.12*fbm3(uv*.4))*(1.-.3*st);hgt=-st*2.+smoothstep(.0,.35,dm);bump=.05;
+      }
       /* relief : dérivées écran de la hauteur procédurale */
+      bump*=clamp(1.-d/26.,0.,1.);
       if(bump>0.&&d<60.){vec3 dpx=dFdx(vW),dpy=dFdy(vW);float hx=dFdx(hgt),hy=dFdy(hgt);
         vec3 r1=cross(dpy,n),r2=cross(n,dpx);float det=dot(dpx,r1);
         if(abs(det)>1e-9){vec3 gr=(hx*r1+hy*r2)/det;n=normalize(n-clamp(gr*bump,-.6,.6)*(1.-d/60.));ndl=max(dot(n,uSun),0.);}}
@@ -268,11 +349,11 @@ void main(){
   if(d.y<0.)c=mix(fogCol(d),uSeaC,smoothstep(0.,-.12,d.y));
   o=fin(c);o.a=uNight>.5?smoothstep(.99962,.99972,s):clamp(pow(s,900.)*2.,0.,1.);
 }`;
-const VS_SEA=HEAD+`layout(location=0)in vec2 aP;uniform mat4 uVP;uniform vec3 uCamP;uniform float uY;out vec3 vW;
-void main(){vW=vec3(aP.x*15000.+uCamP.x,uY,aP.y*15000.+uCamP.z);gl_Position=uVP*vec4(vW,1.);}`;
-const FS_SEA=HEAD+`in vec3 vW;out vec4 o;uniform vec3 uSe0,uSe1;uniform float uLayer,uGroundK;
+const VS_SEA=HEAD+`out float vWd;layout(location=0)in vec2 aP;uniform mat4 uVP;uniform vec3 uCamP;uniform float uY;out vec3 vW;
+void main(){vW=vec3(aP.x*15000.+uCamP.x,uY,aP.y*15000.+uCamP.z);gl_Position=uVP*vec4(vW,1.);vWd=gl_Position.w;}`;
+const FS_SEA=HEAD+`in float vWd;in vec3 vW;out vec4 o;uniform vec3 uSe0,uSe1;uniform float uLayer,uGroundK;
 ${COMMON}
-void main(){
+void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
   float d=length(vW-uCam);vec3 V=normalize(vW-uCam);
   if(uGroundK>.5){ /* sol lointain des espaces à terre ferme */
     vec3 c=mix(uSe0,uSe1,fbm3(vW.xz*.02));c=mix(c,fogCol(V),1.-exp(-pow(d/900.,1.3)));o=fin(c);return;}
@@ -284,14 +365,14 @@ void main(){
   float a=uLayer<.5?1.:smoothstep(.46,.66,n*.7+n3*.45)*(1.-smoothstep(600.,1500.,d))*.9;
   vec4 f=fin(c);o=vec4(f.rgb,uLayer<.5?0.:a);
 }`;
-const VS_ITEM=HEAD+`layout(location=0)in vec3 aP;layout(location=1)in vec3 aN;uniform mat4 uVP;uniform vec3 uPos,uScale;uniform float uRot;out vec3 vN;
-void main(){float c=cos(uRot),s=sin(uRot);vec3 p=aP*uScale;p=vec3(p.x*c-p.z*s,p.y,p.x*s+p.z*c);vN=vec3(aN.x*c-aN.z*s,aN.y,aN.x*s+aN.z*c);gl_Position=uVP*vec4(p+uPos,1.);}`;
-const FS_ITEM=HEAD+`in vec3 vN;out vec4 o;uniform vec3 uColor;void main(){vec3 n=normalize(vN);o=vec4(uColor*(.80+.22*n.y+.12*n.x),1.);}`;
+const VS_ITEM=HEAD+`out float vWd;layout(location=0)in vec3 aP;layout(location=1)in vec3 aN;uniform mat4 uVP;uniform vec3 uPos,uScale;uniform float uRot;out vec3 vN;
+${BENDF}void main(){float c=cos(uRot),s=sin(uRot);vec3 p=aP*uScale;p=vec3(p.x*c-p.z*s,p.y,p.x*s+p.z*c);vN=vec3(aN.x*c-aN.z*s,aN.y,aN.x*s+aN.z*c);gl_Position=uVP*vec4(wbend(p+uPos),1.);vWd=gl_Position.w;}`;
+const FS_ITEM=HEAD+`in float vWd;in vec3 vN;out vec4 o;uniform vec3 uColor;void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;vec3 n=normalize(vN);o=vec4(uColor*(.80+.22*n.y+.12*n.x),1.);}`;
 /* herbe : un ruban de 7 sommets par brin, courbé par le vent, écarté par le joueur */
-const VS_GRASS=HEAD+`layout(location=0)in vec3 aV;layout(location=1)in vec3 iPos;layout(location=2)in vec4 iPar;
+const VS_GRASS=HEAD+`out float vWd;layout(location=0)in vec3 aV;layout(location=1)in vec3 iPos;layout(location=2)in vec4 iPar;
 uniform mat4 uVP;uniform vec3 uOff,uEye;uniform float uTimeV,uGrassR;
 out vec3 vW;out float vT;out float vH;out float vF;out vec3 vRoot;
-void main(){
+${BENDF}void main(){
   float k=aV.z;vec3 P=iPos+uOff;float t=aV.y,fl=iPar.w*step(k,.5);float an=iPar.x+k*2.3;
   P.xz+=vec2(cos(an*1.7),sin(an*1.7))*.07*k;
   float dist=length(P.xz-uEye.xz);float sc=1.-smoothstep(uGrassR*.55,uGrassR,dist);
@@ -302,12 +383,12 @@ void main(){
   float bend=((fract(iPar.z*7.+k*.37)-.5)*.6+w*.10)*t*t*h+(.18*t*t*h);
   vec2 push=P.xz-uEye.xz;float pl=length(push);float pk=(1.-smoothstep(.2,1.1,pl))*step(abs(P.y-uEye.y+1.62),1.2);
   vec3 pos=P+vec3(dir.x*aV.x*wdt,t*h,dir.y*aV.x*wdt)+vec3(lean.x,0.,lean.y)*bend+vec3(push.x,-.25*t,push.y)/max(pl,.05)*pk*.3*t;
-  vW=pos;vT=t;vH=fract(iPar.z+k*.13);vF=fl;vRoot=P;gl_Position=uVP*vec4(pos,1.);
-}`;
-const FS_GRASS=HEAD+`in vec3 vW;in float vT;in float vH;in float vF;in vec3 vRoot;out vec4 o;
+  vW=pos;vT=t;vH=fract(iPar.z+k*.13);vF=fl;vRoot=P;gl_Position=uVP*vec4(wbend(pos),1.);
+vWd=gl_Position.w;}`;
+const FS_GRASS=HEAD+`in float vWd;in vec3 vW;in float vT;in float vH;in float vF;in vec3 vRoot;out vec4 o;
 uniform vec3 uAmbUp,uAmbDn,uSunC,uIndoor;uniform float uSunK,uFogD;
 ${COMMON}${LIGHT}
-void main(){
+void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
   vec3 up=vec3(0.,1.,0.);float sh=shadow(vRoot+vec3(0.,.15,0.),up),vis=skyVis(vRoot+vec3(0.,.3,0.),up);
   vec3 base=mix(vec3(.07,.21,.045),mix(vec3(.33,.62,.15),vec3(.56,.70,.24),vH*vH),vT);
   if(vH>.86)base=mix(base,vec3(.55,.52,.24),vT*.6);
@@ -375,6 +456,7 @@ function setPal(p,doorC){
   if(u.uCloud)gl.uniform1f(u.uCloud,P.cloud);if(u.uCloudY)gl.uniform1f(u.uCloudY,WORLDS[W].cloudY);
   if(u.uLampC){gl.uniform3fv(u.uLampC,P.lampC);gl.uniform4fv(u.uLampP,P.lampP);gl.uniform2fv(u.uLampO,P.lampO);}
   if(u.uDoorC)gl.uniform3fv(u.uDoorC,doorC||[1.04,1.03,1.0]);if(u.uRot)gl.uniform2f(u.uRot,1,0);
+  if(u.uTilt)gl.uniform2f(u.uTilt,1,0);if(u.uBend)gl.uniform3fv(u.uBend,BENDV);
 }
 function setLight(p,SVP,TVP){
   gl.uniformMatrix4fv(p.u.uSVP,false,SVP);gl.uniformMatrix4fv(p.u.uTVP,false,TVP);gl.uniform1f(p.u.uTopR,1.7/(2*TOP_HALF));
@@ -422,12 +504,12 @@ const WINGS=[-1,1].map(sd=>{const g=new Geo(0,0,0),n=[0,0,1];
   return mesh7(new Float32Array(g.v));});
 
 /* œil ailé en image : un panneau toujours tourné vers la caméra, détouré, dont les ailes battent */
-const VS_SPR=HEAD+`layout(location=0)in vec2 aV;uniform mat4 uVP;uniform vec3 uPos,uRight;uniform vec2 uSize;uniform float uFlap;out vec2 vUV;out vec3 vW;
-void main(){float k=smoothstep(.16,1.,abs(aV.x));float x=aV.x*(1.-uFlap*k*.24),y=aV.y+uFlap*k*k*.38;
-  vW=uPos+uRight*x*uSize.x+vec3(0.,y*uSize.y,0.);vUV=vec2(aV.x*.5+.5,.5-aV.y*.5);gl_Position=uVP*vec4(vW,1.);}`;
-const FS_SPR=HEAD+`in vec2 vUV;in vec3 vW;out vec4 o;uniform sampler2D uTex;uniform vec3 uAmbUp,uAmbDn,uSunC;uniform float uFogD;
+const VS_SPR=HEAD+`out float vWd;layout(location=0)in vec2 aV;uniform mat4 uVP;uniform vec3 uPos,uRight;uniform vec2 uSize;uniform float uFlap;out vec2 vUV;out vec3 vW;
+${BENDF}void main(){float k=smoothstep(.16,1.,abs(aV.x));float x=aV.x*(1.-uFlap*k*.24),y=aV.y+uFlap*k*k*.38;
+  vW=uPos+uRight*x*uSize.x+vec3(0.,y*uSize.y,0.);vUV=vec2(aV.x*.5+.5,.5-aV.y*.5);gl_Position=uVP*vec4(wbend(vW),1.);vWd=gl_Position.w;}`;
+const FS_SPR=HEAD+`in float vWd;in vec2 vUV;in vec3 vW;out vec4 o;uniform sampler2D uTex;uniform vec3 uAmbUp,uAmbDn,uSunC;uniform float uFogD;
 ${COMMON}
-void main(){vec4 t=texture(uTex,vUV);if(t.a<.5)discard;
+void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;vec4 t=texture(uTex,vUV);if(t.a<.5)discard;
   vec3 col=t.rgb*max(min(mix(uAmbDn,uAmbUp,.7)+uSunC*.55,vec3(1.)),vec3(.45));
   vec3 V=normalize(uCam-vW);float d=length(uCam-vW);col=mix(col,fogCol(-V),(1.-exp(-pow(d/uFogD,1.7)))*.85);o=fin(col);}`;
 const pSpr=prog(VS_SPR,FS_SPR);
@@ -437,11 +519,24 @@ const SPR=(function(){const v=[],N=12;for(let k=0;k<N;k++){const x0=-1+2*k/N,x1=
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);o.asp=im.height/im.width;o.ready=true;}catch(e){}};
   im.src=EYE_IMG;return o;})();
+const SIT=(function(){const o={tex:gl.createTexture(),ready:false,asp:1.76};
+  const im=new Image();im.onload=()=>{try{gl.bindTexture(gl.TEXTURE_2D,o.tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);o.asp=im.height/im.width;o.ready=true;}catch(e){}};
+  im.src=SIT_IMG;return o;})();
+
+/* nouvelles entités, en image comme les autres : l'étoile ailée, l'homme-étoile, la longue silhouette */
+function imgTex(src){const o={tex:gl.createTexture(),ready:false,asp:1};
+  const im=new Image();im.onload=()=>{try{gl.bindTexture(gl.TEXTURE_2D,o.tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);o.asp=im.height/im.width;o.ready=true;}catch(e){}};
+  im.src=src;return o;}
+const STAR=imgTex(STAR_IMG),MAN=imgTex(MAN_IMG),LONG=imgTex(LONG_IMG);
 
 /* ---------- post-traitement : occlusion ambiante, halo des lumières, anticrénelage, aberration légère ---------- */
 const FS_AO=HEAD+`in vec2 vP;out vec4 o;uniform sampler2D uD;uniform vec2 uTan,uNF,uPx;
 float hh(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
-float vz(vec2 uv){float z=texture(uD,uv).r*2.-1.;return 2.*uNF.x*uNF.y/((uNF.y+uNF.x)-z*(uNF.y-uNF.x));}
+float vz(vec2 uv){return exp2(texture(uD,uv).r*uNF.y)-1.+uNF.x*0.;}
 vec3 vp(vec2 uv){float z=vz(uv);return vec3((uv*2.-1.)*uTan*z,-z);}
 const vec3 K[10]=vec3[10](vec3(.18,.05,.12),vec3(-.22,.20,.25),vec3(.10,-.38,.20),vec3(-.45,-.12,.30),vec3(.50,.30,.22),
   vec3(-.15,.60,.35),vec3(.35,-.60,.45),vec3(-.70,.25,.40),vec3(.75,-.10,.55),vec3(.05,.20,.95));
@@ -451,7 +546,7 @@ void main(){
   vec3 pr=vp(uv+vec2(uPx.x,0.)),pl=vp(uv-vec2(uPx.x,0.)),pu=vp(uv+vec2(0.,uPx.y)),pd=vp(uv-vec2(0.,uPx.y));
   vec3 dx=abs(pr.z-P.z)<abs(P.z-pl.z)?pr-P:P-pl,dy=abs(pu.z-P.z)<abs(P.z-pd.z)?pu-P:P-pd;
   vec3 n=normalize(cross(dx,dy));
-  float a=hh(gl_FragCoord.xy)*6.2832;vec3 rv=vec3(cos(a),sin(a),0.);vec3 t=normalize(rv-n*dot(rv,n)+1e-4),b=cross(n,t);
+  float a=(mod(floor(gl_FragCoord.x),4.)*4.+mod(floor(gl_FragCoord.y),4.))*.3927+hh(floor(gl_FragCoord.xy/4.))*.2;vec3 rv=vec3(cos(a),sin(a),0.);vec3 t=normalize(rv-n*dot(rv,n)+1e-4),b=cross(n,t);
   float R=.42+z*.035,occ=0.;
   for(int i=0;i<10;i++){vec3 k=K[i];vec3 sp=P+(t*k.x+b*k.y+n*k.z)*R;
     vec2 su=(sp.xy/(-sp.z)/uTan)*.5+.5;float sz=vz(su);
@@ -479,8 +574,8 @@ void main(){
   }
   /* aberration chromatique discrète vers les bords */
   vec2 c=uv-.5;float r2=dot(c,c);vec2 off=c*r2*.010;col.r=mix(col.r,texture(uT,uv+off).r,.7);col.b=mix(col.b,texture(uT,uv-off).b,.7);
-  float ao=(texture(uAO,uv).r*2.+texture(uAO,uv+uPx*vec2(3.,3.)).r+texture(uAO,uv+uPx*vec2(-3.,3.)).r+texture(uAO,uv+uPx*vec2(3.,-3.)).r+texture(uAO,uv+uPx*vec2(-3.,-3.)).r)/6.;
-  col*=mix(1.,ao,.92*(1.-M.a));
+  float ao=0.;for(int i=-1;i<=2;i++)for(int j=-1;j<=2;j++)ao+=texture(uAO,uv+uPx*(vec2(float(i),float(j))*2.-1.)*2.).r;ao*=.0625;
+  col*=mix(1.,ao,.74*(1.-M.a));
   col+=texture(uB,uv).rgb*.60;
   o=vec4(col,1.);
 }`;
@@ -515,7 +610,7 @@ function postRun(tanX,tanY,near,far){
   const P=POST,bind=(u,tex)=>{gl.activeTexture(gl.TEXTURE0+u);gl.bindTexture(gl.TEXTURE_2D,tex);};
   gl.disable(gl.DEPTH_TEST);gl.depthMask(false);gl.disable(gl.BLEND);gl.bindVertexArray(vaoTri);
   gl.bindFramebuffer(gl.FRAMEBUFFER,P.ao.fbo);gl.viewport(0,0,P.ao.w,P.ao.h);gl.useProgram(pAO.p);bind(0,P.depth);gl.uniform1i(pAO.u.uD,0);
-  gl.uniform2f(pAO.u.uTan,tanX,tanY);gl.uniform2f(pAO.u.uNF,near,far);gl.uniform2f(pAO.u.uPx,1/P.w,1/P.h);gl.drawArrays(gl.TRIANGLES,0,3);
+  gl.uniform2f(pAO.u.uTan,tanX,tanY);gl.uniform2f(pAO.u.uNF,near,Math.log2(1+far));gl.uniform2f(pAO.u.uPx,1/P.w,1/P.h);gl.drawArrays(gl.TRIANGLES,0,3);
   gl.bindFramebuffer(gl.FRAMEBUFFER,P.bA.fbo);gl.viewport(0,0,P.bA.w,P.bA.h);gl.useProgram(pBright.p);bind(0,P.scene.tex);gl.uniform1i(pBright.u.uT,0);gl.uniform2f(pBright.u.uPx,1/P.w,1/P.h);gl.drawArrays(gl.TRIANGLES,0,3);
   gl.useProgram(pBlur.p);gl.uniform1i(pBlur.u.uT,0);
   for(let k=0;k<2;k++){
@@ -526,3 +621,17 @@ function postRun(tanX,tanY,near,far){
   gl.drawArrays(gl.TRIANGLES,0,3);
   bind(2,null);bind(1,null);bind(0,null);gl.enable(gl.DEPTH_TEST);gl.depthMask(true);
 }
+
+/* ombre debout : pour les apparitions du mode classique */
+const FIG=(function(){const g=new Geo(0,0,0),E=(x,y,z,rx,ry,rz)=>g.ell(x,y,z,rx,ry,rz,28,ICO2);
+  E(0,1.80,0,0.095,0.125,0.105);g.cyl(0,0,0.045,1.60,1.72,28,false,8);
+  E(0,1.37,0,0.185,0.27,0.105);E(0,1.52,0,0.215,0.095,0.095);E(0,1.04,0,0.155,0.17,0.10);
+  for(const s of[-1,1]){E(s*0.255,1.29,0,0.05,0.26,0.052);E(s*0.268,0.90,0.012,0.04,0.25,0.042);E(s*0.272,0.63,0.02,0.036,0.075,0.028);
+    E(s*0.092,0.71,0,0.076,0.30,0.08);E(s*0.088,0.27,-0.005,0.056,0.27,0.058);E(s*0.088,0.035,0.05,0.048,0.035,0.115);}
+  return mesh7(new Float32Array(g.v));})();
+/* balançoire : deux cordes et une assise, suspendues à l'origine */
+const SWING_L=2.35;
+const SWING=(function(){const g=new Geo(0,0,0);
+  g.box(-0.30,-SWING_L-0.03,-0.16,0.30,-SWING_L+0.03,0.16,36,false);
+  g.box(-0.285,-SWING_L,-0.015,-0.255,0,0.015,12,false);g.box(0.255,-SWING_L,-0.015,0.285,0,0.015,12,false);
+  return mesh7(new Float32Array(g.v));})();
