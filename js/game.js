@@ -901,10 +901,11 @@ function frame(now){
 
   /* architecture */
   gl.useProgram(pMain.p);gl.uniform3f(pMain.u.uOff,0,0,0);gl.uniform1f(pMain.u.uSunK,sunK);
-  const fh=norm([Math.sin(yaw),0,-Math.cos(yaw)]),cullOk=Math.abs(pitch)<0.9&&!WORLDS[W].ring;
+  const fh=norm([Math.sin(yaw),0,-Math.cos(yaw)]),cullOk=Math.abs(pitch)<0.9&&!WORLDS[W].ring,fogCut=WORLDS[W].inside?WORLDS[W].pal.fogD*3.2+36:0;
   for(const c of cells.values()){
     if(!c.count)continue;
     if(cullOk&&(c.i*CELL-eye[0])*fh[0]+(c.j*CELL-eye[2])*fh[2]<-42)continue;
+    if(fogCut&&Math.hypot(c.i*CELL-eye[0],c.j*CELL-eye[2])>fogCut)continue; /* noyé dans le brouillard : inutile de le dessiner */
     gl.bindVertexArray(c.vao);gl.drawArrays(gl.TRIANGLES,0,c.count);
   }
   for(const t of trains){
@@ -1004,8 +1005,8 @@ function frame(now){
   if(WORLDS[W].souv&&ex.souv<1)for(const c of cells.values()){const s=c.souvs;if(!s||!s.length)continue;
     gl.uniform3f(pItem.u.uColor,1.25,0.95,0.55);gl.uniform3f(pItem.u.uScale,0.3,0.3,0.3);gl.uniform3f(pItem.u.uPos,s[0],s[1]+0.15+Math.sin(time*1.5)*0.08,s[2]);gl.uniform1f(pItem.u.uRot,time*0.7);gl.drawArrays(gl.TRIANGLES,0,24);
     gl.uniform3f(pItem.u.uColor,1.0,0.85,0.6);gl.uniform3f(pItem.u.uScale,0.035,7,0.035);gl.uniform3f(pItem.u.uPos,s[0],s[1]+7,s[2]);gl.drawArrays(gl.TRIANGLES,0,24);}
-  for(const m of mobs.values())if(m.kind==='guard'){const f=m.alert?1.5:1;gl.uniform3f(pItem.u.uColor,0.62*f,0.56*f,0.36*f);gl.uniform3f(pItem.u.uScale,0.2,0.14,3.2);
-    gl.uniform3f(pItem.u.uPos,m.x+m.fx*3.6,m.y+1.2,m.z+m.fz*3.6);gl.uniform1f(pItem.u.uRot,Math.atan2(-m.fx,m.fz));gl.drawArrays(gl.TRIANGLES,0,24);}
+  for(const m of mobs.values())if(m.kind==='guard'){const f=m.alert?(Math.sin(time*20)>0?1.6:0.6):1.2;gl.uniform3f(pItem.u.uColor,1.1*f,1.0*f,0.7*f);gl.uniform3f(pItem.u.uScale,0.045,0.045,0.045);
+    gl.uniform3f(pItem.u.uPos,m.x+m.fx*0.35-m.fz*0.25,m.y+1.05,m.z+m.fz*0.35+m.fx*0.25);gl.uniform1f(pItem.u.uRot,0);gl.drawArrays(gl.TRIANGLES,0,24);}
   if(WORLDS[W].acts&&G.phones&&ex.phones<G.phones)for(const c of cells.values()){const p=c.phones;if(!p||Math.abs(c.i-ci)>3||Math.abs(c.j-cj)>3)continue;
     for(let k=0;k<p.length;k+=3){if(answered.has(c.i+','+c.j+','+k))continue;const pu=0.5+0.5*Math.sin(time*3+k);gl.uniform3f(pItem.u.uColor,0.5+pu*0.6,0.9,1.1);gl.uniform3f(pItem.u.uScale,0.1,0.1,0.1);
       gl.uniform3f(pItem.u.uPos,p[k],p[k+1]+0.45+pu*0.08,p[k+2]);gl.uniform1f(pItem.u.uRot,time*2);gl.drawArrays(gl.TRIANGLES,0,24);}}
@@ -1067,13 +1068,13 @@ function frame(now){
     }
     if(mode!=='obs'&&!target&&!passage){
       const L=[];
-      if(ex.courses<G.courses){for(const c of cells.values())if(c.course&&!doneCourse.has(c.i+','+c.j))L.push([c.course.s[0],c.course.s[1],c.course.s[2],'départ de course']);}
+      if(ex.souv<G.souv&&WORLDS[W].souv){const S=WORLDS[W].souv;let f=null;for(const c of cells.values())if(c.souvs&&c.souvs.length)f=[c.souvs[0],c.souvs[1],c.souvs[2]];
+        if(!f){const fc=farOf(S.t,S.r);if(fc)f=[fc[0]*CELL,1,fc[1]*CELL];}if(f)L.push([f[0],f[1],f[2],'souvenir']);}
+      else if(ex.courses<G.courses){for(const c of cells.values())if(c.course&&!doneCourse.has(c.i+','+c.j))L.push([c.course.s[0],c.course.s[1],c.course.s[2],'départ de course']);}
       else if(ex.talks<G.talks){for(const c of cells.values())for(let k=0;k<c.npcs.length;k++)if(!talked.has(c.i+','+c.j+','+k)){const p=npcPos(c.npcs[k]);L.push([p[0],p[1],p[2],'un regard']);}}
       else if(ex.notes<G.notes&&WORLDS[W].notes){for(const c of cells.values()){const it=c.notes;if(!it)continue;for(let k=0;k<it.length;k+=3)if(!noteTaken.has(c.i+','+c.j+','+k))L.push([it[k],it[k+1],it[k+2],WORLDS[W].notes.s]);}}
       else if(ex.phones<G.phones&&WORLDS[W].acts){for(const c of cells.values()){const p=c.phones;if(!p)continue;for(let k=0;k<p.length;k+=3)if(!answered.has(c.i+','+c.j+','+k))L.push([p[k],p[k+1],p[k+2],WORLDS[W].acts.s]);}}
       else if(ex.phones<G.phones&&ringing)L.push([ringing.x,ringing.y,ringing.z,'téléphone qui sonne']);
-      else if(ex.souv<G.souv&&WORLDS[W].souv){const S=WORLDS[W].souv;let f=null;for(const c of cells.values())if(c.souvs&&c.souvs.length)f=[c.souvs[0],c.souvs[1],c.souvs[2]];
-        if(!f){const fc=farOf(S.t,S.r);if(fc)f=[fc[0]*CELL,1,fc[1]*CELL];}if(f)L.push([f[0],f[1],f[2],'souvenir']);}
       else if(ex.pearls<G.pearls){for(const c of cells.values()){const it=c.pearls;for(let k=0;k<it.length;k+=3)if(!pearlTaken.has(c.i+','+c.j+','+k))L.push([it[k],it[k+1],it[k+2],'perle']);}}
       else if(shards<G.shards){for(const c of cells.values()){const it=c.items;for(let k=0;k<it.length;k+=3)if(!taken.has(c.i+','+c.j+','+k))L.push([it[k],it[k+1],it[k+2],'éclat']);}}
       let bd=1e9;for(const q of L){const d=(q[0]-pos.x)**2+(q[2]-pos.z)**2+(q[1]-pos.y)**2*4;if(d<bd){bd=d;hint=q;}}

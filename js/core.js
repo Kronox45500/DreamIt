@@ -112,8 +112,8 @@ const WORLDS=[
  {name:'Bowling',gen:19,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,phones:3,shards:3},music:[17],spawn:[0,0,21],
   souv:{n:'la photo du gâteau',k:3,t:3,r:3},
   acts:{L:'Lancers',s:'piste',verb:'E · lancer la boule',snd:'strike',lines:['Strike. Il aurait levé les deux bras, comme toujours.','La boule part de travers, exprès. Tu ris tout seul, dans le noir.','Dix quilles tombent. Sur l\'écran : « Joyeux anniversaire ». Il n\'y a que ton prénom.']},
-  pal:{sun:[0.3,0.85,0.4],zen:[.03,.02,.05],mid:[.03,.02,.05],hor:[.03,.02,.05],seaC:[.03,.02,.05],ambUp:[.22,.18,.26],ambDn:[.16,.13,.18],sunC:[0,0,0],
-       indoor:[.15,.12,.18],fogD:70,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.25,.55,.95],glow:[0,0,0],
+  pal:{sun:[0.3,0.85,0.4],zen:[.03,.02,.05],mid:[.03,.02,.05],hor:[.03,.02,.05],seaC:[.03,.02,.05],ambUp:[.30,.26,.34],ambDn:[.22,.19,.24],sunC:[0,0,0],
+       indoor:[.22,.19,.25],fogD:70,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.25,.55,.95],glow:[0,0,0],
        water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.80,.62,.95],lampP:[9,10,3.6,4.4],lampO:[2.25,0],ground:null}},
  {name:'Parc aquatique',gen:20,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,notes:3,talks:1,shards:3},music:[18],spawn:[0,0,20],
   souv:{n:'la serviette rayée',k:4,t:1,r:3},
@@ -125,7 +125,7 @@ const WORLDS=[
   souv:{n:'les clés',k:5,t:4,r:3},
   acts:{L:'Cartons',s:'carton ouvert',verb:'E · fermer le carton',snd:'box',lines:['Ses pulls. Ils sentent encore la lessive qu\'il achetait toujours.','Des cassettes, avec son écriture : « Vacances », « Noël », « À garder ».','Ta première chaussure. Il l\'avait gardée. Tu ne le savais pas.','Des factures, des clés de rien, un ticket de cinéma. Le tien.','Le carton est lourd. Tu le fermes quand même.']},
   pal:{sun:[0.3,0.85,0.4],zen:[.34,.30,.30],mid:[.34,.30,.30],hor:[.40,.32,.28],seaC:[.40,.32,.28],ambUp:[.52,.46,.42],ambDn:[.40,.34,.30],sunC:[0,0,0],
-       indoor:[.34,.29,.25],fogD:70,cl0:[.3,.3,.3],cl1:[.5,.5,.5],se0:[.3,.3,.3],se1:[.4,.4,.4],accent:[.62,.52,.42],glow:[0,0,0],
+       indoor:[.34,.29,.25],fogD:50,cl0:[.3,.3,.3],cl1:[.5,.5,.5],se0:[.3,.3,.3],se1:[.4,.4,.4],accent:[.62,.52,.42],glow:[0,0,0],
        water:0,night:0,stripe:[0,0],cloud:.2,lampC:[1.0,.75,.48],lampP:[8,8,2.5,3.6],lampO:[4,4],ground:null}},
 ];
 /* les chapitres : tranches de la liste des espaces */
@@ -165,7 +165,7 @@ function icosphere(sub){
     for(const [a,b,c] of f){const ab=m(a,b),bc=m(b,c),ca=m(c,a);nf.push([a,ab,ca],[b,bc,ab],[c,ca,bc],[ab,bc,ca]);}f=nf;}
   const out=[];for(const tri of f)for(const k of tri)out.push(v[k]);return out;
 }
-const ICO1=icosphere(1),ICO2=icosphere(2),ICO3=icosphere(3),ICO5=icosphere(5);
+const ICO0=icosphere(0),ICO1=icosphere(1),ICO2=icosphere(2),ICO3=icosphere(3),ICO5=icosphere(5);
 
 class Geo{
   constructor(ox,oz,y){this.v=[];this.col=[];this.items=[];this.pads=[];this.gr=[];this.ng=[];this.sit=null;this.conv=[];this.lifts=[];this.swings=[];this.hdoors=[];this.crabs=[];this.statues=[];this.guards=[];this.visitors=[];this.souvs=[];this.scr=[];this.notes=[];this.phones=[];this.watch=[];this.npcs=[];this.wat=[];this.pearls=[];this.course=null;this.car=null;this.ox=ox;this.oz=oz;this.y=y;this.m=SYM[0];}
@@ -187,6 +187,19 @@ class Geo{
     this.flat([x0,Y0,z0],[x1,Y0,z0],[x1,Y1,z0],[x0,Y1,z0],[0,0,-1],mat);
     if(solid!==false)this.col.push(x0,Y0,z0,x1,Y1,z1);
   }
+  /* boîte orientée : centre (a,y,b), demi-tailles, lacet autour de y puis tangage autour de x local */
+  obox(a,y,b,hx,hy,hz,yaw,pitch,mat,solid){
+    const cy=Math.cos(yaw||0),sy=Math.sin(yaw||0),cp=Math.cos(pitch||0),sp=Math.sin(pitch||0);
+    const R=(x,yy,z)=>{const y2=yy*cp-z*sp,z2=yy*sp+z*cp;return [x*cy+z2*sy,y2,-x*sy+z2*cy];};
+    const C=[];for(const sx of[-1,1])for(const s2 of[-1,1])for(const sz of[-1,1]){const r=R(sx*hx,s2*hy,sz*hz);C.push(this.P(a+r[0],y+r[1],b+r[2]));}
+    const NN=(x,yy,z)=>{const r=R(x,yy,z);return this.N(r[0],r[1],r[2]);};
+    const F=(i0,i1,i2,i3,n)=>this.flat(C[i0],C[i1],C[i2],C[i3],n,mat);
+    F(4,6,7,5,NN(1,0,0));F(0,1,3,2,NN(-1,0,0));F(2,3,7,6,NN(0,1,0));F(0,4,5,1,NN(0,-1,0));F(1,5,7,3,NN(0,0,1));F(0,2,6,4,NN(0,0,-1));
+    if(solid){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9,z0=1e9,z1=-1e9;for(const p of C){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);z0=Math.min(z0,p[2]);z1=Math.max(z1,p[2]);}this.col.push(x0,y0,z0,x1,y1,z1);}
+  }
+  /* planche tendue d'un point à un autre (rampes, toboggans, mains courantes) */
+  span(a0,y0,b0,a1,y1,b1,w,th,mat,solid){const dx=a1-a0,dy=y1-y0,dz=b1-b0,h=Math.hypot(dx,dz),L=Math.hypot(h,dy);
+    this.obox((a0+a1)/2,(y0+y1)/2,(b0+b1)/2,w/2,th/2,L/2,Math.atan2(dx,dz),-Math.atan2(dy,h),mat,solid);}
   /* dalle vue du dessus seulement (sols continus) */
   top(a0,b0,a1,b1,y,mat){const r=this.rect(a0,b0,a1,b1),Y=this.y+y;this.flat([r[0],Y,r[1]],[r[2],Y,r[1]],[r[2],Y,r[3]],[r[0],Y,r[3]],[0,1,0],mat);}
   solid(a0,y0,b0,a1,y1,b1){const p=this.P(a0,y0,b0),q=this.P(a1,y1,b1);this.col.push(Math.min(p[0],q[0]),p[1],Math.min(p[2],q[2]),Math.max(p[0],q[0]),q[1],Math.max(p[2],q[2]));}
