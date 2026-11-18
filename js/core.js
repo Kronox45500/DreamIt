@@ -133,7 +133,8 @@ const CHAPS=[[0,9,'Le rêve'],[9,15,'Le long sommeil'],[15,22,'Ce qu\'on a perdu
 function chOf(w){return w>=CHAPS[2][0]?2:w>=CHAPS[1][0]?1:0;}
 /* chapitre 3 : les souvenirs rapportés dans la pièce (niveaux 16 à 20), gardés d'une partie à l'autre */
 const C3=new Set((()=>{try{return JSON.parse(localStorage.getItem('dream-c3')||'[]');}catch(e){return [];}})());
-function c3save(){try{localStorage.setItem('dream-c3',JSON.stringify([...C3]));}catch(e){}}
+let c3next=(()=>{try{return Math.min(21,Math.max(16,parseInt(localStorage.getItem('dream-c3next'))||16));}catch(e){return 16;}})();
+function c3save(){try{localStorage.setItem('dream-c3',JSON.stringify([...C3]));localStorage.setItem('dream-c3next',c3next);}catch(e){}}
 /* relief : rivage (13) */
 function HF(x,z){
   if(GEN===13){const n=vnoise(x/23+1.7,z/23+4.2);

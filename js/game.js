@@ -63,14 +63,15 @@ function storyTick(dt){
   if(storyT<=0){if(storyQ.length){storyEl.textContent=storyQ.shift();storyEl.classList.add('on');storyT=5.2;}}
 }
 function chapter(){if(mode==='obs')return;const ch=chOf(W),C=CHAPS[ch];
-  if(WORLDS[W].hub){const n=Math.min(5,[16,17,18,19,20].filter(l=>C3.has(l)).length),nx=[16,17,18,19,20].find(l=>!C3.has(l))||21;
+  if(WORLDS[W].hub){const nx=Math.min(21,Math.max(16,c3next)),n=nx-16;
     toast('Chapitre 3 · '+STORY[W].t+' · souvenirs '+n+'/5 · la porte mène à : '+WORLDS[nx].name,6);story(HUBL[n].concat(['Tu reviens toujours ici entre deux lieux. La porte allumée mène au suivant.'].slice(n&&n<5?0:1)));return;}
   toast('Chapitre '+(ch+1)+' · '+(W-C[0]+(ch===2?0:1))+'/'+(C[1]-C[0]-(ch===2?1:0))+' · '+STORY[W].t,5);story(STORY[W].a);}
 function nextWorld(){
   if(chOf(W)===2&&mode!=='obs'){ /* chapitre 3 : on revient toujours à la pièce, puis on repart */
-    if(W>15&&W<21){C3.add(W);c3save();}
+    /* l'ordre est fixe : pièce, centre commercial, pièce, cinéma, pièce, arcade, pièce, bowling, pièce, parc aquatique, pièce, maison */
+    if(W>15&&W<21){C3.add(W);c3next=W+1;c3save();}
     if(W===21){wakeKind=2;veil=1;veilHold=END3.length*5.2+1.5;wakeT=veilHold-0.4;chime();story(END3,true);return;}
-    const nx=W===15?([16,17,18,19,20].find(l=>!C3.has(l))||21):15;
+    const nx=W===15?Math.min(21,Math.max(16,c3next)):15;
     veil=1;veilHold=2.2;play('ascenseur',0.45);setTimeout(()=>play('ding',0.5),1900);loadWorld(nx,true);chapter();return;}
   const last=W===CHAPS[chOf(W)][1]-1;
   if(mode!=='obs'&&last){ /* fin de chapitre : faux réveil (1), vrai réveil (2) */
@@ -590,7 +591,7 @@ function spacesUI(){
   WORLDS.forEach((w,k)=>{const ch=chOf(k),C=CHAPS[ch];
     if(k===C[0]){const h=document.createElement('span');h.className='chl';h.textContent='Chapitre '+(ch+1)+' · '+C[2];el.appendChild(h);}
     const b=document.createElement('button');b.type='button';b.textContent=(k-C[0]+1)+' · '+w.name;b.disabled=k>(ch===2?max3:ch?max2:maxLevel)&&mode!=='obs';
-    b.setAttribute('aria-pressed',k===W?'true':'false');b.addEventListener('click',()=>{loadWorld(k);});el.appendChild(b);});
+    b.setAttribute('aria-pressed',k===W?'true':'false');b.addEventListener('click',()=>{if(k===15){C3.clear();c3next=16;c3save();}else if(k>15)c3next=k;loadWorld(k);});el.appendChild(b);});
   document.getElementById('where').textContent='Chapitre '+(chOf(W)+1)+' · espace '+(W-CHAPS[chOf(W)][0]+1)+' · '+WORLDS[W].name;
   const md=document.getElementById('modes');md.textContent='';
   for(const [k,n] of MODES){const b=document.createElement('button');b.type='button';b.textContent=n;b.setAttribute('aria-pressed',k===mode?'true':'false');
