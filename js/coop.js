@@ -11,37 +11,51 @@ function coopRand(n,abc){let s='';for(let k=0;k<n;k++)s+=abc[Math.floor(Math.ran
 
 /* ---- mise en relation ---- */
 function coopSignal(id,onOpen){
-  const ws=new WebSocket(COOP_SIG+'&id='+encodeURIComponent(id)+'&token='+coopRand(10,'abcdefghijklmnopqrstuvwxyz0123456789'));
-  COOP.ws=ws;
+  let ws;try{ws=new WebSocket(COOP_SIG+'&id='+encodeURIComponent(id)+'&token='+coopRand(10,'abcdefghijklmnopqrstuvwxyz0123456789')+'&version=1.5.4');}
+  catch(e){coopStatus(COOP_BLOCKED);return;}
+  COOP.ws=ws;let opened=false;
   ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data);}catch(e){return;}
-    if(m.type==='OPEN'){onOpen&&onOpen();return;}
-    if(m.type==='ID-TAKEN'){coopStatus('Ce code est déjà pris. Recommence.');coopLeave();return;}
-    if(m.type==='ERROR'){coopStatus('Le serveur de mise en relation refuse : '+((m.payload&&m.payload.msg)||''));return;}
-    if(m.type==='EXPIRE'){coopStatus('Partie introuvable : vérifie le code.');return;}
-    if(m.type==='OFFER'||m.type==='ANSWER'||m.type==='CANDIDATE')coopOnSignal(m);};
-  ws.onerror=()=>coopStatus('Impossible de joindre le serveur de mise en relation (réseau bloqué ?).');
-  ws.onclose=()=>{if(COOP.on&&!COOP.peers.size)coopStatus('Connexion au serveur perdue.');};
+    if(m.type==='OPEN'){opened=true;onOpen&&onOpen();return;}
+    if(m.type==='ID-TAKEN'){coopStatus(COOP.host?'Ce code est déjà pris. Recrée une partie.':'Ce pseudo de connexion est pris. Réessaie.');coopLeave(true);return;}
+    if(m.type==='ERROR'){coopStatus('Le serveur de mise en relation refuse : '+((m.payload&&m.payload.msg)||'erreur inconnue'));return;}
+    if(m.type==='EXPIRE'){if(!COOP.host)coopStatus('Partie '+COOP.code+' introuvable : vérifie le code, et que l\'hôte a bien cliqué sur « Créer une partie » (il ne doit pas fermer l\'onglet).');return;}
+    if(m.type==='OFFER'||m.type==='ANSWER'||m.type==='CANDIDATE')coopQueue(m);};
+  ws.onerror=()=>{if(!opened)coopStatus(COOP_BLOCKED);};
+  ws.onclose=()=>{if(COOP.on&&COOP.ws===ws&&!COOP.peers.size)coopStatus(opened?'Connexion au serveur perdue. Recrée ou rejoins la partie.':COOP_BLOCKED);};
   clearInterval(COOP.hb);COOP.hb=setInterval(()=>{if(ws.readyState===1)ws.send(JSON.stringify({type:'HEARTBEAT'}));},5000);
 }
+const COOP_BLOCKED='Impossible de joindre le serveur de mise en relation. Le coop ne marche pas dans l\'aperçu Claude : ouvre la version GitHub Pages du jeu. Ailleurs, vérifie ta connexion ou ton bloqueur de pubs.';
 function coopSend(type,dst,payload){if(COOP.ws&&COOP.ws.readyState===1)COOP.ws.send(JSON.stringify({type,dst,payload}));}
+/* les messages de mise en relation sont traités un par un, dans l'ordre d'arrivée */
+let coopChain=Promise.resolve();
+function coopQueue(m){coopChain=coopChain.then(()=>coopOnSignal(m)).catch(e=>console.warn('coop',e));}
+/* on attend d'avoir rassemblé les adresses possibles avant d'envoyer la description : un seul message, rien ne se perd */
+function coopGather(pc){return new Promise(res=>{if(pc.iceGatheringState==='complete')return res();const t=setTimeout(res,3500);
+  pc.addEventListener('icegatheringstatechange',()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);res();}});});}
 function coopPC(peer){
-  const pc=new RTCPeerConnection(COOP_ICE),P={id:peer,pc,dc:null,name:'?'};COOP.peers.set(peer,P);
-  pc.onicecandidate=e=>{if(e.candidate)coopSend('CANDIDATE',peer,{candidate:e.candidate,connectionId:'dream'});};
-  pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'||pc.connectionState==='closed'||pc.connectionState==='disconnected')coopDrop(peer);};
+  const old=COOP.peers.get(peer);if(old)try{old.pc.close();}catch(e){}
+  const pc=new RTCPeerConnection(COOP_ICE),P={id:peer,pc,dc:null,name:'?',pend:[]};COOP.peers.set(peer,P);
+  pc.onicecandidate=e=>{if(e.candidate&&P.sent)coopSend('CANDIDATE',peer,{candidate:e.candidate,type:'data',connectionId:'dream'});};
+  pc.onconnectionstatechange=()=>{const st=pc.connectionState;if(COOP.peers.get(peer)!==P)return;
+    if(st==='failed'){coopStatus('La connexion directe a échoué : un des réseaux (4G, Wi-Fi d\'école ou d\'entreprise) bloque le jeu à plusieurs. Essayez un autre réseau, ou un partage de connexion.');coopDrop(peer,true);}
+    else if(st==='closed')coopDrop(peer);};
   pc.ondatachannel=e=>coopWire(P,e.channel);
   return P;
 }
-function coopWire(P,dc){P.dc=dc;dc.onopen=()=>{coopStatus(COOP.host?'Partie '+COOP.code+' · un rêveur vient d\'entrer.':'Connecté à la partie '+COOP.code+'.');coopList();if(COOP.host)coopSync(true);};
-  dc.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(x){return;}coopMsg(P,m);};dc.onclose=()=>coopDrop(P.id);}
+function coopWire(P,dc){P.dc=dc;dc.onopen=()=>{coopStatus(COOP.host?'Partie '+COOP.code+' · un rêveur vient d\'entrer.':'Connecté à la partie '+COOP.code+'. Clique sur « Entrer » quand tu es prêt.');coopList();if(COOP.host)coopSync(true);};
+  dc.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(x){return;}coopMsg(P,m);};dc.onclose=()=>{if(COOP.peers.get(P.id)===P)coopDrop(P.id);};}
+async function coopFlush(P){P.ready=true;for(const c of P.pend.splice(0))try{await P.pc.addIceCandidate(c);}catch(e){}}
 async function coopOnSignal(m){
-  const src=m.src,p=m.payload||{};
-  if(m.type==='OFFER'&&COOP.host){if(COOP.peers.size>=3){return;}const P=coopPC(src);
-    await P.pc.setRemoteDescription(p.sdp);const a=await P.pc.createAnswer();await P.pc.setLocalDescription(a);coopSend('ANSWER',src,{sdp:P.pc.localDescription,connectionId:'dream'});}
-  else if(m.type==='ANSWER'){const P=COOP.peers.get(src);if(P)await P.pc.setRemoteDescription(p.sdp);}
-  else if(m.type==='CANDIDATE'){const P=COOP.peers.get(src);if(P&&p.candidate)try{await P.pc.addIceCandidate(p.candidate);}catch(e){}}
+  const src=m.src,p=m.payload||{};if(!src)return;
+  if(m.type==='OFFER'&&COOP.host){if(!COOP.peers.has(src)&&COOP.peers.size>=3)return;const P=coopPC(src);
+    await P.pc.setRemoteDescription(p.sdp);await coopFlush(P);const a=await P.pc.createAnswer();await P.pc.setLocalDescription(a);await coopGather(P.pc);
+    P.sent=true;coopSend('ANSWER',src,{sdp:P.pc.localDescription,type:'data',connectionId:'dream'});
+    coopStatus('Partie '+COOP.code+' · un rêveur se connecte…');}
+  else if(m.type==='ANSWER'){const P=COOP.peers.get(src);if(P&&!P.ready){await P.pc.setRemoteDescription(p.sdp);await coopFlush(P);}}
+  else if(m.type==='CANDIDATE'){const P=COOP.peers.get(src);if(!P||!p.candidate)return;if(P.ready){try{await P.pc.addIceCandidate(p.candidate);}catch(e){}}else P.pend.push(p.candidate);}
 }
-function coopDrop(id){const P=COOP.peers.get(id);if(!P)return;try{P.pc.close();}catch(e){}COOP.peers.delete(id);COOP.states.delete(id);coopList();
-  if(!COOP.host&&COOP.on){coopStatus('L\'hôte a quitté la partie.');}}
+function coopDrop(id,keep){const P=COOP.peers.get(id);if(!P)return;try{P.pc.close();}catch(e){}COOP.peers.delete(id);COOP.states.delete(id);coopList();
+  if(!COOP.host&&COOP.on&&!keep&&P.dc&&P.dc.readyState!=='connecting')coopStatus('L\'hôte a quitté la partie.');}
 
 /* ---- créer, rejoindre, quitter ---- */
 function coopName(){const n=(coopEl.name&&coopEl.name.value.trim())||'Rêveur';try{localStorage.setItem('dream-name',n);}catch(e){}return n.slice(0,16);}
@@ -50,11 +64,15 @@ function coopHost(){coopLeave();COOP.on=true;COOP.host=true;COOP.name=coopName()
 function coopJoin(){const code=(coopEl.code.value||'').trim().toUpperCase();if(!/^[A-Z]{4}$/.test(code)){coopStatus('Le code fait quatre lettres.');return;}
   coopLeave();COOP.on=true;COOP.host=false;COOP.name=coopName();COOP.code=code;COOP.me='dreamit-'+code.toLowerCase()+'-'+coopRand(6,'abcdefghijklmnopqrstuvwxyz0123456789');
   const host='dreamit-'+code.toLowerCase();coopStatus('Recherche de la partie '+code+'…');
-  coopSignal(COOP.me,async()=>{const P=coopPC(host);coopWire(P,P.pc.createDataChannel('dream'));const o=await P.pc.createOffer();await P.pc.setLocalDescription(o);
+  const tryOffer=async n=>{if(!COOP.on||COOP.host||COOP.code!==code)return;const P=coopPC(host);coopWire(P,P.pc.createDataChannel('dream'));
+    const o=await P.pc.createOffer();await P.pc.setLocalDescription(o);await coopGather(P.pc);P.sent=true;
     coopSend('OFFER',host,{sdp:P.pc.localDescription,type:'data',connectionId:'dream'});
-    setTimeout(()=>{if(COOP.on&&!COOP.host&&!(P.dc&&P.dc.readyState==='open'))coopStatus('Pas de réponse de la partie '+code+'. Vérifie le code, ou le réseau bloque la connexion directe.');},12000);});}
-function coopLeave(){for(const id of[...COOP.peers.keys()])coopDrop(id);if(COOP.ws)try{COOP.ws.close();}catch(e){}COOP.ws=null;clearInterval(COOP.hb);
-  COOP.on=false;COOP.host=false;COOP.down=false;document.body.classList.remove('downed');coopList();coopStatus('');}
+    setTimeout(()=>{if(!COOP.on||COOP.host||COOP.code!==code||(P.dc&&P.dc.readyState==='open'))return;
+      if(n<2){coopStatus('Recherche de la partie '+code+'… (nouvel essai)');tryOffer(n+1);}
+      else coopStatus('Pas de réponse de la partie '+code+'. Vérifie le code et que l\'hôte a l\'onglet ouvert. Si le code est bon, un des réseaux bloque la connexion directe : essayez un autre réseau.');},9000);};
+  coopSignal(COOP.me,()=>{coopStatus('Recherche de la partie '+code+'…');tryOffer(0);});}
+function coopLeave(keepMsg){for(const id of[...COOP.peers.keys()])coopDrop(id);if(COOP.ws)try{COOP.ws.close();}catch(e){}COOP.ws=null;clearInterval(COOP.hb);
+  COOP.on=false;COOP.host=false;COOP.down=false;document.body.classList.remove('downed');coopList();if(!keepMsg)coopStatus('');}
 function coopList(){if(!coopEl.list)return;const n=[COOP.on?COOP.name+' (toi'+(COOP.host?', hôte':'')+')':''];for(const s of COOP.states.values())n.push(s.n);
   coopEl.list.textContent=COOP.on?'Rêveurs : '+n.filter(Boolean).join(' · '):'';coopEl.leave.hidden=!COOP.on;}
 
@@ -140,7 +158,8 @@ function coopPeersHere(){const out=[];if(!COOP.on)return out;for(const s of COOP
   coopEl.name=document.getElementById('coopName');coopEl.code=document.getElementById('coopCode');coopEl.st=document.getElementById('coopSt');coopEl.list=document.getElementById('coopList');coopEl.leave=document.getElementById('coopLeave');
   try{coopEl.name.value=localStorage.getItem('dream-name')||'';}catch(e){}
   for(const el of[coopEl.name,coopEl.code])el.addEventListener('keydown',e=>e.stopPropagation());
-  document.getElementById('coopHost').addEventListener('click',coopHost);document.getElementById('coopJoin').addEventListener('click',coopJoin);coopEl.leave.addEventListener('click',coopLeave);
+  document.getElementById('coopHost').addEventListener('click',()=>coopHost());document.getElementById('coopJoin').addEventListener('click',()=>coopJoin());coopEl.leave.addEventListener('click',()=>coopLeave());
+  coopEl.code.addEventListener('keydown',e=>{if(e.key==='Enter')coopJoin();});
   coopEl.tags=document.createElement('div');coopEl.tags.id='coopTags';document.body.appendChild(coopEl.tags);
   addEventListener('beforeunload',()=>{coopBroadcast({t:'bye',id:COOP.me});});
 })();
