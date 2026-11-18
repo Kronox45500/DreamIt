@@ -9,28 +9,36 @@ const coopEl={};
 function coopStatus(t){COOP.err=t;if(coopEl.st)coopEl.st.textContent=t;}
 function coopRand(n,abc){let s='';for(let k=0;k<n;k++)s+=abc[Math.floor(Math.random()*abc.length)];return s;}
 
-/* ---- mise en relation ---- */
-function coopSignal(id,onOpen){
-  let ws;try{ws=new WebSocket(COOP_SIG+'&id='+encodeURIComponent(id)+'&token='+coopRand(10,'abcdefghijklmnopqrstuvwxyz0123456789')+'&version=1.5.4');}
-  catch(e){coopStatus(COOP_BLOCKED);return;}
-  COOP.ws=ws;let opened=false;
-  ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data);}catch(e){return;}
-    if(m.type==='OPEN'){opened=true;onOpen&&onOpen();return;}
-    if(m.type==='ID-TAKEN'){coopStatus(COOP.host?'Ce code est déjà pris. Recrée une partie.':'Ce pseudo de connexion est pris. Réessaie.');coopLeave(true);return;}
-    if(m.type==='ERROR'){coopStatus('Le serveur de mise en relation refuse : '+((m.payload&&m.payload.msg)||'erreur inconnue'));return;}
-    if(m.type==='EXPIRE'){if(!COOP.host)coopStatus('Partie '+COOP.code+' introuvable : vérifie le code, et que l\'hôte a bien cliqué sur « Créer une partie » (il ne doit pas fermer l\'onglet).');return;}
-    if(m.type==='OFFER'||m.type==='ANSWER'||m.type==='CANDIDATE')coopQueue(m);};
-  ws.onerror=()=>{if(!opened)coopStatus(COOP_BLOCKED);};
-  ws.onclose=()=>{if(COOP.on&&COOP.ws===ws&&!COOP.peers.size)coopStatus(opened?'Connexion au serveur perdue. Recrée ou rejoins la partie.':COOP_BLOCKED);};
-  clearInterval(COOP.hb);COOP.hb=setInterval(()=>{if(ws.readyState===1)ws.send(JSON.stringify({type:'HEARTBEAT'}));},5000);
-}
+/* ---- mise en relation ----
+   Pas de serveur à nous : un lobby occupe l'une des 16 « places » connues du serveur de mise en relation.
+   Pour lister les lobbies, on frappe à chaque place ; l'hôte qui s'y trouve répond avec la fiche de son lobby. */
+const COOP_PRE='dreamit-k45-',COOP_SLOTS=16,COOP_MAX=4;
 const COOP_BLOCKED='Impossible de joindre le serveur de mise en relation. Le coop ne marche pas dans l\'aperçu Claude : ouvre la version GitHub Pages du jeu. Ailleurs, vérifie ta connexion ou ton bloqueur de pubs.';
-function coopSend(type,dst,payload){if(COOP.ws&&COOP.ws.readyState===1)COOP.ws.send(JSON.stringify({type,dst,payload}));}
+const slotId=k=>COOP_PRE+'lobby-'+String(k).padStart(2,'0');
+function coopHash(t){let h1=0xdeadbeef,h2=0x41c6ce57;t=t+'|dream-it';for(let i=0;i<t.length;i++){const c=t.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677);}
+  h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return (h2>>>0).toString(36)+(h1>>>0).toString(36);}
+function coopSignal(id,on){ /* on : {open, taken, msg} */
+  let ws;try{ws=new WebSocket(COOP_SIG+'&id='+encodeURIComponent(id)+'&token='+coopRand(10,'abcdefghijklmnopqrstuvwxyz0123456789')+'&version=1.5.4');}
+  catch(e){coopStatus(COOP_BLOCKED);return null;}
+  let opened=false,gone=false;ws.id=id;
+  ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data);}catch(e){return;}
+    if(m.type==='OPEN'){opened=true;on.open&&on.open(ws);return;}
+    if(m.type==='ID-TAKEN'){gone=true;try{ws.close();}catch(e){}on.taken&&on.taken();return;}
+    if(m.type==='ERROR'){coopStatus('Le serveur de mise en relation refuse : '+((m.payload&&m.payload.msg)||'erreur inconnue'));return;}
+    on.msg&&on.msg(m,ws);};
+  ws.onerror=()=>{if(!opened&&!gone)coopStatus(COOP_BLOCKED);};
+  ws.onclose=()=>{clearInterval(ws.hb);if(gone)return;if(COOP.ws===ws){COOP.ws=null;if(COOP.on&&!COOP.peers.size)coopStatus(opened?'Connexion au serveur perdue. Recrée ou rejoins un lobby.':COOP_BLOCKED);}
+    if(COOP.bws===ws)COOP.bws=null;};
+  ws.hb=setInterval(()=>{if(ws.readyState===1)ws.send(JSON.stringify({type:'HEARTBEAT'}));},5000);
+  return ws;
+}
+function wsSend(ws,type,dst,payload){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type,dst,payload}));}
+function coopSend(type,dst,payload){wsSend(COOP.ws,type,dst,payload);}
 /* les messages de mise en relation sont traités un par un, dans l'ordre d'arrivée */
 let coopChain=Promise.resolve();
 function coopQueue(m){coopChain=coopChain.then(()=>coopOnSignal(m)).catch(e=>console.warn('coop',e));}
 /* on attend d'avoir rassemblé les adresses possibles avant d'envoyer la description : un seul message, rien ne se perd */
-function coopGather(pc){return new Promise(res=>{if(pc.iceGatheringState==='complete')return res();const t=setTimeout(res,3500);
+function coopGather(pc){return new Promise(res=>{if(pc.iceGatheringState==='complete')return res();const t=setTimeout(res,2000);
   pc.addEventListener('icegatheringstatechange',()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);res();}});});}
 function coopPC(peer){
   const old=COOP.peers.get(peer);if(old)try{old.pc.close();}catch(e){}
@@ -42,46 +50,97 @@ function coopPC(peer){
   pc.ondatachannel=e=>coopWire(P,e.channel);
   return P;
 }
-function coopWire(P,dc){P.dc=dc;dc.onopen=()=>{coopStatus(COOP.host?'Partie '+COOP.code+' · un rêveur vient d\'entrer.':'Connecté à la partie '+COOP.code+'. Clique sur « Entrer » quand tu es prêt.');coopList();if(COOP.host)coopSync(true);};
+function coopWire(P,dc){P.dc=dc;dc.onopen=()=>{if(COOP.host)coopStatus('Un rêveur vient d\'entrer dans le lobby.');else{COOP.joining=null;coopStatus('Tu es dans le lobby. '+(COOP.go?'La partie a commencé : clique sur « Entrer dans la partie ».':'L\'hôte lancera la partie.'));}
+    coopUI();if(COOP.host)coopSync(true);};
   dc.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(x){return;}coopMsg(P,m);};dc.onclose=()=>{if(COOP.peers.get(P.id)===P)coopDrop(P.id);};}
 async function coopFlush(P){P.ready=true;for(const c of P.pend.splice(0))try{await P.pc.addIceCandidate(c);}catch(e){}}
+function coopOpen(){let n=0;for(const P of COOP.peers.values())if(P.dc&&P.dc.readyState==='open')n++;return n;}
 async function coopOnSignal(m){
   const src=m.src,p=m.payload||{};if(!src)return;
-  if(m.type==='OFFER'&&COOP.host){if(!COOP.peers.has(src)&&COOP.peers.size>=3)return;const P=coopPC(src);
+  if(m.type==='OFFER'&&COOP.host){if(!COOP.peers.has(src)&&COOP.peers.size>=COOP_MAX-1)return;const P=coopPC(src);
     await P.pc.setRemoteDescription(p.sdp);await coopFlush(P);const a=await P.pc.createAnswer();await P.pc.setLocalDescription(a);await coopGather(P.pc);
-    P.sent=true;coopSend('ANSWER',src,{sdp:P.pc.localDescription,type:'data',connectionId:'dream'});
-    coopStatus('Partie '+COOP.code+' · un rêveur se connecte…');}
+    P.sent=true;coopSend('ANSWER',src,{sdp:P.pc.localDescription,type:'data',connectionId:'dream'});coopStatus('Un rêveur se connecte au lobby…');}
   else if(m.type==='ANSWER'){const P=COOP.peers.get(src);if(P&&!P.ready){await P.pc.setRemoteDescription(p.sdp);await coopFlush(P);}}
   else if(m.type==='CANDIDATE'){const P=COOP.peers.get(src);if(!P||!p.candidate)return;if(P.ready){try{await P.pc.addIceCandidate(p.candidate);}catch(e){}}else P.pend.push(p.candidate);}
 }
-function coopDrop(id,keep){const P=COOP.peers.get(id);if(!P)return;try{P.pc.close();}catch(e){}COOP.peers.delete(id);COOP.states.delete(id);coopList();
-  if(!COOP.host&&COOP.on&&!keep&&P.dc&&P.dc.readyState!=='connecting')coopStatus('L\'hôte a quitté la partie.');}
+function coopDrop(id,keep){const P=COOP.peers.get(id);if(!P)return;try{P.pc.close();}catch(e){}COOP.peers.delete(id);COOP.states.delete(id);
+  if(!COOP.host&&COOP.on&&!keep&&P.dc&&P.dc.readyState!=='connecting'){coopLeave(true);coopStatus('L\'hôte a fermé le lobby.');}
+  coopUI();}
 
-/* ---- créer, rejoindre, quitter ---- */
+/* ---- la fiche du lobby, telle que les autres la voient ---- */
+function coopInfo(){return{name:COOP.lobby,host:COOP.name,n:1+coopOpen(),max:COOP_MAX,lock:!!COOP.pw,place:WORLDS[level].name,ch:chOf(level)+1,go:started?1:0,mode};}
+/* l'hôte, sur sa place : il répond aux curieux, il trie ceux qui frappent */
+function coopHostMsg(m){const p=m.payload||{};
+  if(m.type==='OFFER'&&p.probe){coopSend('ANSWER',m.src,{lobby:coopInfo()});return;}
+  if(m.type==='OFFER'&&p.sdp&&!COOP.peers.has(m.src)){
+    if(COOP.pw&&p.pw!==COOP.pw){coopSend('ANSWER',m.src,{deny:'pw'});return;}
+    if(1+COOP.peers.size>=COOP_MAX){coopSend('ANSWER',m.src,{deny:'full'});return;}}
+  if(m.type==='OFFER'||m.type==='CANDIDATE')coopQueue(m);
+}
+
+/* ---- créer un lobby ---- */
 function coopName(){const n=(coopEl.name&&coopEl.name.value.trim())||'Rêveur';try{localStorage.setItem('dream-name',n);}catch(e){}return n.slice(0,16);}
-function coopHost(){coopLeave();COOP.on=true;COOP.host=true;COOP.name=coopName();COOP.code=coopRand(4,'ABCDEFGHJKLMNPQRSTUVWXYZ');COOP.me='dreamit-'+COOP.code.toLowerCase();
-  coopStatus('Ouverture de la partie…');coopSignal(COOP.me,()=>{coopStatus('Partie ouverte · code '+COOP.code+' · donne-le à tes amis, puis entre.');coopList();});}
-function coopJoin(){const code=(coopEl.code.value||'').trim().toUpperCase();if(!/^[A-Z]{4}$/.test(code)){coopStatus('Le code fait quatre lettres.');return;}
-  coopLeave();COOP.on=true;COOP.host=false;COOP.name=coopName();COOP.code=code;COOP.me='dreamit-'+code.toLowerCase()+'-'+coopRand(6,'abcdefghijklmnopqrstuvwxyz0123456789');
-  const host='dreamit-'+code.toLowerCase();coopStatus('Recherche de la partie '+code+'…');
-  const tryOffer=async n=>{if(!COOP.on||COOP.host||COOP.code!==code)return;const P=coopPC(host);coopWire(P,P.pc.createDataChannel('dream'));
+function coopCreate(){
+  coopLeave();COOP.name=coopName();
+  const nm=(coopEl.lname.value.trim()||('Partie de '+COOP.name)).slice(0,28),pw=coopEl.priv&&coopEl.pwI.value;
+  if(coopEl.priv&&!pw){coopStatus('Choisis un mot de passe, ou repasse le lobby en public.');return;}
+  COOP.lobby=nm;COOP.pw=coopEl.priv?coopHash(pw):'';COOP.on=true;COOP.host=true;COOP.go=false;
+  const order=[...Array(COOP_SLOTS).keys()].sort(()=>Math.random()-0.5);let k=0;
+  coopStatus('Ouverture du lobby…');coopUI();
+  const tryNext=()=>{if(!COOP.on||!COOP.host)return;if(k>=order.length){coopLeave(true);coopStatus('Tous les lobbies sont pleins pour l\'instant. Réessaie dans un moment.');return;}
+    const id=slotId(order[k++]);COOP.me=id;
+    COOP.ws=coopSignal(id,{open:()=>{coopStatus('Lobby ouvert. Les autres le voient dans la liste ; lance la partie quand tout le monde est là.');coopUI();},taken:tryNext,msg:coopHostMsg});};
+  tryNext();
+}
+
+/* ---- la liste des lobbies ---- */
+function coopBrowse(){ /* une connexion d'observateur, qui sert ensuite à rejoindre */
+  if(COOP.on)return;
+  if(COOP.bws&&COOP.bws.readyState<=1){coopProbe();return;}
+  COOP.me=COOP_PRE+'p-'+coopRand(10,'abcdefghijklmnopqrstuvwxyz0123456789');COOP.lobbies=new Map();COOP.scan=true;coopUI();
+  COOP.bws=coopSignal(COOP.me,{open:()=>coopProbe(),taken:()=>{COOP.bws=null;coopBrowse();},msg:coopBrowseMsg});
+}
+function coopProbe(){if(!COOP.bws||COOP.bws.readyState!==1)return;COOP.found=new Map();COOP.scan=true;coopUI();
+  for(let k=0;k<COOP_SLOTS;k++)wsSend(COOP.bws,'OFFER',slotId(k),{probe:1});
+  clearTimeout(COOP.scanT);COOP.scanT=setTimeout(()=>{COOP.lobbies=COOP.found;COOP.scan=false;coopUI();},2600);}
+function coopBrowseMsg(m){const p=m.payload||{};
+  if(m.type==='ANSWER'&&p.lobby){p.lobby.id=m.src;(COOP.found||(COOP.found=new Map())).set(m.src,p.lobby);COOP.lobbies.set(m.src,p.lobby);if(!COOP.on)coopUI();return;}
+  if(m.type==='ANSWER'&&p.deny&&COOP.joining===m.src){const d=p.deny;coopLeave(true);coopStatus(d==='pw'?'Mot de passe incorrect.':'Ce lobby est complet.');coopProbe();return;}
+  if(m.type==='EXPIRE'){if(COOP.joining&&m.src===COOP.joining){coopLeave(true);coopStatus('Ce lobby vient de fermer.');coopProbe();}return;}
+  if(COOP.on&&(m.type==='ANSWER'||m.type==='CANDIDATE'))coopQueue(m);
+}
+
+/* ---- rejoindre ---- */
+function coopJoin(id,pw){
+  const L=COOP.lobbies&&COOP.lobbies.get(id);if(!L||!COOP.bws||COOP.bws.readyState!==1){coopStatus('Ce lobby n\'est plus là. Actualise la liste.');return;}
+  if(L.lock&&!pw){coopStatus('Ce lobby demande un mot de passe.');return;}
+  for(const pid of[...COOP.peers.keys()])coopDrop(pid,true);
+  COOP.name=coopName();COOP.on=true;COOP.host=false;COOP.go=!!L.go;COOP.lobby=L.name;COOP.pw=L.lock?'x':'';COOP.joining=id;COOP.ws=COOP.bws;
+  coopStatus('Connexion au lobby « '+L.name+' »…');coopUI();const ph=L.lock?coopHash(pw):'';
+  const tryOffer=async n=>{if(!COOP.on||COOP.host||COOP.joining!==id)return;const P=coopPC(id);coopWire(P,P.pc.createDataChannel('dream'));
     const o=await P.pc.createOffer();await P.pc.setLocalDescription(o);await coopGather(P.pc);P.sent=true;
-    coopSend('OFFER',host,{sdp:P.pc.localDescription,type:'data',connectionId:'dream'});
-    setTimeout(()=>{if(!COOP.on||COOP.host||COOP.code!==code||(P.dc&&P.dc.readyState==='open'))return;
-      if(n<2){coopStatus('Recherche de la partie '+code+'… (nouvel essai)');tryOffer(n+1);}
-      else coopStatus('Pas de réponse de la partie '+code+'. Vérifie le code et que l\'hôte a l\'onglet ouvert. Si le code est bon, un des réseaux bloque la connexion directe : essayez un autre réseau.');},9000);};
-  coopSignal(COOP.me,()=>{coopStatus('Recherche de la partie '+code+'…');tryOffer(0);});}
-function coopLeave(keepMsg){for(const id of[...COOP.peers.keys()])coopDrop(id);if(COOP.ws)try{COOP.ws.close();}catch(e){}COOP.ws=null;clearInterval(COOP.hb);
-  COOP.on=false;COOP.host=false;COOP.down=false;document.body.classList.remove('downed');coopList();if(!keepMsg)coopStatus('');}
-function coopList(){if(!coopEl.list)return;const n=[COOP.on?COOP.name+' (toi'+(COOP.host?', hôte':'')+')':''];for(const s of COOP.states.values())n.push(s.n);
-  coopEl.list.textContent=COOP.on?'Rêveurs : '+n.filter(Boolean).join(' · '):'';coopEl.leave.hidden=!COOP.on;}
+    coopSend('OFFER',id,{sdp:P.pc.localDescription,type:'data',connectionId:'dream',pw:ph});
+    const chk=()=>{if(!COOP.on||COOP.host||COOP.joining!==id||(P.dc&&P.dc.readyState==='open'))return;
+      if(P.ready&&!P.waited){P.waited=1;setTimeout(chk,12000);return;}
+      if(n<2){coopStatus('Connexion au lobby… (nouvel essai)');tryOffer(n+1);}
+      else{coopLeave(true);coopStatus('Le lobby ne répond pas. Un des réseaux bloque sans doute la connexion directe : essayez un autre réseau.');}};setTimeout(chk,12000);};
+  tryOffer(0);
+}
+function coopLeave(keepMsg){
+  if(COOP.on){try{coopBroadcast({t:'bye',id:COOP.me});}catch(e){}}
+  for(const id of[...COOP.peers.keys()]){const P=COOP.peers.get(id);try{P.pc.close();}catch(e){}COOP.peers.delete(id);}COOP.states.clear();
+  if(COOP.host&&COOP.ws)try{COOP.ws.close();}catch(e){}
+  COOP.ws=null;COOP.on=false;COOP.host=false;COOP.joining=null;COOP.go=false;COOP.down=false;COOP.pw='';document.body.classList.remove('downed');
+  if(!keepMsg)coopStatus('');coopUI();
+}
+function coopList(){coopUI();}
 
 /* ---- messages ---- */
 function coopBroadcast(m,except){const s=JSON.stringify(m);for(const P of COOP.peers.values())if(P.id!==except&&P.dc&&P.dc.readyState==='open')try{P.dc.send(s);}catch(e){}}
 function coopMsg(P,m){
-  if(m.t==='st'){m.at=performance.now();COOP.states.set(m.id,m);P.name=m.n;if(COOP.host)coopBroadcast(m,P.id);if(!coopEl.list.textContent.includes(m.n))coopList();}
+  if(m.t==='st'){m.at=performance.now();COOP.states.set(m.id,m);P.name=m.n;if(COOP.host)coopBroadcast(m,P.id);coopUI();}
   else if(m.t==='prog'){if(m.ep===COOP.epoch)coopMerge(m);if(COOP.host)coopSync(true);}
-  else if(m.t==='sync'&&!COOP.host)coopApply(m);
+  else if(m.t==='sync'&&!COOP.host){coopApply(m);if(m.go&&!COOP.go){COOP.go=true;if(!started){coopStatus('L\'hôte a lancé la partie ! Clique sur « Entrer dans la partie ».');coopUI();try{chime();}catch(e){}}}}
   else if(m.t==='bye'){coopDrop(m.id);}
 }
 const COOP_SETS=['taken','noteTaken','pearlTaken','answered','talked','doneCourse','doneAsc'];
@@ -96,7 +155,7 @@ function coopMerge(m){ /* l'union de ce que chacun a trouvé : ce qu'un rêveur 
 }
 function coopSync(now){ /* l'hôte publie l'état de la partie : niveau, mode, objets trouvés, fin éventuelle */
   if(!COOP.host)return;const t=performance.now();if(!now&&t-COOP.lastSync<900)return;COOP.lastSync=t;
-  coopBroadcast(Object.assign({t:'sync',lv:level,ep:COOP.epoch,mode,end:wakeT>0?wakeKind:-1,c3n:c3next,c3:[...C3]},coopSets()));}
+  coopBroadcast(Object.assign({t:'sync',go:started?1:0,lv:level,ep:COOP.epoch,mode,end:wakeT>0?wakeKind:-1,c3n:c3next,c3:[...C3]},coopSets()));}
 function coopApply(m){
   if(m.mode&&m.mode!==mode){mode=m.mode;document.body.dataset.mode=mode;}
   if(m.c3){C3.clear();for(const v of m.c3)C3.add(v);c3next=m.c3n||c3next;}
@@ -147,19 +206,57 @@ function coopLabels(){
 function coopPeersHere(){const out=[];if(!COOP.on)return out;for(const s of COOP.states.values())if(s.lv===level)out.push(s);return out;}
 
 /* ---- le panneau du menu ---- */
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let coopUIk='';
+function coopUI(){
+  const host=document.getElementById('coop');if(!host||!coopEl.view)return;
+  coopEl.leave.hidden=!COOP.on;coopEl.make.hidden=COOP.on;coopEl.browse.hidden=COOP.on;coopEl.lobby.hidden=!COOP.on;
+  if(COOP.on){ /* dans un lobby */
+    const me=COOP.name+(COOP.host?' (toi, hôte)':' (toi)'),others=[...COOP.states.values()].map(s=>esc(s.n)),n=COOP.host?1+coopOpen():Math.max(1+others.length,COOP.joining?1:2);
+    const k='L'+COOP.lobby+n+others.join()+COOP.go+COOP.host+(COOP.joining||'')+started;if(k===coopUIk)return;coopUIk=k;
+    coopEl.lobby.innerHTML='<div class="lobbyCard"><b>'+esc(COOP.lobby)+'</b><span>'+(COOP.pw?'🔒 Avec mot de passe':'Public')+' · '+n+' / '+COOP_MAX+' rêveurs</span>'+
+      '<ul><li>'+esc(me)+'</li>'+others.map(o=>'<li>'+o+'</li>').join('')+'</ul></div>'+
+      (COOP.host?(started?'':'<button type="button" id="coopGo" class="go">Lancer la partie</button>'):
+        (COOP.joining?'':(COOP.go&&!started?'<button type="button" id="coopGo" class="go pulse">Entrer dans la partie</button>':(started?'':'<p class="hint">En attente de l\'hôte…</p>'))));
+    const g=document.getElementById('coopGo');if(g)g.addEventListener('click',()=>{if(typeof resume==='function')resume();});
+    coopEl.leave.textContent=COOP.host?'Fermer le lobby':'Quitter le lobby';
+    return;}
+  coopUIk='';
+  const L=COOP.lobbies?[...COOP.lobbies.values()]:[];
+  let h='';
+  if(!COOP.bws)h='<p class="hint">Ouverture de la liste…</p>';
+  else if(!L.length)h='<p class="hint">'+(COOP.scan?'Recherche des lobbies…':'Aucun lobby ouvert pour l\'instant. Crée le tien, ou actualise dans un moment.')+'</p>';
+  else h=L.sort((a,b)=>a.name.localeCompare(b.name)).map(l=>'<div class="lob" data-id="'+esc(l.id)+'"><div><b>'+(l.lock?'🔒 ':'')+esc(l.name)+'</b><span>Hôte : '+esc(l.host)+' · '+l.n+' / '+l.max+
+     ' · '+(l.go?'en jeu, chapitre '+l.ch+' · '+esc(l.place):'dans le lobby')+'</span></div>'+
+     (l.n>=l.max?'<button type="button" disabled>Complet</button>':(l.lock?'<input type="password" placeholder="Mot de passe" aria-label="Mot de passe du lobby">':'')+'<button type="button" class="jn">Rejoindre</button>')+'</div>').join('');
+  coopEl.list.innerHTML=h;
+  for(const row of coopEl.list.querySelectorAll('.lob')){const id=row.dataset.id,inp=row.querySelector('input'),b=row.querySelector('.jn');if(!b)continue;
+    if(inp){inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')coopJoin(id,inp.value);});}
+    b.addEventListener('click',()=>coopJoin(id,inp?inp.value:''));}
+}
 (function(){
   const host=document.getElementById('coop');if(!host)return;
-  host.innerHTML='<span class="chl">Coop · jusqu\'à 4 rêveurs</span>'+
-    '<input id="coopName" maxlength="16" placeholder="Ton pseudo" aria-label="Pseudo">'+
-    '<button id="coopHost" type="button">Créer une partie</button>'+
-    '<input id="coopCode" maxlength="4" placeholder="CODE" aria-label="Code de la partie" style="width:6em;text-transform:uppercase">'+
-    '<button id="coopJoin" type="button">Rejoindre</button><button id="coopLeave" type="button" hidden>Quitter le coop</button>'+
-    '<span id="coopSt" class="coopst" role="status"></span><span id="coopList" class="coopst"></span>';
-  coopEl.name=document.getElementById('coopName');coopEl.code=document.getElementById('coopCode');coopEl.st=document.getElementById('coopSt');coopEl.list=document.getElementById('coopList');coopEl.leave=document.getElementById('coopLeave');
+  host.innerHTML='<label class="crow">Ton pseudo <input id="coopName" maxlength="16" placeholder="Rêveur" aria-label="Pseudo"></label>'+
+    '<div id="coopLobby" hidden></div>'+
+    '<div id="coopMake"><h3>Créer un lobby</h3><div class="crow"><input id="coopLName" maxlength="28" placeholder="Nom du lobby" aria-label="Nom du lobby">'+
+      '<span class="spaces"><button type="button" id="coopPub" aria-pressed="true">Public</button><button type="button" id="coopPriv" aria-pressed="false">Mot de passe</button></span>'+
+      '<input id="coopPw" type="password" maxlength="24" placeholder="Mot de passe" aria-label="Mot de passe" hidden>'+
+      '<button type="button" id="coopCreate">Créer le lobby</button></div></div>'+
+    '<div id="coopBrowse"><h3>Lobbies ouverts <button type="button" id="coopRef" class="small">Actualiser</button></h3><div id="coopList"></div></div>'+
+    '<p id="coopSt" class="coopst" role="status"></p><button id="coopLeave" type="button" hidden>Quitter le lobby</button>';
+  const $=id=>document.getElementById(id);
+  Object.assign(coopEl,{view:host,name:$('coopName'),lname:$('coopLName'),pwI:$('coopPw'),st:$('coopSt'),list:$('coopList'),leave:$('coopLeave'),make:$('coopMake'),browse:$('coopBrowse'),lobby:$('coopLobby'),priv:false});
   try{coopEl.name.value=localStorage.getItem('dream-name')||'';}catch(e){}
-  for(const el of[coopEl.name,coopEl.code])el.addEventListener('keydown',e=>e.stopPropagation());
-  document.getElementById('coopHost').addEventListener('click',()=>coopHost());document.getElementById('coopJoin').addEventListener('click',()=>coopJoin());coopEl.leave.addEventListener('click',()=>coopLeave());
-  coopEl.code.addEventListener('keydown',e=>{if(e.key==='Enter')coopJoin();});
+  for(const el of host.querySelectorAll('input'))el.addEventListener('keydown',e=>e.stopPropagation());
+  const vis=p=>{coopEl.priv=p;$('coopPub').setAttribute('aria-pressed',p?'false':'true');$('coopPriv').setAttribute('aria-pressed',p?'true':'false');coopEl.pwI.hidden=!p;if(p)coopEl.pwI.focus();};
+  $('coopPub').addEventListener('click',()=>vis(false));$('coopPriv').addEventListener('click',()=>vis(true));
+  $('coopCreate').addEventListener('click',()=>coopCreate());coopEl.lname.addEventListener('keydown',e=>{if(e.key==='Enter')coopCreate();});
+  $('coopRef').addEventListener('click',()=>coopBrowse());coopEl.leave.addEventListener('click',()=>{coopLeave();coopBrowse();});
   coopEl.tags=document.createElement('div');coopEl.tags.id='coopTags';document.body.appendChild(coopEl.tags);
   addEventListener('beforeunload',()=>{coopBroadcast({t:'bye',id:COOP.me});});
+  /* la liste s'ouvre et se met à jour seule tant que la page Coop est affichée */
+  const pg=document.querySelector('[data-pg="coop"]');
+  setInterval(()=>{if(pg&&pg.classList.contains('on')&&!document.getElementById('menu').classList.contains('off')){if(!COOP.on){if(!COOP.bws)coopBrowse();else if(!COOP.scan)coopProbe();}else coopUI();}},6000);
+  if(pg)new MutationObserver(()=>{if(pg.classList.contains('on')&&!COOP.on)coopBrowse();coopUI();}).observe(pg,{attributes:true,attributeFilter:['class']});
+  coopUI();
 })();

@@ -128,6 +128,21 @@ body[data-mode="obs"] #story{display:none!important}
 @keyframes jumpk{0%{transform:translate(-8px,5px);background:#f2e9e9}35%{transform:translate(9px,-6px);background:#9a0000}70%{transform:translate(-4px,-8px);background:#fff}100%{transform:translate(5px,4px);background:#5a0000}}
 .coop input{font:inherit;font-size:.72rem;letter-spacing:.1em;padding:8px 10px;border:1px solid currentColor;background:transparent;color:inherit;min-width:0}
 .coopst{flex-basis:100%;font-size:.68rem;letter-spacing:.06em;opacity:.85}
+#coop{display:flex;flex-direction:column;gap:14px}
+#coop h3{display:flex;align-items:center;gap:12px;margin:0 0 8px;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase}
+#coop input{font:inherit;font-size:.85rem;letter-spacing:.04em;padding:9px 12px;border:1px solid rgba(22,48,94,.35);background:rgba(255,255,255,.7);color:var(--ink);min-width:0}
+.crow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:.85rem}
+#coopMake,#coopBrowse{border-top:1px solid rgba(22,48,94,.12);padding-top:12px}
+#coopList{display:flex;flex-direction:column;gap:8px}
+.lob{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;border:1px solid rgba(22,48,94,.18);background:rgba(255,255,255,.55);padding:10px 12px}
+.lob>div{flex:1 1 14em;display:flex;flex-direction:column;gap:2px}.lob b{font-weight:500;color:var(--ink)}.lob span,.lobbyCard span{font-size:.75rem;color:var(--ink-soft);letter-spacing:.04em}
+.lob input{width:11em}.lob button{padding:8px 14px;font-size:.68rem}
+.lobbyCard{border:1px solid rgba(22,48,94,.25);background:rgba(255,255,255,.65);padding:14px 16px;display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.lobbyCard b{font-family:var(--font-display);font-weight:300;font-size:1.3rem;color:var(--ink)}
+.lobbyCard ul{margin:6px 0 0;padding-left:1.1em;font-size:.88rem;line-height:1.6}
+#coop button.go{background:var(--ink);color:var(--white)}#coop button.go:hover{background:var(--sky-deep)}
+#coop button.pulse{animation:pulse 1.2s ease-in-out infinite}@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(22,48,94,.18)}}
+.coopst{font-size:.8rem;letter-spacing:.03em;color:var(--ink);margin:0;min-height:1em}
 #coopTags{position:fixed;inset:0;pointer-events:none;z-index:4}
 #coopTags span{position:absolute;transform:translate(-50%,-100%);font-size:.72rem;font-weight:700;color:#050506;white-space:nowrap;
   text-shadow:.6px 0 0 #fff,-.6px 0 0 #fff,0 .6px 0 #fff,0 -.6px 0 #fff}
@@ -173,8 +188,8 @@ body.downed canvas{filter:grayscale(1) brightness(.55) contrast(1.2)}
       </div>
       <div class="pg" data-pg="coop">
         <h2>Coop</h2>
-        <p class="hint">Jusqu'à quatre rêveurs dans le même lieu. L'un crée la partie et donne son code de quatre lettres ; les autres le tapent et rejoignent. Ce qu'un rêveur trouve compte pour tous, et on ne sort qu'ensemble.</p>
-        <div class="spaces coop" id="coop" aria-label="Coop"></div>
+        <p class="hint">Jusqu'à quatre rêveurs dans le même rêve. Crée un lobby, public ou avec mot de passe, ou rejoins-en un dans la liste. L'hôte choisit le lieu et lance la partie ; ce qu'un rêveur trouve compte pour tous, et on ne sort qu'ensemble.</p>
+        <div class="coop" id="coop" aria-label="Coop"></div>
       </div>
       <div class="pg" data-pg="guide" id="guide"></div>
       <div class="pg" data-pg="stats"><h2>Statistiques</h2><div id="statsT"></div></div>

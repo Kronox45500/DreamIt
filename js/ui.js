@@ -158,9 +158,12 @@ const GUIDE=[
   '<li><b>Observation</b> : aucun objectif, tous les lieux ouverts, pour simplement se promener.</li></ul>'+
   '<p class="hint">En Classique, si quelque chose t\'attrape, tu te réveilles en sursaut et le lieu recommence. Rien n\'est perdu ailleurs.</p>'],
  ['coop','Jouer à plusieurs',
-  '<ol><li>Ouvre <b>Coop</b>, choisis un nom.</li><li>Un joueur clique sur <b>Créer</b> et donne le code aux autres.</li>'+
-  '<li>Les autres tapent le code et cliquent sur <b>Rejoindre</b>.</li><li>Tout ce qu\'un joueur trouve compte pour l\'équipe. On sort ensemble : la sortie attend que tout le monde soit là.</li>'+
-  '<li>Un joueur attrapé en Classique peut être relevé : reste près de lui quelques secondes.</li></ol>'],
+  '<ol><li>Ouvre <b>Coop</b> et choisis ton pseudo.</li><li>Pour héberger : donne un nom à ton lobby, laisse-le <b>public</b> ou mets un <b>mot de passe</b>, puis <b>Créer le lobby</b>.</li>'+
+  '<li>Pour rejoindre : la liste des <b>lobbies ouverts</b> se met à jour seule. Clique sur <b>Rejoindre</b> (avec le mot de passe s\'il y a un cadenas).</li>'+
+  '<li>L\'hôte choisit le lieu dans <b>Chapitres et modes</b>, puis <b>Lancer la partie</b>. Les autres cliquent sur <b>Entrer dans la partie</b>.</li>'+
+  '<li>Tout ce qu\'un joueur trouve compte pour l\'équipe. On sort ensemble : la sortie attend que tout le monde soit là.</li>'+
+  '<li>Un joueur attrapé en Classique peut être relevé : reste près de lui quelques secondes.</li></ol>'+
+  '<p class="hint">Le jeu à plusieurs passe par Internet : il ne marche pas dans l\'aperçu Claude, seulement sur la version en ligne du jeu.</p>'],
  ['keys','Commandes',
   '<div id="gkeys"></div><p class="hint">Les touches se changent dans <b>Paramètres</b>. Échap met en pause. Sur écran tactile : glisse à gauche pour marcher, à droite pour regarder, touche brièvement la moitié droite pour sauter.</p>']
 ];
