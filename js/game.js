@@ -327,7 +327,7 @@ function spawnChaser(){
   chaser={x,y:pos.y,z,sp:5.4};toast('Quelque chose t\'a remarqué. Cours.',3.5);play('impact',0.5);scareSound(0,lookPan(x,z));
 }
 function chaserTick(dt){
-  if(dead>0){dead-=dt;if(dead<=0){dead=0;jumpEl.classList.remove('on');chaser=null;loadWorld(level);toast('Il t\'a rattrapé.',3.5);}return;}
+  if(dead>0){dead-=dt;if(dead<=0){dead=0;jumpEl.classList.remove('on');chaser=null;if(typeof coopOnDeath==='function'&&coopOnDeath())return;loadWorld(level);toast('Il t\'a rattrapé.',3.5);}return;}
   if(!chaser){if(passage&&chaserAt<0&&!wakeT&&GEN<15)chaserAt=time+3.5;if(chaserAt>0&&time>chaserAt){chaserAt=0;spawnChaser();}return;}
   navT-=dt;if(navT<=0){navT=0.3;navBuild();}
   const c=chaser,q=navAt(c.x,c.z);let tx=pos.x,tz=pos.z,sp=c.sp,dq=q>=0?navD[q]:-1;
@@ -341,10 +341,10 @@ function chaserTick(dt){
   const d=Math.hypot(c.x-pos.x,c.z-pos.z);
   if(d>55){const an=yaw+Math.PI+(Math.random()-0.5);c.x=pos.x+Math.sin(an)*30;c.z=pos.z-Math.cos(an)*30;}
   heartT-=dt;if(d<28&&heartT<=0){heartT=0.32+d/32;heartbeat(Math.min(0.5,1.4/(d+2)));}
-  if(d<0.95&&Math.abs(c.y-pos.y)<2&&veil<0.5){dead=1.8;jumpEl.firstChild.src=LONG_IMG;jumpEl.classList.add('on');play('smiler',1.0);play('scream',0.7,1.1,2.2);}
+  if(d<0.95&&Math.abs(c.y-pos.y)<2&&veil<0.5&&!(typeof COOP!=='undefined'&&COOP.down)){dead=1.8;jumpEl.firstChild.src=LONG_IMG;jumpEl.classList.add('on');play('smiler',1.0);play('scream',0.7,1.1,2.2);}
 }
 /* chapitre 3 : les statues qui pleurent, le gardien et sa lampe, les visiteurs de la maison */
-function mobKill(img){if(dead>0||mode!=='classic')return;dead=1.8;jumpEl.firstChild.src=img;jumpEl.classList.add('on');play('smiler',1.0);play('scream',0.7,1.1,2.2);}
+function mobKill(img){if(dead>0||mode!=='classic'||(typeof COOP!=='undefined'&&COOP.down))return;dead=1.8;jumpEl.firstChild.src=img;jumpEl.classList.add('on');play('smiler',1.0);play('scream',0.7,1.1,2.2);}
 function grind(pan,v){if(!ac)return;const t=ac.currentTime,s=ac.createBufferSource();s.buffer=noiseBuf;const b=ac.createBiquadFilter();b.type='lowpass';b.frequency.value=380;
   const p=ac.createStereoPanner?ac.createStereoPanner():ac.createGain();if(p.pan)p.pan.value=pan;const gg=ac.createGain();gg.gain.setValueAtTime(0.0001,t);gg.gain.exponentialRampToValueAtTime(v,t+0.08);gg.gain.exponentialRampToValueAtTime(0.0005,t+0.7);
   s.connect(b);b.connect(gg);gg.connect(p);p.connect(master);s.start(t,Math.random()*2,0.75);}
@@ -547,6 +547,7 @@ function physics(dt){
     else if(GEN===12)go=beltT>6;
     else if(GEN===13)go=swim&&pos.z>CELL*3.4;
     else if(GEN>=15){const R=GEN===20?3:GEN===19?1.2:GEN===17||GEN===18?1.0:0.9;for(const c of nearCells){const h=c.hdoors;for(let k=0;k<h.length;k+=2)if(Math.hypot(pos.x-h[k],pos.z-h[k+1])<R&&(GEN!==17||crouch)&&(GEN!==20||pos.y<-2))go=true;}}
+    if(go&&typeof coopBlockExit==='function'&&coopBlockExit())go=false;
     if(go){exitT=0;clipT=0;padExit=-9;lieT=0;beltT=0;nextWorld();return;}
   }else if((GEN===9||GEN===16)&&mode!=='obs'&&time-elevT>6){for(const c of nearCells){const h=c.hdoors;for(let k=0;k<h.length;k+=2)if(Math.hypot(pos.x-h[k],pos.z-h[k+1])<1.1){elevT=time;toast('L\'ascenseur ne bouge pas. Pas encore.',3.5);}}}
   /* chute dans les nuages */
@@ -849,7 +850,9 @@ function frame(now){
   if(slow>0.6&&grassQ>0.3&&!window.__noLOD){grassQ-=0.15;slow=0.3;}
   resize();
   const doorC=passage?[1.05,0.80+0.1*Math.sin(time*3),0.28]:null;
-  if(!paused&&wakeT<=0){physics(dt);horror(dt);mobsTick(dt);}else{updateTrains(dt);if(!started)yaw=Math.sin(time*0.05)*0.5;}
+  if(!paused&&wakeT<=0&&!(typeof COOP!=='undefined'&&COOP.down)){physics(dt);}
+  if(!paused&&wakeT<=0){horror(dt);mobsTick(dt);}
+  if(typeof coopTick==='function')coopTick(dt);else{updateTrains(dt);if(!started)yaw=Math.sin(time*0.05)*0.5;}
   updateStreaming();
   const WD=WORLDS[W];BENDV=WD.ring?[pos.x,RING_R,1]:[0,1,0];
 
@@ -857,7 +860,7 @@ function frame(now){
   const sw=swim&&!reduce,eye=[pos.x,eyeY+(grounded?Math.sin(bob)*0.035:0)+(sw?Math.sin(swimP)*0.06+Math.sin(time*1.3)*0.035:0),pos.z];
   const roll=sw?Math.sin(swimP*0.5)*0.045+Math.sin(time*0.9)*0.018:0,UP=[Math.sin(roll)*Math.cos(yaw),Math.cos(roll),Math.sin(roll)*Math.sin(yaw)];
   const asp=canvas.width/canvas.height,fovy=(asp<1?88:72)*Math.PI/180,ty=Math.tan(fovy/2);
-  const VP=mul(perspective(fovy,asp,0.12,16000),lookAt(eye,[eye[0]+F[0],eye[1]+F[1],eye[2]+F[2]],UP));
+  const VP=mul(perspective(fovy,asp,0.12,16000),lookAt(eye,[eye[0]+F[0],eye[1]+F[1],eye[2]+F[2]],UP));window.__VP=VP;
   const ci=Math.round(pos.x/CELL),cj=Math.round(pos.z/CELL);
 
   /* ombres du soleil, puis carte de ciel visible (vue du dessus) */
@@ -935,6 +938,7 @@ function frame(now){
   if(GEN===13&&CRAB.count)for(const c of cells.values()){const cr=c.crabs;if(!cr||!cr.length||Math.abs(c.i-ci)>2||Math.abs(c.j-cj)>2)continue;
     for(let k=0;k<cr.length;k+=3){const hh=Math.sin(cr[k]*12.9+cr[k+2]*78.2)*43758.5,ph=hh-Math.floor(hh),ro=ph*6.283,sd=Math.sin(time*(0.5+ph*0.5)+ph*40)*1.6,flee=Math.hypot(cr[k]-pos.x,cr[k+2]-pos.z)<3?Math.sin(time*9)*0.15:0;
       gl.uniform3f(pMain.u.uOff,cr[k]+Math.cos(ro)*(sd+flee),cr[k+1]+Math.abs(Math.sin(time*14+ph*9))*0.012,cr[k+2]+Math.sin(ro)*(sd+flee));gl.uniform2f(pMain.u.uRot,Math.cos(ro),Math.sin(ro));gl.drawArrays(gl.TRIANGLES,0,CRAB.count);}}
+  if(typeof coopPeersHere==='function')for(const s of coopPeersHere()){gl.uniform3f(pMain.u.uOff,s.x,s.y,s.z);gl.uniform2f(pMain.u.uRot,Math.cos(-s.yaw),Math.sin(-s.yaw));gl.bindVertexArray(FIG.vao);gl.drawArrays(gl.TRIANGLES,0,FIG.count);}
   for(const a of shades)if(a.fig){const an=Math.atan2(-(pos.x-a.x),pos.z-a.z);
     gl.uniform3f(pMain.u.uOff,a.x,a.y,a.z);gl.uniform2f(pMain.u.uRot,Math.cos(an),Math.sin(an));gl.bindVertexArray(FIG.vao);gl.drawArrays(gl.TRIANGLES,0,FIG.count);}
   gl.uniform2f(pMain.u.uRot,1,0);gl.uniform3f(pMain.u.uOff,0,0,0);

@@ -99,6 +99,12 @@ body[data-mode="obs"] #story{display:none!important}
 #jump.on{display:flex;animation:jumpk .09s steps(2) infinite}
 #jump img{height:150vh;filter:contrast(2) drop-shadow(0 0 40px #000);transform:scale(1.25)}
 @keyframes jumpk{0%{transform:translate(-8px,5px);background:#f2e9e9}35%{transform:translate(9px,-6px);background:#9a0000}70%{transform:translate(-4px,-8px);background:#fff}100%{transform:translate(5px,4px);background:#5a0000}}
+.coop input{font:inherit;font-size:.72rem;letter-spacing:.1em;padding:8px 10px;border:1px solid currentColor;background:transparent;color:inherit;min-width:0}
+.coopst{flex-basis:100%;font-size:.68rem;letter-spacing:.06em;opacity:.85}
+#coopTags{position:fixed;inset:0;pointer-events:none;z-index:4}
+#coopTags span{position:absolute;transform:translate(-50%,-100%);font-size:.72rem;font-weight:700;color:#050506;white-space:nowrap;
+  text-shadow:.6px 0 0 #fff,-.6px 0 0 #fff,0 .6px 0 #fff,0 -.6px 0 #fff}
+body.downed canvas{filter:grayscale(1) brightness(.55) contrast(1.2)}
 </style>
 </head>
 <body>
@@ -114,11 +120,12 @@ body[data-mode="obs"] #story{display:none!important}
 <div id="menu" class="title">
   <div class="inner">
     <h1 id="ttl">DREAM IT</h1>
-    <p class="sub titleOnly">Un rêve en deux chapitres, de l'enfance à la chambre 214. Chaque lieu a son objectif, puis sa propre façon d'en sortir.</p>
+    <p class="sub titleOnly">Un rêve en trois chapitres, de l'enfance à la maison vendue. Chaque lieu a son objectif, puis sa propre façon d'en sortir.</p>
     <p class="sub" id="where"></p>
     <div class="spaces titleOnly" id="spaces" aria-label="Espaces débloqués"></div>
     <div class="spaces titleOnly" id="modes" aria-label="Mode de jeu"></div>
     <p class="sub titleOnly" id="modeD"></p>
+    <div class="spaces titleOnly coop" id="coop" aria-label="Coop"></div>
     <div class="actions">
       <button id="go" type="button">Entrer</button>
       <button id="restart" type="button" class="pauseOnly">Recommencer</button>
@@ -152,5 +159,6 @@ body[data-mode="obs"] #story{display:none!important}
 <script src="js/sprite.js"></script>
 <script src="js/render.js"></script>
 <script src="js/game.js"></script>
+<script src="js/coop.js"></script>
 </body>
 </html>
