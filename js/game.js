@@ -63,7 +63,8 @@ function storyTick(dt){
   if(storyT<=0){if(storyQ.length){storyEl.textContent=storyQ.shift();storyEl.classList.add('on');storyT=5.2;}}
 }
 function chapter(){if(mode==='obs')return;const ch=chOf(W),C=CHAPS[ch];
-  if(WORLDS[W].hub){const n=Math.min(5,[16,17,18,19,20].filter(l=>C3.has(l)).length);toast('Chapitre 3 · '+STORY[W].t,5);story(HUBL[n]);return;}
+  if(WORLDS[W].hub){const n=Math.min(5,[16,17,18,19,20].filter(l=>C3.has(l)).length),nx=[16,17,18,19,20].find(l=>!C3.has(l))||21;
+    toast('Chapitre 3 · '+STORY[W].t+' · souvenirs '+n+'/5 · la porte mène à : '+WORLDS[nx].name,6);story(HUBL[n].concat(['Tu reviens toujours ici entre deux lieux. La porte allumée mène au suivant.'].slice(n&&n<5?0:1)));return;}
   toast('Chapitre '+(ch+1)+' · '+(W-C[0]+(ch===2?0:1))+'/'+(C[1]-C[0]-(ch===2?1:0))+' · '+STORY[W].t,5);story(STORY[W].a);}
 function nextWorld(){
   if(chOf(W)===2&&mode!=='obs'){ /* chapitre 3 : on revient toujours à la pièce, puis on repart */

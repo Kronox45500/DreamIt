@@ -1183,10 +1183,11 @@ function shopInside(g,a0,a1,s,r,i,j){ /* rayonnages, une caisse, des produits qu
 function deadMallCell(g,c,i,j,r){
   const T=c.type,H=T===3?30:9;g.m=SYM[0];
   g.box(-24,-0.8,-24,24,0,24,59);
-  const cross=T===2||T===3,store=T===5;
+  /* toutes les cellules sont des carrefours : une allée le long de x, une autre le long de z, pour qu'aucun recoin ne soit muré */
+  const cross=true,plaza=T===2||T===3,store=T===5;
   /* plafond : verrière en bandes au-dessus des allées, bandeaux suspendus */
-  if(T!==3){g.box(-24,H,-24,24,H+0.5,-6,0);g.box(-24,H,6,24,H+0.5,24,0);if(cross){g.box(-24,H,-6,-6,H+0.5,6,0);g.box(6,H,-6,24,H+0.5,6,0);}
-    else{g.box(-24,H+2,-6,24,H+2.3,6,13,false);for(const s of[-1,1])g.span(-24,H,s*6,-24,H+2,s*4,0.01,0.01,0,false);}
+  if(T!==3){for(const s of[-1,1])for(const t of[-1,1])g.box(s*6,H,t*6,s*24,H+0.5,t*24,0);
+    g.box(-24,H+2,-6,24,H+2.3,6,13,false);g.box(-6,H+2,-24,6,H+2.3,24,13,false);for(const s of[-1,1])for(const t of[-1,1]){g.box(s*6-0.1,H,Math.min(t*6,t*24),s*6+0.1,H+2,Math.max(t*6,t*24),0,false);g.box(Math.min(t*6,t*24),H,s*6-0.1,Math.max(t*6,t*24),H+2,s*6+0.1,0,false);}
     for(let a=-21;a<=21;a+=6){g.box(a-0.15,H,-6,a+0.15,H+2,6,50,false);for(const s of[-1,1])g.span(a,H,s*6,a,H+2,s*3.5,0.2,0.2,50,false);}
     for(let a=-18;a<=18;a+=12)if(r()<0.6){const m=[34,36,49,48][Math.floor(r()*4)];g.box(a-0.02,H-3.2,-0.7,a+0.02,H,0.7,m,false);g.box(a-0.04,H-0.05,-0.75,a+0.04,H,0.75,50,false);}
     for(let a=-20;a<=20;a+=8)for(const s of[-1,1]){g.cyl(a,s*4.3,0.02,H-1.2,H,50,false,4);g.cyl(a,s*4.3,0.35,H-1.4,H-1.2,12,false,14);g.cyl(a,s*4.3,0.3,H-1.42,H-1.4,r()<0.3?47:17,false,14);}
@@ -1213,8 +1214,8 @@ function deadMallCell(g,c,i,j,r){
         if(r()<0.35)g.item((sg[0]+sg[1])/2+3,1.1,s*19);}
       else if(r()<0.25)g.item((sg[0]+sg[1])/2,1.1,s*4.6);}
     for(const sg of sides)for(const a of[sg[0],sg[1]]){if(Math.abs(a)===24)continue;g.box(a-0.15,0,Math.min(s*6.3,s*24),a+0.15,H,Math.max(s*6.3,s*24),0);}
-    if(cross){g.box(-6,0,Math.min(s*6,s*24),-5.7,H,Math.max(s*6,s*24),0);g.box(5.7,0,Math.min(s*6,s*24),6,H,Math.max(s*6,s*24),0);}
-    g.box(-24,0,s*23.7,24,H,s*24,0);
+    if(!(store&&s>0)){g.box(-6,0,Math.min(s*6,s*24),-5.7,H,Math.max(s*6,s*24),0);g.box(5.7,0,Math.min(s*6,s*24),6,H,Math.max(s*6,s*24),0);}
+    g.box(-24,0,s*23.7,-6,H,s*24,0);g.box(6,0,s*23.7,24,H,s*24,0);
   }
   if(store){ /* le grand magasin : portants de vêtements, cabines, caisses, mannequins debout */
     g.box(-24,0.005,6,24,0.012,24,58,false);c3sign(g,0,4.4,6.02,9,0.9,true,-1,48,r);
@@ -1228,7 +1229,7 @@ function deadMallCell(g,c,i,j,r){
     for(let k=0;k<3;k++)g.statue(-16+k*14+r()*4,12+r()*8);if(r()<0.6)g.note(-12.5,1.15,8);g.item(8,1.1,20);
   }
   /* au milieu de l'allée : bancs, bacs à plantes, poubelles, plan du centre, la fontaine, le kiosque */
-  if(cross){
+  if(plaza){
     g.cyl(0,0,4.4,0,0.55,0,true,32);g.cyl(0,0,4.1,0.0,0.57,10,false,32);g.cyl(0,0,0.45,0.57,1.6,0,true,12);g.cyl(0,0,1.6,1.6,1.75,0,false,20);g.cyl(0,0,1.45,1.75,1.78,10,false,20);
     g.cyl(0,0,0.25,1.78,2.6,0,false,10);g.cyl(0,0,0.8,2.6,2.7,0,false,16);g.sphere(0,2.9,0,0.25,0,ICO2);
     for(let k=0;k<14;k++)g.cyl(Math.cos(k*1.7)*(1.5+k%3),Math.sin(k*1.7)*(1.5+k%3),0.035,0.57,0.58,k%3?25:50,false,8);
@@ -1245,9 +1246,9 @@ function deadMallCell(g,c,i,j,r){
       if(isFar(i,j,2,3))g.souv(kx-1.45,1.12,0.3);else if(r()<0.4)g.note(kx-1.45,1.1,1.5);
     }
   }else{
-    for(const a of[-16,0,16]){g.box(a-1.4,0,-0.9,a+1.4,0.55,0.9,59);g.box(a-1.3,0.55,-0.8,a+1.3,0.6,0.8,62,false);for(let q=0;q<3;q++)c3plant(g,a-0.8+q*0.8,0,1.6,59);
+    for(const a of[-16,16]){g.box(a-1.4,0,-0.9,a+1.4,0.55,0.9,59);g.box(a-1.3,0.55,-0.8,a+1.3,0.6,0.8,62,false);for(let q=0;q<3;q++)c3plant(g,a-0.8+q*0.8,0,1.6,59);
       for(const s of[-1,1])c3bench(g,a+s*3.8,0,true,1.8);c3bin(g,a+6,(a%2?-1:1)*1.2);}
-    {const a=-8;g.box(a-0.6,0,-0.15,a+0.6,2.2,0.15,12);for(const s of[-1,1]){g.box(a-0.5,0.5,s*0.15,a+0.5,2.0,s*0.16,17,false);for(let q=0;q<9;q++)g.box(a-0.45+(q%3)*0.32,0.6+Math.floor(q/3)*0.45,s*0.16,a-0.2+(q%3)*0.32,0.95+Math.floor(q/3)*0.45,s*0.165,[34,35,36,49,16][q%5],false);}}
+    {const a=-9;g.box(a-0.6,0,-0.15,a+0.6,2.2,0.15,12);for(const s of[-1,1]){g.box(a-0.5,0.5,s*0.15,a+0.5,2.0,s*0.16,17,false);for(let q=0;q<9;q++)g.box(a-0.45+(q%3)*0.32,0.6+Math.floor(q/3)*0.45,s*0.16,a-0.2+(q%3)*0.32,0.95+Math.floor(q/3)*0.45,s*0.165,[34,35,36,49,16][q%5],false);}}
     if(T===4){ /* aire de restauration : comptoirs éteints, menus lumineux, l'ascenseur au bout */
       for(let k=0;k<4;k++)for(let l=0;l<2;l++){const a=-15+k*9,b=-3+l*6;g.box(a-0.6,0.72,b-0.6,a+0.6,0.76,b+0.6,0);g.cyl(a,b,0.05,0,0.72,50,false,6);g.cyl(a,b,0.3,0,0.03,50,false,10);
         for(const [dx,dz,rot] of[[0.9,0,1.571],[-0.9,0,-1.571],[0,0.9,0],[0,-0.9,3.14]]){g.box(a+dx-0.2,0.42,b+dz-0.2,a+dx+0.2,0.46,b+dz+0.2,16);g.obox(a+dx*1.22,0.68,b+dz*1.22,0.2,0.22,0.02,rot,0,16);for(const q of[-1,1])g.cyl(a+dx+(dz?q*0.17:0),b+dz+(dx?q*0.17:0),0.015,0,0.42,50,false,4);}
@@ -1559,10 +1560,10 @@ function houseSoldCell(g,c,i,j,r){
     for(let u=-3;u<3;u++){const u0=u*S,u1=u0+S,dc=houseDoor(i,j,k,u);
       for(const az of[true,false]){const B=(p0,y0,p1,y1,m,s,d)=>{d=d||0.08;return az?g.box(p0,y0,w-d,p1,y1,w+d,m,s):g.box(w-d,y0,p0,w+d,y1,p1,m,s);};
         if(Math.abs(k)===3&&k>0)continue;
-        B(u0,0,dc-0.5,H,0);B(dc+0.5,0,u1,H,0);B(dc-0.5,2.1,dc+0.5,H,0);
-        B(dc-0.58,0,dc-0.5,2.18,41,false,0.11);B(dc+0.5,0,dc+0.58,2.18,41,false,0.11);B(dc-0.58,2.1,dc+0.58,2.18,41,false,0.11);
-        B(u0,0,dc-0.58,0.1,0,false,0.095);B(dc+0.58,0,u1,0.1,0,false,0.095);
-        if(hash(i*3+k,j*3+u,73)<0.5){if(az)g.obox(dc-0.5+0.04,1.05,w+0.45,0.03,1.04,0.42,0,0,41);else g.obox(w+0.45,1.05,dc-0.5+0.04,0.42,1.04,0.03,0,0,41);}}}}
+        B(u0,0,dc-0.6,H,0);B(dc+0.6,0,u1,H,0);B(dc-0.6,2.1,dc+0.6,H,0);
+        B(dc-0.68,0,dc-0.6,2.18,41,false,0.11);B(dc+0.6,0,dc+0.68,2.18,41,false,0.11);B(dc-0.68,2.1,dc+0.68,2.18,41,false,0.11);
+        B(u0,0,dc-0.68,0.1,0,false,0.095);B(dc+0.68,0,u1,0.1,0,false,0.095);
+        if(hash(i*3+k,j*3+u,73)<0.5){if(az)g.obox(dc-0.6+0.04,1.05,w+0.55,0.03,1.04,0.52,0,0,41);else g.obox(w+0.55,1.05,dc-0.6+0.04,0.42,1.04,0.03,0,0,41);}}}}
   const chair=T===6&&isFar(i,j,6,2);
   for(let ra=-3;ra<3;ra++)for(let rb=-3;rb<3;rb++){const a0=ra*S,b0=rb*S,a=a0+S/2,b=b0+S/2;
     g.cyl(a,b,0.02,H-0.35,H,12,false,4);g.cyl(a,b,0.22,H-0.55,H-0.35,0,false,8);g.box(a-0.15,H-0.56,b-0.15,a+0.15,H-0.55,b+0.15,25,false);
