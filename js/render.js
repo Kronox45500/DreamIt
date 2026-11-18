@@ -76,6 +76,13 @@ void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
     col=vec3(.92,.88,.80)*(.35+.55*vn(q*1.3+floor(uTime*.4)*7.)+.15*vn(q*6.))*fl+sc*.4;fogK=.6;emi=.9;}
   else if(m==71){col=vec3(1.15,.22,.85);fogK=.35;emi=1.;} /* néon magenta */
   else if(m==72){col=vec3(.2,.95,1.15);fogK=.35;emi=1.;} /* néon cyan */
+  else if(m==82){ /* moniteur cardiaque : une ligne verte qui bat, une grille */
+    float sx=(abs(n.x)>abs(n.z)?vW.z:vW.x)*4.2,x=fract(sx-uTime*.55),yy=fract(vW.y*5.)-.5;
+    float h=.30*exp(-pow((x-.45)*38.,2.))-.12*exp(-pow((x-.49)*40.,2.))+.06*exp(-pow((x-.70)*12.,2.));
+    float ln=smoothstep(.035,.0,abs(yy-h))*(.35+.65*smoothstep(.0,.6,1.-x));vec2 gq=abs(fract(vec2(sx,vW.y*5.)*4.)-.5);
+    col=vec3(.01,.03,.02)+vec3(.0,.10,.05)*step(.46,max(gq.x,gq.y))+vec3(.25,1.15,.45)*ln;fogK=.5;emi=.4+ln*.6;}
+  else if(m==84){ /* abat-jour allumé : tissu chaud, plus clair en bas */
+    col=vec3(1.05,.78,.46)*(.82+.18*vn(vec2(atan(vN.x,vN.z)*20.,vW.y*30.)));fogK=.45;emi=.85;}
   else if(m==28){float rim=pow(1.-max(dot(n,V),0.),3.);col=vec3(.005,.005,.008)+uHor*rim*.05;fogK=.9;}
   else if(m==39){ /* œil : la pupille est toujours tournée vers vous */
     float e=dot(n,V);vec3 sc=mix(vec3(.80,.40,.38),vec3(.97,.95,.93),smoothstep(.12,.55,e));
@@ -150,7 +157,7 @@ void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
         alb=vec3(.925,.925,.915)*(.93+.07*fbm3(uv*.45))*(.965+.035*vn(uv*11.));
         alb=mix(alb,alb*vec3(.86,.84,.78),smoothstep(.58,.82,fbm3(uv*.16+5.))*.55);
         if(abs(n.y)<.5)alb*=1.-.07*vn(vec2(uv.x*3.5,uv.y*.22));
-        hgt=vn(uv*38.);bump=.012;
+        hgt=vn(uv*38.)*.5+fbm3(uv*4.)*.5;bump=.005;
       }else if(m==1){
         vec2 g=uv/(abs(n.y)>.5?vec2(1.5):vec2(3.,1.5));vec2 fw=fwidth(g);vec2 f=abs(fract(g)-.5);
         vec2 l=smoothstep(.5-fw*1.5-.006,vec2(.5),f);float line=max(l.x,l.y)*clamp(1.-max(fw.x,fw.y)*4.,0.,1.);
@@ -310,6 +317,30 @@ void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
       }else if(m==66){ /* couverture matelassée */
         vec2 q=abs(fract(uv/2.6)-.5);float dm=abs(q.x+q.y-.5),st=smoothstep(.07,0.,dm);
         alb=vec3(.27,.38,.62)*(.88+.12*fbm3(uv*.4))*(1.-.3*st);hgt=-st*2.+smoothstep(.0,.35,dm);bump=.05;
+      }else if(m==74){ /* peau */
+        alb=vec3(.84,.66,.56)*(.94+.06*vn(uv*9.))*(.97+.03*vn(uv*60.));gloss=.12;
+      }else if(m==75||m==79){ /* cheveux : bruns, ou gris */
+        float st=vn(vec2((vW.x+vW.z)*90.,vW.y*7.));alb=(m==75?vec3(.15,.10,.07):vec3(.62,.61,.60))*(.75+.45*st);gloss=.35;
+      }else if(m==76){ /* drap de coton : plis souples */
+        float f=fbm3(uv*1.2);alb=vec3(.90,.91,.93)*(.88+.12*f);hgt=f;bump=.012;
+      }else if(m==77){ /* blouse d'hôpital : bleu pâle, petits losanges */
+        vec2 q=abs(fract(uv*7.)-.5);float dt=smoothstep(.12,.06,q.x+q.y);alb=mix(vec3(.60,.74,.84),vec3(.30,.44,.62),dt*.6)*(.9+.1*fbm3(uv*2.));hgt=fbm3(uv*3.);bump=.02;
+      }else if(m==78){ /* laiton patiné */
+        alb=vec3(.74,.55,.26)*(.82+.18*fbm3(uv*4.));gloss=.85;refl=.45;
+      }else if(m==85){ /* couverture d'hôpital : bleu pâle, tissage gaufré, une bande blanche */
+        vec2 q=abs(fract(uv*9.)-.5);float wf=smoothstep(.5,.3,max(q.x,q.y));alb=vec3(.58,.68,.80)*(.9+.07*wf)*(.92+.08*fbm3(uv*1.5));
+      }else if(m==86){ /* tableau : un paysage à l'huile, ciel, collines, touches de pinceau */
+        float u=(abs(n.x)>abs(n.z)?vW.z:vW.x)*2.,t=vW.y,hz=1.52+.08*sin(u*2.3+h21(floor(vW.xz*.1)))+.04*vn(vec2(u*3.,0.));
+        vec3 sky=mix(vec3(.85,.72,.52),vec3(.42,.55,.66),smoothstep(hz,1.9,t)),land=mix(vec3(.18,.24,.12),vec3(.40,.36,.18),vn(vec2(u*4.,t*9.)));
+        alb=mix(land,sky,smoothstep(hz-.01,hz+.01,t))*(.85+.25*vn(vec2(u*30.,t*12.)));gloss=.3;
+      }else if(m==87){ /* ouïes de casier : fentes sombres en biais */
+        float sl=fract(vW.y*26.);alb=mix(vec3(.04,.045,.05),vec3(.55,.58,.6),smoothstep(.45,.6,sl));gloss=.3;
+      }else if(m==80){ /* tôle peinte des casiers et armoires métalliques : vert d'eau, rayures fines */
+        alb=vec3(.42,.55,.54)*(.9+.1*fbm3(uv*1.5))*(1.-.12*smoothstep(.75,.95,vn(uv*vec2(3.,40.))));gloss=.45;refl=.12;
+      }else if(m==81){ /* acajou verni : veines serrées */
+        float gr=vn(vec2(uv.x*3.+fbm3(uv*.8)*2.,uv.y*38.));alb=mix(vec3(.20,.085,.045),vec3(.38,.17,.08),gr)*(.9+.1*fbm3(uv*.5));gloss=.6;refl=.18;
+      }else if(m==83){ /* velours de fauteuil : bordeaux, reflets doux */
+        alb=vec3(.36,.07,.09)*(.8+.2*vn(uv*14.))*(.85+.3*pow(1.-max(dot(n,V),0.),2.));hgt=vn(uv*40.);bump=.015;
       }
       /* relief : dérivées écran de la hauteur procédurale */
       bump*=clamp(1.-d/26.,0.,1.);

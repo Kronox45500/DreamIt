@@ -23,11 +23,13 @@ function railing(g,a0,b0,a1,b1,y){
   for(const h of[0.38,0.72,1.05]){if(along)g.box(a0,y+h-0.025,b0-0.025,a1,y+h+0.025,b0+0.025,12,false);else g.box(a0-0.025,y+h-0.025,b0,a0+0.025,y+h+0.025,b1,12,false);}
   if(along)g.solid(a0,y,b0-0.05,a1,y+1.1,b0+0.05);else g.solid(a0-0.05,y,b0,a0+0.05,y+1.1,b1);
 }
-function tree(g,a,b,r,sc){
+function tree(g,a,b,r,sc){ /* tronc effilé, trois branches maîtresses, un houppier en grappes */
   sc=sc||1;const h=(2.6+r()*1.6)*sc,R=(1.5+r()*0.8)*sc;
-  g.cyl(a,b,0.17*sc,0,h+R*0.4,27,true,8);
-  g.sphere(a,h+R*0.75,b,R,15,ICO2,0.9);
-  for(let k=0;k<4;k++){const an=r()*6.28,d=R*(0.45+r()*0.3);g.sphere(a+Math.cos(an)*d,h+R*(0.4+r()*0.7),b+Math.sin(an)*d,R*(0.5+r()*0.25),15,ICO2,0.9);}
+  g.rod(a,0,b,a,h+R*0.35,b,0.19*sc,27,8,0.09*sc);g.cone(a,b,0.3*sc,0.19*sc,0,0.3*sc,27,8);g.solid(a-0.13*sc,0,b-0.13*sc,a+0.13*sc,h,b+0.13*sc);
+  const cl=[[a,h+R*0.95,b,R*0.72]];
+  for(let k=0;k<3;k++){const an=k*2.1+r(),d=R*0.55,y=h+R*(0.2+0.3*r()),x=a+Math.cos(an)*d,z=b+Math.sin(an)*d;g.rod(a,h*0.72,b,x,y,z,0.07*sc,27,5,0.035*sc);cl.push([x,y+R*0.22,z,R*0.6]);}
+  for(let k=0;k<4;k++){const an=r()*6.28,d=R*(0.3+r()*0.4);cl.push([a+Math.cos(an)*d,h+R*(0.45+r()*0.65),b+Math.sin(an)*d,R*(0.42+r()*0.2)]);}
+  for(const c of cl)g.ell(c[0],c[1],c[2],c[3],c[3]*0.82,c[3],15,ICO1);
   g.nog(a-0.4,b-0.4,a+0.4,b+0.4);
 }
 
@@ -684,8 +686,58 @@ function houseCell(g,c,i,j,r){
    ===================================================================== */
 
 /* ====== Hôtel : couloirs sur une trame de 24 m, des portes à l'infini ====== */
-function phoneAt(g,a,y,b){ /* un vieux téléphone rouge ; il sonnera peut-être */
-  g.box(a-0.13,y,b-0.1,a+0.13,y+0.08,b+0.1,12,false);g.box(a-0.15,y+0.08,b-0.035,a+0.15,y+0.13,b+0.035,48,false);g.phone(a,y+0.1,b);
+/* ====== mobilier commun, plus détaillé ====== */
+/* repère d'un meuble adossé à un mur : u le long du mur (autour de u), d la profondeur depuis le dos (w), f le sens de la façade ; az : le mur suit b */
+function furn(g,az,u,w,f){const X=(uu,dd)=>az?[w+f*dd,u+uu]:[u+uu,w+f*dd];
+  return {P:X,B:(u0,u1,y0,y1,d0,d1,m,s)=>{const p=X(u0,d0),q=X(u1,d1);g.box(Math.min(p[0],q[0]),y0,Math.min(p[1],q[1]),Math.max(p[0],q[0]),y1,Math.max(p[1],q[1]),m,s);},
+    door:(u0,u1,y0,y1,d,th,ang,m)=>{const du=az?[0,1]:[1,0],nf=az?[f,0]:[0,f],c=Math.cos(ang),sn=Math.sin(ang),dx=du[0]*c+nf[0]*sn,dz=du[1]*c+nf[1]*sn,h=X(u0,d),W=u1-u0;
+      g.obox(h[0]+dx*W/2,(y0+y1)/2,h[1]+dz*W/2,W/2,(y1-y0)/2,th/2,Math.atan2(-dz,dx),0,m,false);}};}
+function lockerBank(g,F,u0,u1,D,H,dw,m,r){ /* casiers métalliques : socle, portes à ouïes, poignées, numéros ; parfois une porte entrouverte */
+  H=H||1.9;dw=dw||0.45;m=m||80;const n=Math.max(1,Math.round((u1-u0)/dw)),w=(u1-u0)/n;
+  F.B(u0,u1,0.1,H,0,D,m);F.B(u0+0.02,u1-0.02,0,0.1,0,D-0.04,12,false);F.B(u0,u1,H,H+0.03,0,D+0.02,m,false);
+  F.B(u0,u1,0.12,H-0.02,D,D+0.004,12,false);
+  for(let k=0;k<n;k++){const a0=u0+k*w+0.012,a1=u0+(k+1)*w-0.012,mid=(a0+a1)/2;
+    if(r&&r()<0.07){F.B(a0,a1,0.13,H-0.03,D-0.3,D-0.29,28,false);F.door(a0,a1,0.13,H-0.03,D+0.01,0.015,0.5+r()*0.6,m);continue;}
+    F.B(a0,a1,0.13,H-0.03,D,D+0.015,m,false);
+    F.B(a0+0.06,a1-0.06,H-0.42,H-0.16,D+0.015,D+0.02,87,false);F.B(a1-0.07,a1-0.04,0.95,1.2,D+0.015,D+0.045,50,false);}
+}
+function armoire(g,F,u,W,D,m){ /* armoire de bois : socle, corniche, deux portes à panneaux, boutons de laiton */
+  m=m||81;W=W||1.3;D=D||0.6;const h=W/2;
+  F.B(u-h,u+h,0.12,2.0,0,D,m);F.B(u-h-0.02,u+h+0.02,0,0.12,0,D+0.02,m,false);F.B(u-h-0.05,u+h+0.05,2.0,2.07,0,D+0.05,m,false);F.B(u-h-0.03,u+h+0.03,2.07,2.12,0,D+0.03,m,false);
+  F.B(u-0.006,u+0.006,0.16,1.96,D,D+0.012,12,false);
+  for(const s of[-1,1]){const a0=s<0?u-h+0.04:u+0.02,a1=s<0?u-0.02:u+h-0.04;
+    for(const [y0,y1] of[[0.26,1.0],[1.12,1.86]])F.B(a0+0.06,a1-0.06,y0,y1,D,D+0.018,m,false);
+    const p=F.P(u+s*0.06,D+0.03);g.sphere(p[0],1.06,p[1],0.022,78,ICO0);}
+}
+function filing(g,F,u,D,m){ /* classeur à quatre tiroirs : poignées, porte-étiquettes */
+  m=m||80;D=D||0.62;F.B(u-0.24,u+0.24,0,1.32,0,D,m);
+  for(let k=0;k<4;k++){const y=0.03+k*0.32;F.B(u-0.225,u+0.225,y,y+0.3,D,D+0.015,m,false);F.B(u-0.09,u+0.09,y+0.19,y+0.22,D+0.015,D+0.04,50,false);F.B(u-0.05,u+0.05,y+0.24,y+0.27,D+0.015,D+0.02,0,false);}
+}
+
+function potPlant(g,a,b,h,pot){ /* pot évasé, terreau, tiges, feuilles en éventail */
+  pot=pot||81;h=h||1.3;g.cone(a,b,0.19,0.26,0,0.46,pot,12);g.torus(a,0.46,b,0.25,0.025,[0,1,0],pot,12,4);g.cyl(a,b,0.235,0.42,0.44,27,false,10);g.solid(a-0.2,0,b-0.2,a+0.2,0.5,b+0.2);
+  for(let k=0;k<4;k++)g.rod(a,0.44,b,a+Math.sin(k*1.6)*0.12,0.44+h*0.55,b+Math.cos(k*1.6)*0.12,0.012,15,4);
+  for(let k=0;k<14;k++){const t=k*2.4,l=0.2+0.16*(k%3)/2,y=0.44+h*(0.28+0.4*((k*7)%5)/4);g.obox(a+Math.sin(t)*l*0.7,y,b+Math.cos(t)*l*0.7,0.085,0.01,l,t,-0.2-0.25*(k%3),15);}
+}
+function sofa2(g,a,b,L,f,m,legM){ /* canapé : f = côté du dossier (±1 en b), coussins, accoudoirs roulés, pieds tournés */
+  m=m||83;legM=legM||81;const Z=(z0,z1)=>[Math.min(b+f*z0,b+f*z1),Math.max(b+f*z0,b+f*z1)];
+  let z=Z(-0.45,0.45);g.box(a-L,0.1,z[0],a+L,0.38,z[1],m);
+  for(const s of[-1,1])for(const t of[-0.38,0.38])g.cone(a+s*(L+0.1),b+f*t,0.035,0.025,0,0.1,legM,6);
+  const n=Math.max(1,Math.round(L/0.65)),w=2*L/n;
+  for(let k=0;k<n;k++){const x0=a-L+k*w;z=Z(-0.44,0.22);g.box(x0+0.02,0.38,z[0],x0+w-0.02,0.53,z[1],m,false);
+    g.ell(x0+w/2,0.74,b+f*0.2,w/2-0.03,0.22,0.09,m,ICO1);}
+  z=Z(0.24,0.45);g.box(a-L,0.38,z[0],a+L,0.98,z[1],m,false);
+  for(const s of[-1,1]){z=Z(-0.45,0.45);g.box(a+s*L-(s>0?0:0.2),0.1,z[0],a+s*L+(s>0?0.2:0),0.62,z[1],m,false);g.rod(a+s*(L+0.1),0.66,z[0]-0.02,a+s*(L+0.1),0.66,z[1]+0.02,0.1,m,10,0.1,true);}
+}
+function tableLamp(g,a,y,b,s){s=s||1;g.cone(a,b,0.09*s,0.06*s,y,y+0.03*s,78,8);g.ell(a,y+0.16*s,b,0.075*s,0.13*s,0.075*s,47,ICO1);g.rod(a,y+0.28*s,b,a,y+0.4*s,b,0.008*s,78,4);g.cone(a,b,0.17*s,0.1*s,y+0.34*s,y+0.55*s,84,10);}
+function sideTable(g,a,b,h,R){h=h||0.75;R=R||0.32;g.cyl(a,b,R,h-0.04,h,81,false,18);g.torus(a,h-0.02,b,R,0.02,[0,1,0],81,18,4);g.rod(a,0.06,b,a,h-0.04,b,0.035,81,8,0.025);g.cone(a,b,0.22,0.1,0,0.07,81,12);g.solid(a-R*0.7,0,b-R*0.7,a+R*0.7,h,b+R*0.7);}
+function phoneAt(g,a,y,b){ /* un vieux téléphone à cadran, en bakélite rouge ; il sonnera peut-être */
+  const P=48;g.box(a-0.12,y,b-0.13,a+0.12,y+0.045,b+0.13,P,false);g.obox(a,y+0.075,b+0.01,0.105,0.035,0.11,0,0.3,P,false);
+  g.cyl(a,b+0.05,0.06,y+0.1,y+0.112,0,false,14);g.torus(a,y+0.114,b+0.05,0.046,0.009,[0,1,0],50,12,4);g.cyl(a,b+0.05,0.018,y+0.112,y+0.12,P,false,8);
+  for(const s of[-1,1])g.box(a+s*0.085-0.012,y+0.08,b-0.07,a+s*0.085+0.012,y+0.15,b-0.03,P,false);
+  g.rod(a-0.11,y+0.165,b-0.05,a+0.11,y+0.165,b-0.05,0.019,P,8);for(const s of[-1,1])g.cone(a+s*0.12,b-0.05,0.032,0.044,y+0.13,y+0.172,P,10);
+  let q=[a+0.13,y+0.14,b-0.05];for(let k=1;k<=9;k++){const t=k/9,n=[a+0.13+0.07*Math.sin(t*3.14)+(k%2?0.012:-0.012),y+0.14-0.12*Math.sin(t*1.57),b-0.05-0.1*t];g.rod(q[0],q[1],q[2],n[0],n[1],n[2],0.007,47,4);q=n;}
+  g.phone(a,y+0.1,b);
 }
 function hotelCell(g,c,i,j,r){
   const T=c.type===T_DOOR?4:c.type,H=2.8,lob=T===2||T===3;g.m=SYM[0];
@@ -695,21 +747,27 @@ function hotelCell(g,c,i,j,r){
   for(const s of[-1,1]){const e0=s>0?13.2:-24,e1=s>0?24:-13.2;
     g.box(e0,0,-10.8,e1,H,10.8,57);g.box(-10.8,0,e0,10.8,H,e1,57);
     for(const q of[-1,1])g.box(e0,0,q>0?13.2:-24,e1,H,q>0?24:-13.2,57);}
-  const plant=(a,b)=>{g.cyl(a,b,0.28,0,0.55,41,true,10);g.sphere(a,1.25,b,0.62,15,ICO1,1.25);};
-  const sofa=(a,b,L)=>{g.box(a-L,0,b-0.45,a+L,0.42,b+0.45,16);g.box(a-L,0.42,b+0.25,a+L,0.9,b+0.45,16,false);};
+  const plant=(a,b)=>potPlant(g,a,b,1.5,47);
+  const sofa=(a,b,L)=>sofa2(g,a,b,L,1);
   /* habillage d'un mur de couloir : appliques, tableaux, corniche, consoles. Le plan est x=X (az) ou z=X, tourné vers n */
   const B=(az,u0,u1,y0,y1,d0,d1,m,s)=>az?g.box(d0,y0,u0,d1,y1,u1,m,s):g.box(u0,y0,d0,u1,y1,d1,m,s);
   const wallDeco=(az,X,n,u0,u1)=>{
     const D=(d0,d1)=>[Math.min(X+n*d0,X+n*d1),Math.max(X+n*d0,X+n*d1)];
-    {const d=D(0,0.07);B(az,u0,u1,H-0.16,H,d[0],d[1],41,false);}
-    for(let u=Math.ceil((u0-4)/8)*8+4;u<=u1-0.6;u+=8){if(u<u0+0.6)continue;const d=D(0,0.1);
-      B(az,u-0.09,u+0.09,1.8,2.0,d[0],d[1],41,false);const e=D(0.1,0.2);B(az,u-0.12,u+0.12,1.95,2.2,e[0],e[1],25,false);}
+    const Q=(u,d)=>az?[X+n*d,u]:[u,X+n*d];
+    {const d=D(0,0.07);B(az,u0,u1,H-0.16,H,d[0],d[1],81,false);const e=D(0,0.03);B(az,u0,u1,0.9,0.96,e[0],e[1],81,false);}
+    for(let u=Math.ceil((u0-4)/8)*8+4;u<=u1-0.6;u+=8){if(u<u0+0.6)continue; /* applique : platine de laiton, bras, petit abat-jour */
+      const d=D(0,0.025);B(az,u-0.06,u+0.06,1.72,1.92,d[0],d[1],78,false);const p0=Q(u,0.02),p1=Q(u,0.16);g.rod(p0[0],1.8,p0[1],p1[0],1.86,p1[1],0.012,78,5);g.cone(p1[0],p1[1],0.09,0.055,1.86,2.04,84,8);}
     for(let u=Math.ceil(u0/8)*8;u<=u1-0.9;u+=8){if(u<u0+0.9)continue;const k=r();
-      if(k<0.45){const d=D(0,0.05),e=D(0.05,0.07);B(az,u-0.55,u+0.55,1.15,1.95,d[0],d[1],41,false);B(az,u-0.45,u+0.45,1.25,1.85,e[0],e[1],[47,34,36,16,49][Math.floor(r()*5)],false);}
-      else if(k<0.62){const d=D(0,0.42);B(az,u-0.7,u+0.7,0.8,0.86,d[0],d[1],41);B(az,u-0.62,u+0.62,0,0.8,d[0],d[1],41,false);
-        const m=D(0.21,0.21)[0];if(r()<0.5){if(az)phoneAt(g,m,0.86,u-0.3);else phoneAt(g,u-0.3,0.86,m);}
-        if(az)g.sphere(m,1.05,u+0.35,0.16,34+Math.floor(r()*4),ICO1,1.3);else g.sphere(u+0.35,1.05,m,0.16,34+Math.floor(r()*4),ICO1,1.3);}
-      else if(k<0.7){const m=D(0.5,0.5)[0];if(az){g.box(m-0.25,0,u-0.3,m+0.25,0.1,u+0.3,50,false);g.sphere(m,0.1,u,0.2,50,ICO1,0.6);}else{g.box(u-0.3,0,m-0.25,u+0.3,0.1,m+0.25,50,false);g.sphere(u,0.1,m,0.2,50,ICO1,0.6);}}
+      if(k<0.45){ /* tableau : cadre doré, paysage */
+        const d=D(0,0.05),e=D(0.05,0.065);B(az,u-0.58,u+0.58,1.12,1.98,d[0],d[1],78,false);B(az,u-0.48,u+0.48,1.22,1.88,e[0],e[1],86,false);}
+      else if(k<0.62){ /* console : plateau d'acajou, un tiroir, pieds fuselés ; une lampe, parfois le téléphone */
+        const t=D(0,0.42);B(az,u-0.72,u+0.72,0.78,0.82,t[0],t[1],81);const ap=D(0.02,0.38);B(az,u-0.66,u+0.66,0.64,0.78,ap[0],ap[1],81,false);
+        const dr=D(0.38,0.4);B(az,u-0.3,u+0.3,0.66,0.76,dr[0],dr[1],81,false);{const kn=Q(u,0.41);g.sphere(kn[0],0.71,kn[1],0.018,78,ICO0);}
+        for(const uu of[u-0.62,u+0.62])for(const dd of[0.06,0.34]){const p=Q(uu,dd);g.cone(p[0],p[1],0.028,0.016,0,0.64,81,6);}
+        const m=Q(u-0.3,0.21);if(r()<0.5)phoneAt(g,m[0],0.82,m[1]);const l=Q(u+0.36,0.2);tableLamp(g,l[0],0.82,l[1],1);}
+      else if(k<0.7){ /* grand vase, des branches sèches */
+        const p=Q(u,0.3);g.cone(p[0],p[1],0.13,0.2,0,0.45,47,12);g.cone(p[0],p[1],0.2,0.09,0.45,0.78,47,12);g.solid(p[0]-0.2,0,p[1]-0.2,p[0]+0.2,0.8,p[1]+0.2);
+        for(let q=0;q<5;q++){const t=q*1.3;g.rod(p[0],0.7,p[1],p[0]+Math.sin(t)*0.3,1.5+0.2*(q%2),p[1]+Math.cos(t)*0.3,0.01,27,4);}}
     }};
   const segs=[[-24,-13.2],[13.2,24]],mid=[-10.8,10.8];
   for(const s of[-1,1])for(const az of[true,false]){
@@ -727,7 +785,7 @@ function hotelCell(g,c,i,j,r){
     for(const s of[-1,1])g.box(s*1.5-0.06,0,-10.9,s*1.5+0.06,2.36,-10.8,25,false);g.box(-1.56,2.3,-10.92,1.56,2.38,-10.8,25,false);
     g.box(-0.7,2.42,-10.9,0.7,2.7,-10.86,61,false);g.box(1.75,1.1,-10.86,1.9,1.4,-10.82,25,false);
     g.top(-1.3,-13.2,1.3,-10.8,0.012,16);g.hdoor(0,-9.5);plant(-2.4,-11.4);plant(2.4,-11.4);
-    g.box(-3.8,0,-10.8,-2.9,0.82,-10.42,41);phoneAt(g,-3.35,0.82,-10.6);
+    sideTable(g,-3.35,-10.45,0.78,0.34);phoneAt(g,-3.35,0.78,-10.45);
     if(c.type!==T_DOOR){const u=-22+r()*44;g.item(12,1.1,u);}
   }else if(T===3){ /* le puits : vingt étages de coursives au-dessus de vous */
     const HH=67.2;
@@ -739,7 +797,7 @@ function hotelCell(g,c,i,j,r){
     g.cyl(0,0,0.07,22,HH,12,false,6);for(let k=0;k<5;k++)g.gem(0,21-k*1.9,0,3.2-k*0.6,24,ICO1);g.sphere(0,12.4,0,0.7,25,ICO2);
     g.cyl(0,0,3.2,0,0.5,0,true,24);g.cyl(0,0,2.9,0.5,0.56,3,false,24);g.item(0,1.7,0);
     for(const s of[-1,1])sofa(s*7,0,2.2);plant(-9,-9);plant(9,9);if(r()<0.6)g.npc(6,0,6,r()*6.28);
-    g.box(-7.5,0,-7.5,-6.5,0.7,-6.5,41);phoneAt(g,-7,0.7,-7);
+    sideTable(g,-7,-7,0.72,0.4);phoneAt(g,-7,0.72,-7);
   }else{ /* le grand salon : un lustre, la réception, quelqu'un derrière le comptoir */
     const HL=8.4;
     for(const s of[-1,1]){g.box(s*10.8,H+0.4,-10.8,s*11.2,HL,10.8,57,false);g.box(-10.8,H+0.4,s*10.8,10.8,HL,s*11.2,57,false);}
@@ -750,7 +808,7 @@ function hotelCell(g,c,i,j,r){
     g.cyl(0,0,0.03,6.6,HL,12,false,6);
     for(let k=0;k<3;k++){const R=1.7-k*0.5,y=6.6-k*0.55;for(let q=0;q<10+k*-3;q++){const t=q/(10-k*3)*6.283;g.sphere(Math.cos(t)*R,y,Math.sin(t)*R,0.09,25,ICO1);g.gem(Math.cos(t)*R,y-0.3,Math.sin(t)*R,0.08,24,ICO1,2.2);}}
     g.gem(0,5.1,0,0.35,24,ICO1,2.2);
-    g.box(-4,0,-1.2,4,1.1,-0.4,41);g.box(-4.2,1.1,-1.3,4.2,1.16,-0.3,0,false);g.box(-0.1,1.16,-0.9,0.1,1.3,-0.7,25,false);
+    g.box(-4,0,-1.2,4,1.1,-0.4,81);g.box(-4.2,1.1,-1.3,4.2,1.16,-0.3,81,false);g.box(-4.05,0,-1.25,4.05,0.1,-0.36,47,false);g.box(-4.02,0.98,-0.39,4.02,1.02,-0.37,78,false);for(let k=0;k<6;k++)g.box(-3.7+k*1.25,0.22,-0.4,-2.7+k*1.25,0.88,-0.37,81,false);g.cone(-1.2,-0.8,0.06,0.07,1.16,1.18,78,10);g.ell(-1.2,1.2,-0.8,0.055,0.045,0.055,78,ICO1);g.box(-0.1,1.16,-0.9,0.1,1.3,-0.7,25,false);tableLamp(g,3.6,1.16,-0.85,1.1);
     phoneAt(g,2.6,1.16,-0.8);for(let k=0;k<12;k++)g.box(-3.6+k*0.6-0.04,1.6,-2.95,-3.6+k*0.6+0.04,1.75,-2.9,25,false);g.box(-3.8,1.2,-3.0,3.8,2.2,-2.95,41,false);
     sofa(0,8.4,3);sofa(-8.5,3,1.6);plant(-9.6,-9.6);plant(9.6,-9.6);g.top(-5,3,5,7.6,0.012,16);
     {const a=7.5,b=5;for(const s of[-1,1])g.box(a+s*0.5-0.03,0,b-0.03,a+s*0.5+0.03,1.9,b+0.03,25,false);g.box(a-0.55,1.85,b-0.05,a+0.55,1.92,b+0.05,25,false);
@@ -760,39 +818,92 @@ function hotelCell(g,c,i,j,r){
 }
 
 /* ====== Hôpital : couloirs de nuit, chambres communes, un lit vide quelque part ====== */
+function patient(g,a,bh,dir,r){ /* allongé sur le dos, la tête sur l'oreiller, les bras sur la couverture */
+  const B=t=>bh+dir*t,y0=0.62,hair=r()<0.4?79:75,L=(t0,t1)=>[Math.min(B(t0),B(t1)),Math.max(B(t0),B(t1))];
+  g.ell(a,y0+0.06,B(0.3),0.32,0.075,0.17,76,ICO1);                                   /* oreiller */
+  g.ell(a,y0+0.165,B(0.35),0.082,0.095,0.112,74,ICO1);                               /* visage tourné vers le plafond */
+  g.ell(a,y0+0.15,B(0.31),0.088,0.08,0.1,hair,ICO1);                                 /* cheveux, du côté de l'oreiller */
+  g.ell(a,y0+0.262,B(0.385),0.017,0.022,0.026,74,ICO0);                              /* nez */
+  for(const s of[-1,1])g.ell(a+s*0.083,y0+0.16,B(0.35),0.014,0.03,0.022,74,ICO0);    /* oreilles */
+  g.ell(a,y0+0.13,B(0.48),0.05,0.05,0.06,74,ICO0);                                   /* cou */
+  g.ell(a,y0+0.11,B(0.6),0.23,0.09,0.1,77,ICO1);                                     /* épaules, la blouse */
+  {const z=L(0.64,0.76);g.box(a-0.5,y0+0.03,z[0],a+0.5,y0+0.12,z[1],76,false);}      /* le drap rabattu */
+  {const z=L(0.68,2.08);g.box(a-0.51,y0,z[0],a+0.51,y0+0.03,z[1],85,false);for(const s of[-1,1])g.box(a+s*0.51-0.01,0.4,z[0],a+s*0.51+0.01,y0+0.03,z[1],85,false);}
+  g.ell(a,y0+0.03,B(1.05),0.3,0.085,0.42,85,ICO1);g.ell(a,y0+0.02,B(1.62),0.27,0.065,0.48,85,ICO1); /* le corps sous la couverture */
+  for(const s of[-1,1])g.ell(a+s*0.1,y0+0.05,B(1.98),0.08,0.065,0.07,85,ICO0);
+  /* bras : manche courte, avant-bras, main ; l'un le long du corps, l'autre sur le ventre */
+  g.rod(a-0.22,y0+0.13,B(0.58),a-0.25,y0+0.14,B(0.84),0.05,77,6,0.045);g.rod(a-0.25,y0+0.14,B(0.84),a-0.22,y0+0.14,B(1.08),0.04,74,6,0.034);
+  g.ell(a-0.21,y0+0.145,B(1.14),0.042,0.026,0.065,74,ICO0);
+  g.rod(a+0.22,y0+0.13,B(0.58),a+0.25,y0+0.15,B(0.83),0.05,77,6,0.045);g.rod(a+0.25,y0+0.15,B(0.83),a+0.09,y0+0.17,B(0.97),0.04,74,6,0.034);
+  g.ell(a+0.05,y0+0.175,B(0.99),0.065,0.026,0.042,74,ICO1);
+  return [a+0.05,y0+0.18,B(0.99)];
+}
 function hbed(g,a,bh,dir,r,empty){ /* lit médicalisé : tête en bh, pieds vers dir (±1 en b) */
-  const Z=(u,v,y0,y1,m,s,da)=>{da=da||0.5;g.box(a-da,y0,Math.min(u,v),a+da,y1,Math.max(u,v),m,s);},bf=bh+dir*2.1;
-  Z(bh+dir*0.05,bf,0,0.3,50);Z(bh+dir*0.08,bf-dir*0.03,0.3,0.48,0,true,0.47);
-  Z(bh+dir*0.55,bf-dir*0.02,0.48,0.52,66,false,0.49);g.ell(a,0.56,bh+dir*0.32,0.34,0.07,0.17,0,ICO1);
-  Z(bh,bh+dir*0.06,0,1.05,50,false,0.52);Z(bf-dir*0.05,bf,0,0.82,50,false,0.52);
-  for(const s of[-1,1])g.box(a+s*0.5-0.02,0.55,Math.min(bh+dir*0.4,bh+dir*1.3),a+s*0.5+0.02,0.72,Math.max(bh+dir*0.4,bh+dir*1.3),50,false);
-  if(empty){g.hdoor(a,bh+dir*1.05);Z(bh+dir*0.02,bh+dir*0.08,1.55,1.72,17,false,0.32);}else g.ell(a,0.6,bh+dir*1.15,0.3,0.13,0.7,66,ICO2);
-  const px=a+0.85,pz=bh+dir*0.35;g.cyl(px,pz,0.022,0,1.95,50,false,6);g.box(px-0.08,1.55,pz-0.03,px+0.08,1.82,pz+0.03,13,false);
-  g.box(a-1.25,0,pz-0.28,a-0.7,0.75,pz+0.28,0);g.box(a-1.2,0.75,pz-0.05,a-0.75,1.05,pz+0.05,12,false);g.box(a-1.17,0.79,pz+dir*0.06-0.005,a-0.78,1.01,pz+dir*0.06+0.005,29,false);
-  if(r()<0.6){const cz=bf+dir*0.6,cx=a+0.9;g.box(cx-0.24,0,cz-0.24,cx+0.24,0.45,cz+0.24,16);g.box(cx-0.24,0.45,cz-0.24,cx+0.24,0.95,cz-0.18,16,false);}
+  const B=t=>bh+dir*t,Zb=(t0,t1,y0,y1,da,m,s)=>g.box(a-da,y0,Math.min(B(t0),B(t1)),a+da,y1,Math.max(B(t0),B(t1)),m,s);
+  /* châssis sur roulettes, matelas */
+  Zb(0.06,2.04,0.34,0.44,0.47,50);
+  for(const t of[0.14,1.96])for(const s of[-1,1]){g.rod(a+s*0.4,0.1,B(t),a+s*0.4,0.36,B(t),0.022,50,6);g.box(a+s*0.4-0.03,0.02,B(t)-0.06,a+s*0.4+0.03,0.13,B(t)+0.06,12,false);}
+  Zb(0.08,2.02,0.44,0.62,0.46,76,false);
+  /* têtes de lit : panneau crème dans un cadre de tubes chromés */
+  for(const [t,h] of[[0.03,1.02],[2.07,0.84]]){Zb(t-0.015,t+0.015,0.44,h-0.06,0.43,42,false);
+    for(const s of[-1,1])g.rod(a+s*0.47,0.34,B(t),a+s*0.47,h,B(t),0.028,50,6);g.rod(a-0.47,h,B(t),a+0.47,h,B(t),0.028,50,6);}
+  /* barrières relevées, côté tête */
+  for(const s of[-1,1]){for(const y of[0.72,0.86])g.rod(a+s*0.5,y,B(0.22),a+s*0.5,y,B(1.12),0.013,50,5);
+    for(const t of[0.25,0.67,1.09])g.rod(a+s*0.5,0.58,B(t),a+s*0.5,0.86,B(t),0.012,50,5);}
+  let hand=null;
+  if(empty){g.hdoor(a,bh+dir*1.05);Zb(0.02,0.08,1.55,1.72,0.32,17,false);
+    g.ell(a,0.68,B(0.3),0.32,0.07,0.17,76,ICO1);Zb(0.7,2.04,0.62,0.645,0.47,76,false);g.ell(a+0.12,0.64,B(1.55),0.36,0.06,0.34,85,ICO1);}
+  else if(r()<0.6)hand=patient(g,a,bh,dir,r);
+  else{g.ell(a,0.68,B(0.3),0.32,0.07,0.17,76,ICO1);Zb(0.6,2.06,0.62,0.66,0.48,85,false);Zb(0.6,0.72,0.66,0.7,0.48,76,false);}
+  /* pied à perfusion : cinq branches, une poche, une tubulure jusqu'à la main */
+  const px=a+0.85,pz=B(0.35);g.rod(px,0.06,pz,px,1.95,pz,0.014,50,6);
+  for(let k=0;k<5;k++){const t=k/5*6.283;g.rod(px,0.08,pz,px+Math.cos(t)*0.26,0.03,pz+Math.sin(t)*0.26,0.012,50,4);}
+  g.rod(px-0.13,1.93,pz,px+0.13,1.93,pz,0.009,50,4);g.ell(px+0.1,1.74,pz,0.065,0.12,0.03,13,ICO1);
+  if(hand){g.rod(px+0.1,1.62,pz,px+0.02,1.1,pz+dir*0.25,0.004,76,4);g.rod(px+0.02,1.1,pz+dir*0.25,hand[0]+0.06,hand[1]+0.02,hand[2],0.004,76,4);}
+  /* table de chevet : un tiroir, un plateau, le moniteur qui bat encore */
+  const cx=a-0.98,f=pz+dir*0.25;g.box(cx-0.25,0.04,pz-0.25,cx+0.25,0.72,pz+0.25,42);g.box(cx-0.27,0.72,pz-0.27,cx+0.27,0.75,pz+0.27,41);
+  for(const y of[0.45,0.2]){g.box(cx-0.22,y,Math.min(f,f+dir*0.012),cx+0.22,y+0.22,Math.max(f,f+dir*0.012),0,false);g.box(cx-0.07,y+0.15,Math.min(f,f+dir*0.03),cx+0.07,y+0.17,Math.max(f,f+dir*0.03),50,false);}
+  g.cone(cx+0.13,pz-0.08,0.04,0.035,0.75,0.86,13,8);
+  g.rod(cx-0.05,0.75,pz,cx-0.05,0.95,pz,0.02,50,5);g.box(cx-0.24,0.95,pz-0.09,cx+0.14,1.25,pz+0.09,12,false);
+  g.box(cx-0.21,0.98,Math.min(pz+dir*0.09,pz+dir*0.1),cx+0.11,1.22,Math.max(pz+dir*0.09,pz+dir*0.1),empty?47:82,false);
+  if(r()<0.6){const cz=B(2.7),ch=a+0.95;g.box(ch-0.24,0.42,cz-0.22,ch+0.24,0.47,cz+0.22,16);
+    for(const s of[-1,1])for(const t of[-1,1])g.rod(ch+s*0.21,0,cz+t*0.19,ch+s*0.21,0.42,cz+t*0.19,0.015,50,5);
+    g.box(ch-0.24,0.6,cz+dir*0.2,ch+0.24,0.95,cz+dir*0.23,16,false);for(const s of[-1,1])g.rod(ch+s*0.21,0.47,cz+dir*0.21,ch+s*0.21,0.62,cz+dir*0.21,0.013,50,5);}
 }
 /* accessoires d'hôpital, posés le long d'un mur : u le long du mur, w la distance au centre du couloir, s le côté */
 function hprop(g,az,u,w,k,r){ /* az : couloir le long de a (b=w) ; sinon le long de b (a=w) */
   const B=(u0,u1,y0,y1,w0,w1,m,s)=>az?g.box(u0,y0,Math.min(w0,w1),u1,y1,Math.max(w0,w1),m,s):g.box(Math.min(w0,w1),y0,u0,Math.max(w0,w1),y1,u1,m,s);
+  const Q=(uu,ww)=>az?[uu,ww]:[ww,uu],R=(u0,y0,w0,u1,y1,w1,rr,m,n)=>{const p=Q(u0,w0),q=Q(u1,w1);g.rod(p[0],y0,p[1],q[0],y1,q[1],rr,m,n||6);},AX=az?[1,0,0]:[0,0,1];
   const sg=Math.sign(w)||1;
-  if(k===0){ /* brancard, un drap froissé */
-    B(u-1,u+1,0.62,0.74,w-sg*0.33,w+sg*0.33,50);B(u-0.95,u+0.95,0.74,0.8,w-sg*0.3,w+sg*0.3,0,false);
-    for(const q of[-0.85,0.85])B(u+q-0.03,u+q+0.03,0,0.62,w-0.03,w+0.03,12,false);
-    if(r()<0.5)B(u-0.3,u+0.6,0.8,0.86,w-sg*0.28,w+sg*0.2,66,false);
-  }else if(k===1){ /* fauteuil roulant */
-    B(u-0.25,u+0.25,0.45,0.52,w-0.25,w+0.25,12);B(u-0.25,u+0.25,0.52,0.95,w+sg*0.2,w+sg*0.26,12,false);
-    for(const q of[-1,1]){const p=az?[u,0.33,w+q*0.3]:[w+q*0.3,0.33,u];g.ell(p[0],p[1],p[2],az?0.33:0.03,0.33,az?0.03:0.33,50,ICO2);}
-  }else if(k===2){ /* banc de trois sièges */
-    for(let q=-1;q<=1;q++){B(u+q*0.55-0.25,u+q*0.55+0.25,0.42,0.48,w-0.25,w+0.25,16);B(u+q*0.55-0.25,u+q*0.55+0.25,0.48,0.9,w+sg*0.2,w+sg*0.25,16,false);}
-    B(u-0.8,u+0.8,0.36,0.42,w-0.04,w+0.04,12,false);
-  }else if(k===3){ /* chariot de soins, tiroirs de couleur */
+  if(k===0){ /* brancard : cadre de tubes, matelas, un drap froissé */
+    B(u-1,u+1,0.6,0.66,w-0.32,w+0.32,50);B(u-0.97,u+0.97,0.66,0.76,w-0.3,w+0.3,76,false);
+    for(const q of[-0.85,0.85])for(const t of[-0.26,0.26]){R(u+q,0.08,w+t,u+q,0.6,w+t,0.02,50);const p=Q(u+q,w+t);g.sphere(p[0],0.06,p[1],0.055,12,ICO0);}
+    for(const t of[-0.33,0.33])R(u-0.95,0.82,w+t,u+0.95,0.82,w+t,0.014,50,5);
+    if(r()<0.6){const p=Q(u+0.2,w);g.ell(p[0],0.8,p[1],az?0.45:0.28,0.06,az?0.28:0.45,76,ICO1);}
+  }else if(k===1){ /* fauteuil roulant : grandes roues, mains courantes, roulettes, repose-pieds */
+    B(u-0.24,u+0.24,0.46,0.52,w-0.22,w+0.22,47);B(u-0.24,u+0.24,0.52,0.95,w+sg*0.2,w+sg*0.24,47,false);
+    for(const q of[-1,1]){const p=Q(u+q*0.3,w+sg*0.05);g.torus(p[0],0.31,p[1],0.29,0.022,AX,12,16,4);g.torus(p[0],0.31,p[1],0.25,0.01,AX,50,14,3);
+      R(u+q*0.3,0.31,w+sg*0.05,u+q*0.24,0.48,w+sg*0.05,0.012,50,4);
+      R(u+q*0.24,0.52,w+sg*0.22,u+q*0.24,1.0,w+sg*0.27,0.014,50);R(u+q*0.24,1.0,w+sg*0.27,u+q*0.24,1.0,w+sg*0.4,0.018,47);
+      R(u+q*0.22,0.46,w-sg*0.2,u+q*0.18,0.12,w-sg*0.38,0.013,50);B(u+q*0.18-0.08,u+q*0.18+0.08,0.1,0.12,w-sg*0.46,w-sg*0.34,12,false);
+      const c=Q(u+q*0.22,w-sg*0.25);g.sphere(c[0],0.07,c[1],0.065,12,ICO0);}
+  }else if(k===2){ /* trois sièges sur une poutre */
+    for(let q=-1;q<=1;q++){B(u+q*0.55-0.24,u+q*0.55+0.24,0.42,0.48,w-0.24,w+0.22,16);B(u+q*0.55-0.24,u+q*0.55+0.24,0.52,0.92,w+sg*0.2,w+sg*0.25,16,false);}
+    B(u-0.85,u+0.85,0.36,0.42,w-0.04,w+0.04,50,false);for(const q of[-0.7,0.7]){R(u+q,0,w,u+q,0.36,w,0.03,50);B(u+q-0.04,u+q+0.04,0,0.02,w-0.25,w+0.25,50,false);}
+  }else if(k===3){ /* chariot de soins : tiroirs de couleur, poignée, roulettes */
     B(u-0.4,u+0.4,0.12,0.95,w-0.28,w+0.28,0);for(let q=0;q<4;q++)B(u-0.38,u+0.38,0.2+q*0.19,0.34+q*0.19,w-sg*0.29,w-sg*0.27,[16,36,34,35][q],false);
-    B(u-0.15,u+0.15,0.95,1.05,w-0.1,w+0.1,13,false);
-  }else if(k===4){ /* plante en pot, extincteur */
-    g.cyl(az?u:w,az?w:u,0.25,0,0.5,41,true,10);g.sphere(az?u:w,1.1,az?w:u,0.5,15,ICO1,1.3);
-    g.cyl(az?u+0.8:w+sg*0.3,az?w+sg*0.3:u+0.8,0.09,0.9,1.4,48,false,8);
-  }else{ /* un fauteuil, des magazines */
-    B(u-0.4,u+0.4,0,0.45,w-0.35,w+0.35,16);B(u-0.4,u+0.4,0.45,1.0,w+sg*0.25,w+sg*0.35,16,false);B(u+0.55,u+1.0,0,0.5,w-0.25,w+0.25,41);B(u+0.6,u+0.9,0.5,0.53,w-0.15,w+0.12,36,false);
+    B(u-0.42,u+0.42,0.95,0.98,w-0.3,w+0.3,50,false);R(u-0.46,0.9,w-0.2,u-0.46,0.9,w+0.2,0.015,50);
+    for(const q of[-0.32,0.32])for(const t of[-0.2,0.2]){const p=Q(u+q,w+t);g.sphere(p[0],0.06,p[1],0.055,12,ICO0);}
+    {const p=Q(u+0.15,w);g.cone(p[0],p[1],0.06,0.05,0.98,1.12,0,8);}
+  }else if(k===4){ /* plante en pot, extincteur au mur */
+    const p=Q(u,w);potPlant(g,p[0],p[1],1.2,0);
+    const e=Q(u+0.8,w+sg*0.3);g.cyl(e[0],e[1],0.085,0.9,1.4,48,false,12);g.cone(e[0],e[1],0.085,0.03,1.4,1.47,48,10);g.cone(e[0],e[1],0.02,0.02,1.47,1.53,12,6);
+    R(u+0.8,1.5,w+sg*0.3,u+0.88,1.35,w+sg*0.22,0.01,12,4);R(u+0.88,1.35,w+sg*0.22,u+0.9,1.0,w+sg*0.22,0.012,12,4);
+  }else{ /* un fauteuil de skaï, une table basse, des magazines */
+    B(u-0.42,u+0.42,0.12,0.45,w-0.36,w+0.36,16);B(u-0.36,u+0.36,0.45,0.55,w-0.33,w+0.2,16,false);B(u-0.42,u+0.42,0.45,1.0,w+sg*0.22,w+sg*0.36,16,false);
+    for(const q of[-1,1])B(u+q*0.42-(q>0?0.12:0),u+q*0.42+(q<0?0.12:0),0.12,0.68,w-0.36,w+0.36,16,false);
+    for(const q of[-0.36,0.36])for(const t of[-0.3,0.3])R(u+q,0,w+t,u+q,0.12,w+t,0.02,50,4);
+    const t=Q(u+0.78,w);sideTable(g,t[0],t[1],0.5,0.25);B(u+0.66,u+0.92,0.5,0.52,w-0.14,w+0.12,36,false);B(u+0.7,u+0.95,0.52,0.535,w-0.1,w+0.15,34,false);
   }
 }
 function hospitalCell(g,c,i,j,r){
@@ -834,7 +945,7 @@ function hospitalCell(g,c,i,j,r){
         if(k<3&&r()<0.7)g.box(a+sa*2.7-0.02,0.25,Math.min(sb*23.7,sb*20.6),a+sa*2.7+0.02,2.45,Math.max(sb*23.7,sb*20.6),16,false);
         if(Math.abs(a-gc)>2.4&&r()<0.75)hbed(g,a,sb*2.25,sb,r,false);}
       g.box(Math.min(sa*3,sa*23),2.55,Math.min(sb*20.55,sb*20.6),Math.max(sa*3,sa*23),2.6,Math.max(sb*20.55,sb*20.6),50,false);
-      {const a=sa*22.3,b=sb*16.8;g.box(Math.min(a,a+sa*1.5),0,b-1.3,Math.max(a,a+sa*1.5),1.9,b+1.3,41);}
+      {const F=furn(g,true,sb*16.8,sa*23.8,-sa);lockerBank(g,F,-1.3,1.3,0.55,1.95,0.65,80,r);}
       {const b=sb*8.5;g.box(Math.min(sa*2.2,sa*2.35),1.9,b-0.6,Math.max(sa*2.2,sa*2.35),2.5,b+0.6,47,false);}
       {const a=sa*12,b=sb*9;g.box(a-0.9,0.72,b-0.6,a+0.9,0.78,b+0.6,41);g.box(a-0.04,0,b-0.04,a+0.04,0.72,b+0.04,12,false);
         for(const s of[-1,1]){g.box(a+s*1.3-0.22,0,b-0.22,a+s*1.3+0.22,0.45,b+0.22,16);}g.sphere(a+0.3,0.95,b,0.14,13,ICO1,1.4);g.sphere(a+0.3,1.15,b,0.2,[34,36,35][Math.floor(r()*3)],ICO1);}
@@ -845,7 +956,7 @@ function hospitalCell(g,c,i,j,r){
       g.box(a-0.35,0.8,b-0.4,a+0.25,1.2,b-0.32,12,false);g.box(a-0.3,0.84,b-0.38,a+0.2,1.16,b-0.36,29,false);
       for(let k=0;k<4;k++)g.box(a+0.5+k*0.04,0.8,b-0.1,a+0.8+k*0.04,0.84+k*0.03,b+0.3,[0,36,0,16][k],false);
       g.box(a-0.3,0,b+1.0,a+0.3,0.45,b+1.6,16);
-      for(let k=0;k<4;k++)g.box(Math.min(sa*23.3,sa*23.8),0,sb*(4+k*1.1),Math.max(sa*23.3,sa*23.8),1.4,sb*(4+k*1.1)+sb*1,50);
+      {const F=furn(g,true,0,sa*23.8,-sa);for(let k=0;k<4;k++)filing(g,F,sb*(4.5+k*0.55),0.62,80);}
       g.box(Math.min(sa*23.7,sa*23.75),1.5,sb*14,Math.max(sa*23.7,sa*23.75),2.2,sb*17,17,false);
       if(hasNote)g.note(a+0.5,0.95,b);else if(r()<0.5)g.item(a,1.4,b+3);
       if(r()<0.5)g.npc(a-2,0,b-2,r()*6.28);
@@ -1504,8 +1615,8 @@ function aquaCell(g,c,i,j,r){
     for(let k=0;k<6;k++){g.box(-17+k*6.8,0,-14.6,-15+k*6.8,4.5,-14.3,50);for(let q=0;q<6;q++)g.box(-16.9+k*6.8,0.4+q*0.6,-14.31,-15.1+k*6.8,0.6+q*0.6,-14.29,12,false);}
     palm(20,16,10);for(let k=0;k<6;k++)lounger(-15+k*3,18,[49,36,34][k%3]);g.statue(-10,-8);g.statue(10,-12);g.item(0,-1.5,-6);if(r()<0.5)g.note(-14,0.4,17);
   }else{ /* vestiaires : casiers aérés, bancs, douches qui gouttent */
-    for(let l=0;l<4;l++){const b=-14+l*8;for(let k=0;k<16;k++){const a=-18+k*2.4,m=[49,35,48][l%3];g.box(a-1.15,0,b-0.3,a+1.15,2.2,b+0.3,m);
-      for(const s of[-1,1]){for(let q=0;q<2;q++){const u=a-0.6+q*1.15;for(let v=0;v<4;v++)g.box(u-0.35,1.7+v*0.08,b+s*0.3,u+0.35,1.73+v*0.08,b+s*0.31,12,false);g.box(u+0.3,1.0,b+s*0.3,u+0.34,1.2,b+s*0.32,50,false);g.box(u-0.56,0.05,b+s*0.3,u-0.54,2.15,b+s*0.31,12,false);}}}
+    for(let l=0;l<4;l++){const b=-14+l*8,m=[49,35,48][l%3];g.box(-18.6,0,b-0.02,18.6,1.95,b+0.02,12,false);
+      for(const f of[-1,1]){const F=furn(g,false,0,b,f);lockerBank(g,F,-17.6,-9.4,0.3,1.95,0.45,m,r);lockerBank(g,F,-7.6,7.6,0.3,1.95,0.45,m,r);lockerBank(g,F,9.4,17.6,0.3,1.95,0.45,m,r);}
       c3bench(g,0,b+2.0,true,8);}
     showerRow(g,22,-12,5,r);if(r()<0.6)g.note(6,1.2,-10+0.6);g.statue(-4,-6+r()*2);g.item(10,1.1,2);
   }
@@ -1536,7 +1647,7 @@ function houseRoom(g,a0,b0,kind,r){ /* une pièce de 8 m : le mobilier reste dan
   }else if(kind===2){ /* la chambre : lit défait, matelas nu, armoire, table de nuit */
     g.box(a0+6.2,0,b0+5.6,a0+7.85,0.35,b0+7.9,41);g.box(a0+6.25,0.35,b0+5.65,a0+7.8,0.55,b0+7.85,0);for(let q=0;q<6;q++)g.box(a0+6.25,0.551,b0+5.75+q*0.36,a0+7.8,0.553,b0+5.8+q*0.36,49,false);
     g.box(a0+6.2,0.35,b0+7.85,a0+7.85,1.15,b0+7.95,41);g.box(a0+5.65,0,b0+7.4,a0+6.15,0.55,b0+7.9,41);g.cyl(a0+5.9,b0+7.65,0.12,0.55,0.62,0,false,10);g.cyl(a0+5.9,b0+7.65,0.015,0.62,0.85,50,false,4);g.cyl(a0+5.9,b0+7.65,0.14,0.85,1.05,36,false,10);
-    g.box(a0+0.1,0,b0+0.1,a0+1.3,2.1,b0+0.7,41);g.box(a0+0.69,0.15,b0+0.69,a0+0.71,2.0,b0+0.72,12,false);for(const s of[-1,1])g.box(a0+0.7+s*0.08-0.015,1.0,b0+0.7,a0+0.7+s*0.08+0.015,1.2,b0+0.74,50,false);
+    armoire(g,furn(g,false,a0+0.75,b0+0.08,1),0,1.3,0.6,81);
     for(let q=0;q<6;q++)g.box(cx-1.2+q*0.42,0,cz-0.1,cx-0.9+q*0.42,0.35+r()*0.2,cz+0.25,70);
   }else if(kind===3){ /* la salle de bain : baignoire, lavabo et miroir, toilettes */
     g.box(a0+5.6,0,b0+0.02,a0+7.98,1.2,b0+0.05,10,false);g.box(a0+0.02,0,b0+0.02,a0+1.4,1.2,b0+0.05,10,false);

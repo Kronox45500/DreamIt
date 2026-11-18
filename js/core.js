@@ -216,6 +216,24 @@ class Geo{
   /* planche tendue d'un point à un autre (rampes, toboggans, mains courantes) */
   span(a0,y0,b0,a1,y1,b1,w,th,mat,solid){const dx=a1-a0,dy=y1-y0,dz=b1-b0,h=Math.hypot(dx,dz),L=Math.hypot(h,dy);
     this.obox((a0+a1)/2,(y0+y1)/2,(b0+b1)/2,w/2,th/2,L/2,Math.atan2(dx,dz),-Math.atan2(dy,h),mat,solid);}
+  /* tige ronde d'un point à un autre (barreaux, tuyaux, pieds) ; r1 pour l'effiler, caps pour fermer les bouts */
+  rod(a0,y0,b0,a1,y1,b1,r,mat,n,r1,caps){n=n||8;r1=r1===undefined?r:r1;const p=this.P(a0,y0,b0),q=this.P(a1,y1,b1);
+    const d=[q[0]-p[0],q[1]-p[1],q[2]-p[2]],L=Math.hypot(d[0],d[1],d[2])||1,u=[d[0]/L,d[1]/L,d[2]/L];
+    const t=Math.abs(u[1])<0.9?[0,1,0]:[1,0,0];let e1=[u[1]*t[2]-u[2]*t[1],u[2]*t[0]-u[0]*t[2],u[0]*t[1]-u[1]*t[0]];const l1=Math.hypot(e1[0],e1[1],e1[2]);e1=e1.map(x=>x/l1);
+    const e2=[u[1]*e1[2]-u[2]*e1[1],u[2]*e1[0]-u[0]*e1[2],u[0]*e1[1]-u[1]*e1[0]];
+    const R=(c,k,rr)=>{const a=k/n*6.2832,co=Math.cos(a),si=Math.sin(a),w=[e1[0]*co+e2[0]*si,e1[1]*co+e2[1]*si,e1[2]*co+e2[2]*si];return [[c[0]+w[0]*rr,c[1]+w[1]*rr,c[2]+w[2]*rr],w];};
+    for(let k=0;k<n;k++){const A=R(p,k,r),B=R(p,k+1,r),C=R(q,k+1,r1),D=R(q,k,r1);this.quad(A[0],B[0],C[0],D[0],A[1],B[1],B[1],A[1],mat);
+      if(caps){const nu=[-u[0],-u[1],-u[2]];this.quad(p,A[0],B[0],p,nu,nu,nu,nu,mat);this.quad(q,D[0],C[0],q,u,u,u,u,mat);}}}
+  /* cône tronqué vertical, fermé (abat-jour, pots, vases, pieds tournés) */
+  cone(a,b,r0,r1,y0,y1,mat,n){this.rod(a,y0,b,a,y1,b,r0,mat,n||14,r1,true);}
+  /* tore : roues, anneaux, poignées. ax : axe local (x, y ou z) */
+  torus(a,y,b,R,r,ax,mat,n,m){n=n||16;m=m||6;const c=this.P(a,y,b);let u=this.N(ax[0],ax[1],ax[2]);const lu=Math.hypot(u[0],u[1],u[2]);u=u.map(x=>x/lu);
+    const t=Math.abs(u[1])<0.9?[0,1,0]:[1,0,0];let e1=[u[1]*t[2]-u[2]*t[1],u[2]*t[0]-u[0]*t[2],u[0]*t[1]-u[1]*t[0]];const l1=Math.hypot(e1[0],e1[1],e1[2]);e1=e1.map(x=>x/l1);
+    const e2=[u[1]*e1[2]-u[2]*e1[1],u[2]*e1[0]-u[0]*e1[2],u[0]*e1[1]-u[1]*e1[0]];
+    const P=(i,j)=>{const a1=i/n*6.2832,b1=j/m*6.2832,ca=Math.cos(a1),sa=Math.sin(a1),cb=Math.cos(b1),sb=Math.sin(b1);
+      const w=[e1[0]*ca+e2[0]*sa,e1[1]*ca+e2[1]*sa,e1[2]*ca+e2[2]*sa],N=[w[0]*cb+u[0]*sb,w[1]*cb+u[1]*sb,w[2]*cb+u[2]*sb];
+      return [[c[0]+w[0]*R+N[0]*r,c[1]+w[1]*R+N[1]*r,c[2]+w[2]*R+N[2]*r],N];};
+    for(let i=0;i<n;i++)for(let j=0;j<m;j++){const A=P(i,j),B=P(i+1,j),C=P(i+1,j+1),D=P(i,j+1);this.quad(A[0],B[0],C[0],D[0],A[1],B[1],C[1],D[1],mat);}}
   /* dalle vue du dessus seulement (sols continus) */
   top(a0,b0,a1,b1,y,mat){const r=this.rect(a0,b0,a1,b1),Y=this.y+y;this.flat([r[0],Y,r[1]],[r[2],Y,r[1]],[r[2],Y,r[3]],[r[0],Y,r[3]],[0,1,0],mat);}
   solid(a0,y0,b0,a1,y1,b1){const p=this.P(a0,y0,b0),q=this.P(a1,y1,b1);this.col.push(Math.min(p[0],q[0]),p[1],Math.min(p[2],q[2]),Math.max(p[0],q[0]),q[1],Math.max(p[2],q[2]));}
