@@ -2,6 +2,21 @@
 /* =====================================================================
    ÉTHER — noyau : constantes, maths, espaces, géométrie, description du monde
    ===================================================================== */
+/* réglages du joueur : sensibilité, inversion, volume des bruitages, touches */
+const ACTIONS=[['fwd','Avancer','KeyW'],['back','Reculer','KeyS'],['left','Aller à gauche','KeyA'],['right','Aller à droite','KeyD'],['jump','Sauter · remonter','Space'],
+  ['run','Courir · plonger','ShiftLeft'],['crouch','S\'accroupir','KeyC'],['use','Interagir','KeyE'],['music','Couper la musique','KeyM']];
+const SET=(()=>{const d={sens:1,inv:false,sfx:0.8,binds:{}};try{return Object.assign(d,JSON.parse(localStorage.getItem('dream-set')||'{}'));}catch(e){return d;}})();
+function setSave(){try{localStorage.setItem('dream-set',JSON.stringify(SET));}catch(e){}}
+/* la touche physique pressée, traduite vers la touche d'origine de l'action qu'elle remplit */
+function canon(code){
+  for(const [id,,def] of ACTIONS){const b=SET.binds[id];if(b&&b===code)return id==='run'?'ShiftLeft':def;}
+  for(const [id,,def] of ACTIONS){const b=SET.binds[id];if(b&&b!==def&&(code===def||(id==='run'&&code==='ShiftRight')))return '_'+code;}
+  return code;
+}
+/* statistiques, gardées d'une partie à l'autre */
+const STATS=(()=>{const d={time:0,dist:0,levels:[],shards:0,summits:0,talks:0,pearls:0,notes:0,acts:0,souv:0,courses:0,cars:0,stations:0,objectives:0,deaths:0,chapters:[],jumps:0};
+  try{return Object.assign(d,JSON.parse(localStorage.getItem('dream-stats')||'{}'));}catch(e){return d;}})();
+function statSave(){try{localStorage.setItem('dream-stats',JSON.stringify(STATS));}catch(e){}}
 const CELL=48,VIEW_R=7,SHADOW_HALF=64,SHADOW_RES=2048,TOP_HALF=72,TOP_RES=1024,MEGA=2400;
 const RAD=0.3,HGT=1.75,EYE=1.62,STEP=0.55;
 

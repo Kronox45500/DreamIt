@@ -67,15 +67,16 @@ function chapter(){if(mode==='obs')return;const ch=chOf(W),C=CHAPS[ch];
     toast('Chapitre 3 · '+STORY[W].t+' · souvenirs '+n+'/5 · la porte mène à : '+WORLDS[nx].name,6);story(HUBL[n].concat(['Tu reviens toujours ici entre deux lieux. La porte allumée mène au suivant.'].slice(n&&n<5?0:1)));return;}
   toast('Chapitre '+(ch+1)+' · '+(W-C[0]+(ch===2?0:1))+'/'+(C[1]-C[0]-(ch===2?1:0))+' · '+STORY[W].t,5);story(STORY[W].a);}
 function nextWorld(){
+  if(typeof statLevel==='function')statLevel(W);
   if(chOf(W)===2&&mode!=='obs'){ /* chapitre 3 : on revient toujours à la pièce, puis on repart */
     /* l'ordre est fixe : pièce, centre commercial, pièce, cinéma, pièce, arcade, pièce, bowling, pièce, parc aquatique, pièce, maison */
     if(W>15&&W<21){C3.add(W);c3next=W+1;c3save();}
-    if(W===21){wakeKind=2;veil=1;veilHold=END3.length*5.2+1.5;wakeT=veilHold-0.4;chime();story(END3,true);return;}
+    if(W===21){if(typeof statEnd==='function')statEnd(2);wakeKind=2;veil=1;veilHold=END3.length*5.2+1.5;wakeT=veilHold-0.4;chime();story(END3,true);return;}
     const nx=W===15?Math.min(21,Math.max(16,c3next)):15;
     veil=1;veilHold=2.2;play('ascenseur',0.45);setTimeout(()=>play('ding',0.5),1900);loadWorld(nx,true);chapter();return;}
   const last=W===CHAPS[chOf(W)][1]-1;
   if(mode!=='obs'&&last){ /* fin de chapitre : faux réveil (1), vrai réveil (2) */
-    const L=chOf(W)?END2:WAKE;wakeKind=chOf(W);
+    const L=chOf(W)?END2:WAKE;wakeKind=chOf(W);if(typeof statEnd==='function')statEnd(chOf(W));
     veil=1;veilHold=L.length*5.2+1.5;wakeT=veilHold-0.4;chime();story(L,true);return;}
   veil=1;veilHold=1.2;chime();loadWorld(last?CHAPS[chOf(W)][0]:level+1,true);chapter();
 }
@@ -341,10 +342,10 @@ function chaserTick(dt){
   const d=Math.hypot(c.x-pos.x,c.z-pos.z);
   if(d>55){const an=yaw+Math.PI+(Math.random()-0.5);c.x=pos.x+Math.sin(an)*30;c.z=pos.z-Math.cos(an)*30;}
   heartT-=dt;if(d<28&&heartT<=0){heartT=0.32+d/32;heartbeat(Math.min(0.5,1.4/(d+2)));}
-  if(d<0.95&&Math.abs(c.y-pos.y)<2&&veil<0.5&&!(typeof COOP!=='undefined'&&COOP.down)){dead=1.8;jumpEl.firstChild.src=LONG_IMG;jumpEl.classList.add('on');play('smiler',1.0);play('scream',0.7,1.1,2.2);}
+  if(d<0.95&&Math.abs(c.y-pos.y)<2&&veil<0.5&&!(typeof COOP!=='undefined'&&COOP.down)){dead=1.8;STATS.deaths++;jumpEl.firstChild.src=LONG_IMG;jumpEl.classList.add('on');play('smiler',1.0);play('scream',0.7,1.1,2.2);}
 }
 /* chapitre 3 : les statues qui pleurent, le gardien et sa lampe, les visiteurs de la maison */
-function mobKill(img){if(dead>0||mode!=='classic'||(typeof COOP!=='undefined'&&COOP.down))return;dead=1.8;jumpEl.firstChild.src=img;jumpEl.classList.add('on');play('smiler',1.0);play('scream',0.7,1.1,2.2);}
+function mobKill(img){if(dead>0||mode!=='classic'||(typeof COOP!=='undefined'&&COOP.down))return;dead=1.8;STATS.deaths++;jumpEl.firstChild.src=img;jumpEl.classList.add('on');play('smiler',1.0);play('scream',0.7,1.1,2.2);}
 function grind(pan,v){if(!ac)return;const t=ac.currentTime,s=ac.createBufferSource();s.buffer=noiseBuf;const b=ac.createBiquadFilter();b.type='lowpass';b.frequency.value=380;
   const p=ac.createStereoPanner?ac.createStereoPanner():ac.createGain();if(p.pan)p.pan.value=pan;const gg=ac.createGain();gg.gain.setValueAtTime(0.0001,t);gg.gain.exponentialRampToValueAtTime(v,t+0.08);gg.gain.exponentialRampToValueAtTime(0.0005,t+0.7);
   s.connect(b);b.connect(gg);gg.connect(p);p.connect(master);s.start(t,Math.random()*2,0.75);}
@@ -606,9 +607,11 @@ canvas.addEventListener('click',()=>{if(started&&!paused&&!locked)lockPointer();
 document.addEventListener('pointerlockchange',()=>{const was=locked;locked=document.pointerLockElement===canvas;if(was&&!locked&&!paused)pause();});
 let dragging=false;
 canvas.addEventListener('mousedown',()=>{dragging=true;});addEventListener('mouseup',()=>{dragging=false;});
-addEventListener('mousemove',e=>{if(paused)return;if(locked||dragging){yaw+=e.movementX*0.0022;pitch=Math.max(-1.5,Math.min(1.5,pitch-e.movementY*0.0022));}});
-addEventListener('keydown',e=>{
-  if(e.code==='Escape'&&started){if(paused)resume();else pause();return;}
+addEventListener('mousemove',e=>{if(paused)return;if(locked||dragging){yaw+=e.movementX*0.0022*SET.sens;pitch=Math.max(-1.5,Math.min(1.5,pitch-e.movementY*0.0022*SET.sens*(SET.inv?-1:1)));}});
+addEventListener('keydown',ev=>{
+  if(typeof uiKeyCapture==='function'&&uiKeyCapture(ev))return;
+  const e={code:canon(ev.code),repeat:ev.repeat,preventDefault:()=>ev.preventDefault()};
+  if(ev.code==='Escape'&&started){if(paused)resume();else pause();return;}
   if(e.code==='KeyM'){toggleMusic();return;}
   if(paused)return;if(e.code==='KeyE'&&!e.repeat){interact();return;}
   if(e.code==='KeyG'&&!e.repeat&&GEN===3){gps=!gps;return;}
@@ -620,7 +623,7 @@ addEventListener('keydown',e=>{
   if(e.code==='Space'&&!e.repeat)jumpT=time;keys[e.code]=true;
   if(e.code==='Space'||e.code.startsWith('Arrow'))e.preventDefault();
 });
-addEventListener('keyup',e=>{keys[e.code]=false;});
+addEventListener('keyup',e=>{keys[canon(e.code)]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 canvas.addEventListener('touchstart',e=>{e.preventDefault();touchMode=true;for(const t of e.changedTouches){
   if(t.clientX<innerWidth/2&&touch.mId===null){touch.mId=t.identifier;touch.m0=[t.clientX,t.clientY];}
@@ -628,7 +631,7 @@ canvas.addEventListener('touchstart',e=>{e.preventDefault();touchMode=true;for(c
 canvas.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches){
   if(t.identifier===touch.mId){touch.mx=Math.max(-1,Math.min(1,(t.clientX-touch.m0[0])/60));touch.my=Math.max(-1,Math.min(1,-(t.clientY-touch.m0[1])/60));}
   else if(t.identifier===touch.lId){const dx=t.clientX-touch.l0[0],dy=t.clientY-touch.l0[1];if(Math.abs(dx)+Math.abs(dy)>4)touch.lMoved=true;
-    yaw+=dx*0.005;pitch=Math.max(-1.5,Math.min(1.5,pitch-dy*0.005));touch.l0=[t.clientX,t.clientY];}}},{passive:false});
+    yaw+=dx*0.005*SET.sens;pitch=Math.max(-1.5,Math.min(1.5,pitch-dy*0.005*SET.sens*(SET.inv?-1:1)));touch.l0=[t.clientX,t.clientY];}}},{passive:false});
 const tEnd=e=>{for(const t of e.changedTouches){
   if(t.identifier===touch.mId){touch.mId=null;touch.mx=touch.my=0;}
   else if(t.identifier===touch.lId){touch.lId=null;if(!touch.lMoved&&performance.now()-touch.lt<220)touch.jump=true;}}};
@@ -678,9 +681,9 @@ fxUI();
 let ac=null,master=null,noiseBuf=null,rumble=null,windG=null;
 function startAudio(){
   try{
-    if(ac){ac.resume();master.gain.setTargetAtTime(0.45,ac.currentTime,0.4);return;}
+    if(ac){ac.resume();master.gain.setTargetAtTime(0.45*SET.sfx,ac.currentTime,0.4);return;}
     ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=0;master.connect(ac.destination);
-    master.gain.setTargetAtTime(0.45,ac.currentTime,1.5);loadSfx();
+    master.gain.setTargetAtTime(0.45*SET.sfx,ac.currentTime,1.5);loadSfx();
     noiseBuf=ac.createBuffer(1,ac.sampleRate*3,ac.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
     const mk=(type,f,q,gv)=>{const s=ac.createBufferSource();s.buffer=noiseBuf;s.loop=true;const b=ac.createBiquadFilter();b.type=type;b.frequency.value=f;b.Q.value=q;
       const g=ac.createGain();g.gain.value=gv;s.connect(b);b.connect(g);g.connect(master);s.start();return {b,g};};
@@ -852,7 +855,8 @@ function frame(now){
   const doorC=passage?[1.05,0.80+0.1*Math.sin(time*3),0.28]:null;
   if(!paused&&wakeT<=0&&!(typeof COOP!=='undefined'&&COOP.down)){physics(dt);}
   if(!paused&&wakeT<=0){horror(dt);mobsTick(dt);}
-  if(typeof coopTick==='function')coopTick(dt);else{updateTrains(dt);if(!started)yaw=Math.sin(time*0.05)*0.5;}
+  if(typeof coopTick==='function')coopTick(dt);
+  if(typeof statTick==='function')statTick(dt);else{updateTrains(dt);if(!started)yaw=Math.sin(time*0.05)*0.5;}
   updateStreaming();
   const WD=WORLDS[W];BENDV=WD.ring?[pos.x,RING_R,1]:[0,1,0];
 

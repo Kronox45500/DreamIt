@@ -45,34 +45,61 @@ body[data-mode="obs"] #hud,body[data-mode="obs"] #obj,body[data-mode="obs"] #toa
 body[data-mode="classic"] #vig{box-shadow:inset 0 0 260px 60px rgba(0,0,0,.72)}
 #modeD{font-size:.9rem}
 #veil{position:fixed;inset:0;background:var(--white);opacity:0;pointer-events:none}
-#menu{position:fixed;inset:0;display:flex;align-items:flex-end;padding:clamp(20px,6vw,72px);
-  overflow-y:auto;
-  background:linear-gradient(to top,rgba(251,252,255,.94) 0%,rgba(251,252,255,.80) 55%,rgba(251,252,255,.35) 100%);transition:opacity .9s}
+#menu{position:fixed;inset:0;overflow-y:auto;padding:clamp(16px,4vw,48px);
+  background:linear-gradient(100deg,rgba(251,252,255,.94) 0%,rgba(251,252,255,.7) 40%,rgba(251,252,255,.3) 100%);transition:opacity .9s}
 #menu.off{opacity:0;pointer-events:none}
-#menu .inner{display:flex;flex-direction:column;gap:16px;max-width:44rem;margin-top:auto}
-h1{font-family:var(--font-display);font-weight:200;font-size:clamp(2.6rem,9vw,5rem);letter-spacing:.32em;margin:0;line-height:1;color:var(--ink)}
-.sub{font-weight:300;font-size:1.05rem;letter-spacing:.08em;color:var(--ink-soft);margin:0}
-button{font:inherit;font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:.85rem;
-  padding:14px 30px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:background .3s,color .3s}
+#menu .frame{display:grid;grid-template-columns:minmax(240px,320px) minmax(0,1fr);gap:clamp(20px,4vw,56px);min-height:100%;align-items:start}
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:0}
+.nav{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.nav button{text-align:left;padding:12px 18px;font-size:.78rem}
+.nav button.primary{background:var(--ink);color:var(--white);font-size:.95rem;padding:16px 18px}
+.nav button.primary:hover{background:var(--sky-deep)}
+.nav button[aria-current="true"]{background:rgba(22,48,94,.1)}
+h1{font-family:var(--font-display);font-weight:200;font-size:clamp(2.2rem,4.6vw,3.4rem);letter-spacing:.2em;white-space:nowrap;margin:0;line-height:1;color:var(--ink)}
+h2{font-family:var(--font-display);font-weight:300;font-size:1.05rem;letter-spacing:.24em;text-transform:uppercase;margin:22px 0 10px;color:var(--ink)}
+h2:first-child{margin-top:4px}
+h3{font-weight:400;font-size:.95rem;letter-spacing:.06em;margin:0 0 4px;color:var(--ink)}
+.sub{font-weight:300;font-size:1rem;letter-spacing:.06em;color:var(--ink-soft);margin:0}
+.hint{font-weight:300;font-size:.92rem;line-height:1.5;color:var(--ink-soft);margin:0 0 10px;max-width:44rem}
+button{font:inherit;font-weight:400;letter-spacing:.18em;text-transform:uppercase;font-size:.8rem;
+  padding:12px 24px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;transition:background .25s,color .25s}
 button:hover{background:var(--ink);color:var(--white)}
-button:focus-visible{outline:2px solid var(--sky-deep);outline-offset:4px}
-.actions{display:flex;flex-wrap:wrap;gap:12px}
-.music{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
-.music button{padding:9px 16px;font-size:.72rem;letter-spacing:.16em;min-width:13.5em}
-.music input[type=range]{width:150px;accent-color:var(--ink);cursor:pointer}
-.music input[type=range]:focus-visible{outline:2px solid var(--sky-deep);outline-offset:4px}
-#trk{flex-basis:100%;text-transform:none;letter-spacing:.04em;font-weight:300;color:var(--ink-soft);min-height:1.2em}
+button:focus-visible,input:focus-visible{outline:2px solid var(--sky-deep);outline-offset:3px}
+button.small{padding:8px 14px;font-size:.68rem;letter-spacing:.14em}
+button.danger{border-color:#8a1c1c;color:#8a1c1c}button.danger:hover{background:#8a1c1c;color:#fff}
+.panel{background:rgba(255,255,255,.8);border:1px solid rgba(22,48,94,.14);padding:clamp(16px,3vw,32px);max-width:56rem;backdrop-filter:blur(3px)}
+.pg{display:none}.pg.on{display:block}
+#menu.pause .panel:not(.has){display:none}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:8px 0;font-size:.85rem;letter-spacing:.06em}
+.row label,.row .lbl{min-width:13em;color:var(--ink)}
+.row input[type=range]{width:min(260px,60vw);accent-color:var(--ink);cursor:pointer}
+.row input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink)}
+.val{font-variant-numeric:tabular-nums;color:var(--ink-soft);min-width:4em}
+#trk{font-size:.75rem;letter-spacing:.03em;font-weight:300;color:var(--ink-soft);min-height:1.2em;margin:0}
 #menu.title .pauseOnly,#menu.pause .titleOnly{display:none}
 .spaces{display:flex;flex-wrap:wrap;gap:8px}
-.spaces button{padding:8px 14px;font-size:.7rem;letter-spacing:.14em}
+.spaces button{padding:8px 14px;font-size:.7rem;letter-spacing:.12em}
 .spaces button[aria-pressed="true"]{background:var(--ink);color:var(--white)}
-.spaces .chl{flex-basis:100%;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;opacity:.75;margin-top:6px}
-.spaces button:disabled{opacity:.35;cursor:default;background:transparent;color:var(--ink)}
+.spaces .chl{flex-basis:100%;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;opacity:.75;margin-top:8px}
+.spaces button:disabled{opacity:.32;cursor:default;background:transparent;color:var(--ink)}
 #where{font-weight:400;color:var(--ink)}
-#menu.pause h1{font-size:clamp(2rem,6vw,3.2rem)}
-dl{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;margin:0;font-size:.85rem;font-weight:300;color:var(--ink-soft)}
-dt{letter-spacing:.12em;text-transform:uppercase;font-weight:400;color:var(--ink)}
-dd{margin:0}
+#binds{display:grid;grid-template-columns:minmax(12em,auto) auto;gap:6px 16px;align-items:center;font-size:.85rem;max-width:32rem}
+#binds button{padding:7px 12px;font-size:.72rem;min-width:9em;text-align:center}
+#binds button.wait{background:var(--sky-deep);color:#fff}
+#statsT{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.stat{border:1px solid rgba(22,48,94,.15);padding:12px 14px;background:rgba(255,255,255,.5)}
+.stat b{display:block;font-family:var(--font-display);font-weight:300;font-size:1.6rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.stat span{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.gnav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.gnav button{padding:7px 12px;font-size:.66rem}
+.gnav button[aria-pressed="true"]{background:var(--ink);color:var(--white)}
+.gsec{display:none}.gsec.on{display:block}
+.gcard{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:14px;align-items:start;margin:0 0 16px}
+.gcard img{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid rgba(22,48,94,.2);display:block;background:#223}
+.gcard p{margin:0;font-weight:300;font-size:.9rem;line-height:1.5;color:var(--ink-soft)}
+.gsec ol,.gsec ul{margin:0 0 12px;padding-left:1.2em;font-weight:300;font-size:.92rem;line-height:1.6;color:var(--ink-soft)}
+kbd{font-family:inherit;font-size:.78em;border:1px solid var(--ink-soft);padding:1px 6px;border-radius:3px;color:var(--ink)}
+@media (max-width:760px){#menu .frame{grid-template-columns:1fr}.side{position:static}.gcard{grid-template-columns:1fr}}
 #hud{position:fixed;left:20px;bottom:16px;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:300;
   color:var(--white);text-shadow:0 0 8px rgba(22,48,94,.55);font-variant-numeric:tabular-nums;pointer-events:none;opacity:0;transition:opacity 1.2s;
   display:flex;gap:22px}
@@ -118,38 +145,56 @@ body.downed canvas{filter:grayscale(1) brightness(.55) contrast(1.2)}
 <div id="toast"></div>
 <div id="story"></div>
 <div id="menu" class="title">
-  <div class="inner">
-    <h1 id="ttl">DREAM IT</h1>
-    <p class="sub titleOnly">Un rêve en trois chapitres, de l'enfance à la maison vendue. Chaque lieu a son objectif, puis sa propre façon d'en sortir.</p>
-    <p class="sub" id="where"></p>
-    <div class="spaces titleOnly" id="spaces" aria-label="Espaces débloqués"></div>
-    <div class="spaces titleOnly" id="modes" aria-label="Mode de jeu"></div>
-    <p class="sub titleOnly" id="modeD"></p>
-    <div class="spaces titleOnly coop" id="coop" aria-label="Coop"></div>
-    <div class="actions">
-      <button id="go" type="button">Entrer</button>
-      <button id="restart" type="button" class="pauseOnly">Recommencer</button>
-      <button id="tomenu" type="button" class="pauseOnly">Retour au menu</button>
-    </div>
-    <div class="music">
-      <button id="mus" type="button" aria-pressed="true">Musique activée</button>
-      <label for="vol">Volume</label>
-      <input id="vol" type="range" min="0" max="100" step="1" value="60">
-      <button id="fxb" type="button">Filtre : aucun</button>
-      <span id="trk"></span>
-    </div>
-    <dl class="titleOnly">
-      <dt>ZQSD / flèches</dt><dd>marcher</dd>
-      <dt>Souris</dt><dd>regarder</dd>
-      <dt>Espace · Maj</dt><dd>sauter · courir (les grands sauts demandent de l'élan)</dd>
-      <dt>E</dt><dd>écouter un œil ailé, klaxon de la voiture, s'asseoir sur une balançoire</dd>
-      <dt>C</dt><dd>s'accroupir (maintenir), pour les passages bas</dd>
-      <dt>Dalles bleues · vertes</dt><dd>tremplins · départ d'une course chronométrée</dd>
-      <dt>Dans l'eau</dt><dd>Espace pour remonter, Maj pour plonger, regardez où vous nagez</dd>
-      <dt>Métro</dt><dd>montez dans une rame à quai, elle repart toute seule</dd>
-      <dt>Échap · M</dt><dd>menu · couper la musique</dd>
-      <dt>Tactile</dt><dd>moitié gauche pour marcher, droite pour regarder</dd>
-    </dl>
+  <div class="frame">
+    <nav class="side" aria-label="Menu">
+      <h1 id="ttl">DREAM IT</h1>
+      <p class="sub titleOnly tag">Un rêve en trois chapitres, de l'enfance à la maison vendue.</p>
+      <p class="sub" id="where"></p>
+      <div class="nav">
+        <button id="go" type="button" class="primary">Entrer</button>
+        <button id="restart" type="button" class="pauseOnly">Recommencer ce lieu</button>
+        <button type="button" data-p="chapters" class="titleOnly">Chapitres et modes</button>
+        <button type="button" data-p="coop" class="titleOnly">Coop</button>
+        <button type="button" data-p="guide">Guide du rêveur</button>
+        <button type="button" data-p="stats">Statistiques</button>
+        <button type="button" data-p="settings">Paramètres</button>
+        <button id="tomenu" type="button" class="pauseOnly">Menu principal</button>
+      </div>
+      <p id="trk"></p>
+    </nav>
+    <section class="panel" aria-live="polite">
+      <div class="pg" data-pg="chapters">
+        <h2>Chapitres</h2>
+        <p class="hint">Chaque lieu terminé ouvre le suivant. Choisis-en un, puis entre.</p>
+        <div class="spaces" id="spaces" aria-label="Lieux débloqués"></div>
+        <h2>Mode de jeu</h2>
+        <div class="spaces" id="modes" aria-label="Mode de jeu"></div>
+        <p class="hint" id="modeD"></p>
+      </div>
+      <div class="pg" data-pg="coop">
+        <h2>Coop</h2>
+        <p class="hint">Jusqu'à quatre rêveurs dans le même lieu. L'un crée la partie et donne son code de quatre lettres ; les autres le tapent et rejoignent. Ce qu'un rêveur trouve compte pour tous, et on ne sort qu'ensemble.</p>
+        <div class="spaces coop" id="coop" aria-label="Coop"></div>
+      </div>
+      <div class="pg" data-pg="guide" id="guide"></div>
+      <div class="pg" data-pg="stats"><h2>Statistiques</h2><div id="statsT"></div></div>
+      <div class="pg" data-pg="settings" id="settings">
+        <h2>Son</h2>
+        <div class="row"><label for="vol">Musique</label><input id="vol" type="range" min="0" max="100" step="1" value="60"><button id="mus" type="button" aria-pressed="true" class="small">Musique activée</button></div>
+        <div class="row"><label for="sfxv">Bruitages</label><input id="sfxv" type="range" min="0" max="100" step="1" value="80"><span id="sfxo" class="val"></span></div>
+        <h2>Image</h2>
+        <div class="row"><span class="lbl">Filtre</span><div class="spaces" id="fxs"></div><button id="fxb" type="button" hidden>Filtre</button></div>
+        <h2>Contrôles</h2>
+        <div class="row"><label for="sens">Sensibilité de la souris</label><input id="sens" type="range" min="20" max="300" step="5" value="100"><span id="senso" class="val"></span></div>
+        <div class="row"><label for="inv">Inverser l'axe vertical</label><input id="inv" type="checkbox"></div>
+        <p class="hint">Clique sur une touche, puis appuie sur la nouvelle. Échap annule. Les flèches restent toujours actives pour marcher.</p>
+        <div id="binds"></div>
+        <div class="row"><button id="bdef" type="button" class="small">Touches par défaut</button></div>
+        <h2>Progression</h2>
+        <p class="hint">Efface les lieux débloqués, les souvenirs rangés et les statistiques. Les réglages sont gardés.</p>
+        <div class="row"><button id="reset" type="button" class="small danger">Tout recommencer</button><span id="reseto" class="val"></span></div>
+      </div>
+    </section>
   </div>
 </div>
 <div id="err"><p>Ce jeu a besoin de WebGL 2, que ce navigateur ne fournit pas. Essayez avec une version récente de Chrome, Firefox ou Safari.</p></div>
@@ -160,5 +205,6 @@ body.downed canvas{filter:grayscale(1) brightness(.55) contrast(1.2)}
 <script src="js/render.js"></script>
 <script src="js/game.js"></script>
 <script src="js/coop.js"></script>
+<script src="js/ui.js"></script>
 </body>
 </html>
