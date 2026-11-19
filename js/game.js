@@ -20,22 +20,23 @@ try{const m=localStorage.getItem('ether-mode');if(m==='obs'||m==='calm'||m==='cl
 const PASSH=['sautez dans le vide','montez dans une rame et laissez-vous emporter','prenez un tremplin','restez sous l\'eau jusqu\'au bout','retournez à votre voiture','courez contre un mur','sautez de la galerie dans le vide central','balancez-vous','entrez dans une maison','prenez l\'ascenseur','montez dans le lit vide','fermez les yeux : accroupissez-vous (C) sans bouger','laissez-vous porter par un tapis roulant','nagez vers le large','montez dans le lit, jusqu\'à l\'oreiller, et ouvrez les yeux','passez la porte allumée','prenez l\'ascenseur de l\'aire de restauration','asseyez-vous au premier rang (C)','jouez la partie qui reste : la borne qui clignote','marchez jusqu\'aux quilles','descendez le grand toboggan, jusqu\'au fond','asseyez-vous sur sa chaise'];
 /* le récit : un rêve, chaque lieu est un morceau de vie ; à la fin on croit se réveiller */
 const STORY=[
- {t:'Un rêve',a:['Tu dors.','C\'est un rêve comme les autres. Blanc, calme, beaucoup trop grand.'],e:'Quelque chose t\'appelle, plus bas.'},
- {t:'La vie d\'adulte',a:['Le même quai, tous les matins.','Tu ne sais plus à quelle station tu devais descendre.'],e:'La rame t\'attend. Elle t\'a toujours attendu.'},
- {t:'Le futur, vu de l\'enfance',a:['Quand tu étais petit, demain ressemblait à ça.','De l\'herbe, du verre, un ciel sans nuage. Il n\'est jamais arrivé.'],e:'Prends ton élan.'},
- {t:'Les jours de piscine',a:['L\'odeur du chlore. L\'écho.','Tout le monde est parti se changer. Toi, tu es resté dans l\'eau.'],e:'Retiens ton souffle.'},
- {t:'L\'école, la nuit',a:['Tu es en retard. Tu ne retrouves plus ta classe.','Les couloirs n\'étaient pas si longs, avant.'],e:'Ne cherche plus la porte. Il n\'y en a pas.'},
- {t:'Les jeux d\'avant',a:['Tu connais cet endroit par cœur. La cartouche est abîmée.','Les textures manquent là où ta mémoire manque.'],e:'Saute hors de la carte.'},
- {t:'Le square',a:['Ici, tu étais petit, et tout le reste était immense.','Les jouets ont gardé la taille qu\'ils avaient alors.'],e:'Encore un tour de balançoire.'},
- {t:'Là où tu habitais',a:['Toutes les maisons se ressemblent. Une seule était la tienne.','La rue monte, passe au-dessus de toi, et revient.'],e:'Rentre.'},
- {t:'Le retour',a:['Le parking, tard. Tes parents cherchent la voiture.','Tu t\'endormiras sur la banquette arrière, comme toujours.'],e:'La voiture est là. On rentre à la maison.'},
- /* chapitre 2 : le long sommeil. Le plafond trop blanc était celui d'un hôpital */
- {t:'Le plafond blanc',a:['Ce n\'était pas ta chambre. C\'était un plafond d\'hôpital.','Des pas dans le couloir, un bip régulier, une voix que tu connais.','Tu dors encore. Mais ce n\'est plus le même sommeil.','Ton dossier traîne quelque part, en morceaux. Lis-le.'],e:'Un lit t\'attend, vide et bien fait. Monte dedans.'},
- {t:'Les voix derrière les portes',a:['Les médecins disent que tu entends peut-être.','Alors tu marches dans des couloirs. Derrière chaque porte, on parle de toi à voix basse.','Quelque part, un téléphone sonne. C\'est pour toi. Décroche.'],e:'L\'ascenseur est arrivé. Il descend plus profond.'},
- {t:'Ceux qui attendent',a:['Ici, tout le monde attend quelqu\'un.','Quelque part, dans une autre salle d\'attente, ta famille fait pareil.','Des cartes d\'embarquement traînent sur les sièges. Elles portent ton nom.'],e:'Tu as assez attendu. Laisse le tapis te porter.'},
- {t:'La nuit du retour',a:['Le parking, sous la terre. Tu ne te souviens pas de la route.','Seulement des phares, la banquette arrière, et puis le blanc.','La voiture est garée quelque part. Appuie sur E : elle répondra.'],e:'Ferme les yeux. Accroupis-toi, et ne bouge plus.'},
- {t:'Le large',a:['La mer est rose et tiède. Tu n\'as jamais été aussi bien.','C\'est ici que le sommeil voudrait te garder. Pour toujours, s\'il pouvait.','Des bouteilles échouées sur le sable. Il y a des mots dedans.'],e:'Nage vers le large, vers la lumière.'},
- {t:'Chambre 214',a:['Une chambre immense. Un lit, une machine qui bipe, une chaise.','Sur la chaise, quelqu\'un s\'est endormi en t\'attendant. Il était là depuis le début.','Partout, des cartes. Tout le monde t\'a écrit.'],e:'Monte dans le lit. Ouvre les yeux.'},
+ /* chapitre 1 : le rêve. Une boucle de rêves et de cauchemars, dans le coma ; la vie s'y infiltre */
+ {t:'Un rêve',a:['Tu dors.','Quelque part, très loin, une machine fait bip. Tu ne sais pas encore que c\'est pour toi.','C\'est un rêve comme les autres. Blanc, calme, beaucoup trop grand.'],e:'Quelque chose t\'appelle, plus bas.'},
+ {t:'La vie que tu n\'as pas eue',a:['Un quai, tous les matins. Un manteau, un café, une rame.','Tu rêves de la vie d\'adulte qu\'on t\'avait promise. Tu as onze ans.','Dans les haut-parleurs, une voix dit ton prénom doucement, comme on le dit à quelqu\'un qui dort.'],e:'La rame t\'attend. Elle t\'a toujours attendu.'},
+ {t:'Le futur, vu de l\'enfance',a:['Quand tu étais petit, demain ressemblait à ça.','De l\'herbe, du verre, un ciel sans nuage.','Le vent sent le désinfectant. Tu ne sais pas pourquoi.'],e:'Prends ton élan.'},
+ {t:'Les jours de piscine',a:['L\'odeur du chlore. L\'écho.','Tout le monde est parti se changer. Toi, tu es resté dans l\'eau.','Quelqu\'un est resté aussi. Il est assis, loin, et il ne te quitte pas des yeux.'],e:'Retiens ton souffle.'},
+ {t:'L\'école, la nuit',a:['Tu es en retard. Tu ne retrouves plus ta classe.','Ta chaise est vide depuis des semaines. La maîtresse a demandé aux autres de t\'écrire une carte.','Les couloirs n\'étaient pas si longs, avant.'],e:'Ne cherche plus la porte. Il n\'y en a pas.'},
+ {t:'Les jeux d\'avant',a:['La console que papa t\'avait offerte. La cartouche est abîmée.','Les textures manquent là où ta mémoire manque.','Ta sauvegarde est toujours là, à la maison. Personne n\'ose l\'effacer.'],e:'Saute hors de la carte.'},
+ {t:'Le square',a:['Ici, tu étais petit, et tout le reste était immense.','Papa poussait la balançoire. Plus haut, disais-tu. Toujours plus haut.','Aujourd\'hui personne ne pousse. Elle bouge quand même.'],e:'Encore un tour de balançoire.'},
+ {t:'Là où tu habitais',a:['Toutes les maisons se ressemblent. Une seule était la tienne.','Ta fenêtre est la seule allumée. Il n\'y a personne dedans.','La rue monte, passe au-dessus de toi, et revient.'],e:'Rentre.'},
+ {t:'Le retour',a:['Le parking, tard. Les vacances sont finies. Papa cherche la voiture.','Tu t\'endormiras sur la banquette arrière, comme toujours.','Ce soir-là, tu ne t\'es pas réveillé à la maison.'],e:'La voiture est là. On rentre.'},
+ /* chapitre 2 : les dernières vacances. Le coma rêve l'été d'avant l'accident, puis la nuit du retour, puis l'hôpital */
+ {t:'Le départ',a:['Le jour du départ. Papa avait tout imprimé, deux fois.','Tu avais collé ton front au hublot pendant tout le vol. Il te regardait, lui, pas les nuages.','Ici, les cartes d\'embarquement traînent sur les sièges. Elles portent toutes ton nom.'],e:'Tu as assez attendu. Laisse le tapis te porter.'},
+ {t:'L\'hôtel des vacances',a:['L\'hôtel du bord de mer. La moquette épaisse, l\'ascenseur doré.','Tu décrochais tous les téléphones des couloirs pour faire rire papa.','Ils sonnent encore. Au bout du fil, ce ne sont plus des voix de vacances. Décroche.'],e:'L\'ascenseur est arrivé. Il descend plus profond.'},
+ {t:'La mer',a:['La plage des vacances. C\'est ici que papa t\'a appris à faire la planche.','La mer est rose et tiède. Tu n\'as jamais été aussi bien.','C\'est ici que le sommeil voudrait te garder. Pour toujours, s\'il pouvait.','Des bouteilles échouées sur le sable. Il y a des mots dedans. C\'est son écriture.'],e:'Nage vers le large, vers la lumière.'},
+ {t:'La nuit du retour',a:['Le parking, sous la terre. Tu ne te souviens pas de la route.','Seulement la radio très bas, papa qui bâille, la fenêtre qu\'il ouvre pour ne pas dormir.','La voiture est garée quelque part. Appuie sur E : elle répondra.'],e:'Ferme les yeux. Accroupis-toi, et ne bouge plus.'},
+ {t:'Le plafond blanc',a:['Ce n\'était pas ta chambre. C\'était un plafond d\'hôpital.','Ton dossier traîne quelque part, en morceaux. Lis-le.','Dans un couloir, un homme répète la même phrase : « Il dormait. Il dormait juste à l\'arrière. »'],e:'Un lit t\'attend, vide et bien fait. Monte dedans.'},
+ {t:'Chambre 214',a:['Une chambre immense. Un lit, une machine qui bipe, une chaise.','Sur la chaise, papa s\'est endormi en t\'attendant. Il est là depuis le début.','Partout, des cartes. Tout le monde t\'a écrit. Lui, il t\'a écrit tous les jours.'],e:'Monte dans le lit. Ouvre les yeux.'},
  /* chapitre 3 : ce qu'on a perdu. Un an après le réveil ; la chaise de la chambre 214 est restée vide */
  {t:'La pièce aux souvenirs',a:[],e:''},
  {t:'Les samedis',a:['Le centre commercial a fermé l\'année de tes dix ans. Papa disait : on fait juste un tour.','On ne faisait jamais juste un tour.','Quelque part, au kiosque, il y a encore ce qu\'il t\'avait acheté.'],e:'L\'ascenseur de l\'aire de restauration te ramènera.'},
@@ -43,18 +44,24 @@ const STORY=[
  {t:'Les pièces de un franc',a:['La salle d\'arcade. Thomas et toi, tous les mercredis. Papa vous donnait des pièces et attendait dehors, sur le banc.','Thomas a déménagé. Vous vous étiez promis d\'écrire.'],e:'Il reste une partie, celle que vous n\'avez jamais finie : la borne qui clignote au fond.'},
  {t:'Les anniversaires',a:['Le bowling des anniversaires. Papa lançait de travers, exprès, pour te faire rire.','Les chaussures de location sentaient le désinfectant. Tu donnerais tout pour cette odeur.'],e:'Va jusqu\'au bout d\'une piste, là où tombent les quilles.'},
  {t:'Les étés',a:['Le parc aquatique a été vidé. Les toboggans descendent dans des bassins secs.','C\'est là qu\'il t\'a appris à nager. Tu te souviens de sa main sous ton ventre, et puis plus de main.'],e:'Descends le grand toboggan, jusqu\'au fond du bassin.'},
- {t:'Vendue',a:['La maison est vendue. Des inconnus la visitent ; ils mesurent les murs, ils parlent fort.','Il faut finir les cartons. Après, ce ne sera plus chez toi.'],e:'Ta chambre. Sa chaise y est encore.'},
+ {t:'Vendue',a:['La maison est vendue. Des inconnus la visitent ; ils mesurent les murs, ils parlent fort.','La porte de sa chambre à lui est restée fermée depuis novembre. Personne ne l\'a rouverte.','Il faut finir les cartons. Après, ce ne sera plus chez toi.'],e:'Ta chambre. Sa chaise y est encore.'},
 ];
-const END2=['Un bip. Puis un autre, plus rapide.','Le plafond blanc. Il est à la bonne distance, cette fois.','Sur la chaise, quelqu\'un se réveille en sursaut.','« Tu m\'entends ? »','Oui.'];
+const END2=['Un bip. Puis un autre, plus rapide.','Le plafond blanc. Il est à la bonne distance, cette fois.','Sur la chaise, papa se réveille en sursaut. Il a vieilli de dix ans.','« Tu m\'entends ? »','Oui.','Il se met à pleurer. Il répète pardon, pardon, et tu ne sais pas encore pourquoi.'];
 const HUBL=[
- ['Un an a passé depuis le réveil. Tu marches de nouveau, sans canne.','Papa n\'a pas vu la fin de la rééducation. Il était fatigué ; il l\'était depuis la chaise.','Il faut vider la maison. Et la nuit, tu retournes dans les lieux qui ont fermé, chercher ce qui reste.'],
- ['La petite voiture rouge. Tu la poses sur l\'étagère. Une roue grince encore.'],
+ ['Six ans ont passé depuis le réveil. Tu marches de nouveau, sans canne.','Papa, lui, ne s\'est jamais réveillé de cette nuit-là. Il venait à tous tes rendez-vous, il souriait, et il ne se pardonnait rien.','Un matin de novembre, il n\'est pas descendu. Il avait laissé sur la table de la cuisine une lettre, et les clés de la maison.','Tu n\'as pas ouvert la lettre. Il faut vider la maison. Et la nuit, tu retournes dans les lieux qui ont fermé, chercher ce qui reste de lui.'],
+ ['La petite voiture rouge. Tu la poses sur l\'étagère. Une roue grince encore.','Il l\'avait gardée dans sa poche, à l\'hôpital, tout le temps du coma.'],
  ['Les deux tickets. Tu lui racontes la fin du film, tout bas. C\'était une fin heureuse.'],
- ['Le ticket gagnant. Thomas, si tu savais. Il faudrait lui écrire.'],
- ['La photo du gâteau. Il a de la crème jusqu\'au nez. Il rit.'],
- ['La serviette rayée. Elle sent encore le chlore et l\'été.','Il ne reste que la maison.']];
-const END3=['Tu t\'assois sur la chaise. Elle a encore un peu la forme de quelqu\'un.','Pendant des mois, il a attendu ici que tu reviennes.','Maintenant c\'est toi qui attends. Mais tu sais qu\'il ne viendra pas.','Alors tu poses les clés sur le rebord de la fenêtre, à côté de la petite voiture rouge.','Dehors, il fait jour. Tu n\'as plus peur de l\'eau, ni du noir, ni de partir.','Merci d\'avoir attendu, papa.'];
-const WAKE=['Tu ouvres les yeux.','Le plafond de ta chambre. C\'est le matin.','…','Non. Le plafond est trop blanc. Trop loin.','Tu dors encore.'];
+ ['Le ticket gagnant. Thomas, si tu savais. Il faudrait lui écrire.','Papa aussi voulait t\'écrire. Il a écrit, à la fin. Une seule fois.'],
+ ['La photo du gâteau. Il a de la crème jusqu\'au nez. Il rit.','Après l\'accident, il n\'a plus jamais ri comme ça. Tu l\'avais remarqué. Tu n\'avais rien dit.'],
+ ['La serviette rayée. Elle sent encore le chlore et l\'été.','Il ne reste que la maison. Et la lettre, dans ta poche, toujours fermée.']];
+const END3=['Tu t\'assois sur la chaise. Elle a encore un peu la forme de quelqu\'un.','Pendant des mois, il a attendu ici que tu reviennes. Tu es revenu. Lui, il est resté sur le bord de cette route.','Tu ouvres enfin la lettre. Il n\'y a qu\'une ligne, de son écriture penchée :','« Pardon pour la route. »','Tu aurais voulu lui dire que tu ne lui en avais jamais voulu. Pas une seule fois.','Alors tu le dis, tout haut, dans la chambre vide.','Tu poses les clés sur le rebord de la fenêtre, à côté de la petite voiture rouge.','Ce n\'était pas ta faute, papa.','Si tu portes quelque chose de trop lourd, parle à quelqu\'un. En France, le 3114 répond jour et nuit.'];
+const WAKE=['Tu t\'endors à l\'arrière. La radio, très bas.','Papa bâille. Il ouvre la fenêtre pour se tenir éveillé.','« Dors. On arrive bientôt. »','Des phares. Beaucoup trop de phares.','…','Blanc.','Un bip. Tu dors encore. Mais ce n\'est plus le même sommeil.'];
+/* les silhouettes assises qui veillent : ce qu'on comprend en s'approchant (par générateur) */
+const SITL={3:['Il porte la veste de papa. Il ne se retourne pas.','« Je suis là. Je ne bouge pas. Nage, je te regarde. »'],
+  14:['Papa. Il dort la bouche ouverte, la main tendue vers le lit.','Il a gardé ses chaussures. Il n\'est pas rentré depuis des semaines.','Sur ses genoux, la petite voiture rouge.']};
+let sitSaid=-1;
+function sitTalk(){if(mode==='obs'||sitSaid===W||!started||paused)return;const T=SITL[WORLDS[W].gen];if(!T)return;
+  for(const c of cells.values()){if(!c.sit)continue;const big=(c.sit[3]||1)>2;if(Math.hypot(c.sit[0]-pos.x,c.sit[2]-pos.z)<(big?16:5)){sitSaid=W;story(T);return;}}}
 const storyEl=document.getElementById('story');let storyQ=[],storyT=0,wakeT=0,wakeKind=0,lieT=0,beltT=0;
 function story(lines,ink){if(mode==='obs')return;storyQ=lines.slice();storyT=0;storyEl.classList.toggle('ink',!!ink);storyEl.classList.remove('on');}
 function storyTick(dt){
@@ -77,16 +84,18 @@ function nextWorld(){
   const last=W===CHAPS[chOf(W)][1]-1;
   if(mode!=='obs'&&last){ /* fin de chapitre : faux réveil (1), vrai réveil (2) */
     const L=chOf(W)?END2:WAKE;wakeKind=chOf(W);if(typeof statEnd==='function')statEnd(chOf(W));
-    veil=1;veilHold=L.length*5.2+1.5;wakeT=veilHold-0.4;chime();story(L,true);return;}
+    veil=1;veilHold=L.length*5.2+1.5;wakeT=veilHold-0.4;chime();story(L,true);if(L===WAKE){setTimeout(()=>{try{play('impact',0.9);}catch(e){}},3*5200+300);}return;}
   veil=1;veilHold=1.2;chime();loadWorld(last?CHAPS[chOf(W)][0]:level+1,true);chapter();
 }
 function wakeEnd(){
-  if(wakeKind===0){ /* le rêve reprend ; la suite s'ouvre dans le menu */
+  if(wakeKind===0){ /* le choc : le coma rêve maintenant les dernières vacances */
     try{localStorage.setItem('ether-ch1','1');}catch(e){}
-    loadWorld(0,true);chapter();return;}
+    loadWorld(9,true);chapter();return;}
+  if(wakeKind===1&&mode!=='obs'){ /* des années plus tard : la pièce aux souvenirs */
+    C3.clear();c3next=16;c3save();loadWorld(15,true);chapter();return;}
   loadWorld(0);started=false;paused=true;showMenu('title');
   if(document.pointerLockElement)document.exitPointerLock();
-  document.getElementById('where').textContent=wakeKind===2?'Fin · Ce qu\'on a perdu.':'Fin · tu t\'es réveillé.';
+  document.getElementById('where').textContent=wakeKind===2?'Fin · Ce n\'était pas ta faute.':'Fin · tu t\'es réveillé.';
 }
 const mobs=new Map(),noteTaken=new Set(),answered=new Set(),gone=new Set(),visited=new Set(),talked=new Set(),pearlTaken=new Set(),doneCourse=new Set();
 function val(k){return k==='summits'?summits:k==='shards'?shards:ex[k];}
@@ -101,8 +110,8 @@ const LINES=[
  ['Je ne retrouve pas ma voiture non plus.','Les lampadaires ne s\'éteignent jamais.','Vous avez entendu ? Un bip, là-bas.','Le parking continue après le parking.','Il est tard. Il est toujours tard.'],
  ['C\'est laquelle, la tienne ? Elles ont toutes la même porte.','La rue repasse au-dessus. Je l\'ai suivie.','Quelqu\'un tond la pelouse, mais on ne le voit jamais.','On t\'attend pour dîner. Depuis longtemps.','Les volets sont ouverts, il n\'y a personne.'],
  ['Chambre 214. Ou 412. Je ne sais plus.','Le petit-déjeuner est servi jusqu\'à dix heures. Il est toujours dix heures.','J\'ai rendu ma clé il y a longtemps.','On entend une télévision, derrière une porte.','L\'ascenseur ne descend pas. Il emmène ailleurs.'],
- ['Il dort depuis combien de temps ?','Parlez-lui. On dit que ça aide.','Le bip ralentit la nuit. Puis il reprend.','Je cherche la chambre 214. Les numéros changent quand on les lit.','Les infirmières passent toutes les heures. On ne les voit jamais.'],
- ['Vous avez vu des phares ? Moi aussi. Tout le temps.','On cherche tous une voiture qui n\'est plus là.','Ne restez pas au milieu de l\'allée.','En dessous, il y a un autre niveau. Et encore un autre.','Il fait si calme ici. On pourrait dormir. Ne dormez pas.'],
+ ['Il dort depuis combien de temps ?','Parlez-lui. On dit que ça aide.','Le bip ralentit la nuit. Puis il reprend.','Je cherche la chambre 214. Les numéros changent quand on les lit.','Les infirmières passent toutes les heures. On ne les voit jamais.','Le père du 214 ne dort plus. Il dit que c\'est comme ça que ça arrive.'],
+ ['Vous avez vu des phares ? Moi aussi. Tout le temps.','On cherche tous une voiture qui n\'est plus là.','Ne restez pas au milieu de l\'allée.','En dessous, il y a un autre niveau. Et encore un autre.','Il fait si calme ici. On pourrait dormir. Ne dormez pas.','Une seconde. Il a fermé les yeux une seconde. Ça suffit, une seconde.'],
  ['Mon vol est annoncé. Il l\'est toujours.','Je garde une valise. Elle n\'est à personne.','Tout le monde part d\'ici. Personne n\'arrive.','Le tapis vous emmène plus loin que vous ne pensez.','On m\'a dit d\'attendre ici.'],
  ['L\'eau est encore tiède.','Le soleil ne se couche pas. Il hésite.','Ne t\'éloigne pas trop. Enfin, si.','Les cabines sont fermées jusqu\'à l\'été prochain.','Il y a des choses, là-bas, debout dans la mer.'],
  ['Chut. Il va se réveiller.','C\'était plus petit, avant. Ou c\'est toi.','La machine compte pour toi, en attendant.','Il t\'a parlé toute la nuit. Tu as entendu ?','Encore cinq minutes. Puis ouvre les yeux.'],,
@@ -254,7 +263,7 @@ function checkGoal(){
   if(!passage&&GK.every(k=>val(k)>=G[k])){passage=true;chime();if(STORY[W].e)story([STORY[W].e]);}
   pickTarget();
 }
-function loadWorld(lv,arrive){
+function loadWorld(lv,arrive){sitSaid=-1;
   level=lv;if(lv<9){if(lv>maxLevel)maxLevel=lv;}else if(lv<15){if(lv>max2)max2=lv;}else if(lv>max3)max3=lv;try{localStorage.setItem('ether-level',lv);localStorage.setItem('ether-max',maxLevel);localStorage.setItem('ether-max2',max2);localStorage.setItem('dream-max3',max3);}catch(e){}
   applyWorld();worldMusic();infoCache.clear();ascCache.clear();megaCache.clear();
   for(const c of cells.values())freeCell(c);cells.clear();
@@ -856,7 +865,8 @@ function frame(now){
   if(!paused&&wakeT<=0&&!(typeof COOP!=='undefined'&&COOP.down)){physics(dt);}
   if(!paused&&wakeT<=0){horror(dt);mobsTick(dt);}
   if(typeof coopTick==='function')coopTick(dt);
-  if(typeof statTick==='function')statTick(dt);else{updateTrains(dt);if(!started)yaw=Math.sin(time*0.05)*0.5;}
+  if(typeof statTick==='function')statTick(dt);sitTalk();
+  if(paused||wakeT>0){updateTrains(dt);if(!started)yaw=Math.sin(time*0.05)*0.5;}
   updateStreaming();
   const WD=WORLDS[W];BENDV=WD.ring?[pos.x,RING_R,1]:[0,1,0];
 
