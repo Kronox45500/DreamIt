@@ -556,7 +556,7 @@ function physics(dt){
     else if(GEN===11){lieT=(crouch&&grounded&&walkV<0.4)?lieT+dt:0;go=lieT>3;}
     else if(GEN===12)go=beltT>6;
     else if(GEN===13)go=swim&&pos.z>CELL*3.4;
-    else if(GEN>=15){const R=GEN===20?3:GEN===19?1.2:GEN===17||GEN===18?1.0:0.9;for(const c of nearCells){const h=c.hdoors;for(let k=0;k<h.length;k+=2)if(Math.hypot(pos.x-h[k],pos.z-h[k+1])<R&&(GEN!==17||crouch)&&(GEN!==20||pos.y<-2))go=true;}}
+    else if(GEN>=15){const R=GEN===20?3:GEN===16?1.8:GEN===19?1.2:GEN===17||GEN===18?1.0:0.9;for(const c of nearCells){const h=c.hdoors;for(let k=0;k<h.length;k+=2)if(Math.hypot(pos.x-h[k],pos.z-h[k+1])<R&&(GEN!==17||crouch)&&(GEN!==20||pos.y<-2))go=true;}}
     if(go&&typeof coopBlockExit==='function'&&coopBlockExit())go=false;
     if(go){exitT=0;clipT=0;padExit=-9;lieT=0;beltT=0;nextWorld();return;}
   }else if((GEN===9||GEN===16)&&mode!=='obs'&&time-elevT>6){for(const c of nearCells){const h=c.hdoors;for(let k=0;k<h.length;k+=2)if(Math.hypot(pos.x-h[k],pos.z-h[k+1])<1.1){elevT=time;toast('L\'ascenseur ne bouge pas. Pas encore.',3.5);}}}
