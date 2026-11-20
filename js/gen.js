@@ -1497,55 +1497,98 @@ function arcadeCell(g,c,i,j,r){
   }
 }
 
-/* ---- bowling : des pistes cirées à perte de vue, des quilles qui attendent ---- */
+/* ---- lettres de néon : de vraies lettres, en tubes ---- */
+const GLYPH={A:[[0,0,.3,1],[.3,1,.6,0],[.12,.4,.48,.4]],B:[[0,0,0,1],[0,1,.45,1],[.45,1,.6,.8],[.6,.8,.45,.55],[0,.55,.45,.55],[.45,.55,.6,.3],[.6,.3,.45,0],[.45,0,0,0]],
+  C:[[.6,1,0,1],[0,1,0,0],[0,0,.6,0]],E:[[.6,1,0,1],[0,1,0,0],[0,0,.6,0],[0,.5,.45,.5]],G:[[.6,1,0,1],[0,1,0,0],[0,0,.6,0],[.6,0,.6,.45],[.6,.45,.3,.45]],
+  H:[[0,0,0,1],[.6,0,.6,1],[0,.5,.6,.5]],I:[[.08,0,.08,1]],D:[[0,0,0,1],[0,1,.4,1],[.4,1,.6,.75],[.6,.75,.6,.25],[.6,.25,.4,0],[.4,0,0,0]],K:[[0,0,0,1],[0,.45,.6,1],[.15,.6,.6,0]],L:[[0,1,0,0],[0,0,.55,0]],N:[[0,0,0,1],[0,1,.6,0],[.6,0,.6,1]],
+  O:[[0,0,0,1],[0,1,.6,1],[.6,1,.6,0],[.6,0,0,0]],R:[[0,0,0,1],[0,1,.6,1],[.6,1,.6,.55],[.6,.55,0,.55],[.2,.55,.6,0]],S:[[.6,1,0,1],[0,1,0,.5],[0,.5,.6,.5],[.6,.5,.6,0],[.6,0,0,0]],
+  T:[[0,1,.6,1],[.3,1,.3,0]],U:[[0,1,0,0],[0,0,.6,0],[.6,0,.6,1]],V:[[0,1,.3,0],[.3,0,.6,1]],W:[[0,1,.1,0],[.1,0,.3,.5],[.3,.5,.5,0],[.5,0,.6,1]],
+  '0':[[0,0,0,1],[0,1,.6,1],[.6,1,.6,0],[.6,0,0,0]],'1':[[.15,.8,.35,1],[.35,1,.35,0]],'2':[[0,1,.6,1],[.6,1,.6,.5],[.6,.5,0,.5],[0,.5,0,0],[0,0,.6,0]],
+  '3':[[0,1,.6,1],[.6,1,.6,0],[.6,0,0,0],[.15,.5,.6,.5]],'4':[[0,1,0,.5],[0,.5,.6,.5],[.6,1,.6,0]],'5':[[.6,1,0,1],[0,1,0,.5],[0,.5,.6,.5],[.6,.5,.6,0],[.6,0,0,0]],
+  '6':[[.6,1,0,1],[0,1,0,0],[0,0,.6,0],[.6,0,.6,.5],[.6,.5,0,.5]],'7':[[0,1,.6,1],[.6,1,.25,0]],'8':[[0,0,0,1],[0,1,.6,1],[.6,1,.6,0],[.6,0,0,0],[0,.5,.6,.5]],
+  '9':[[.6,.5,0,.5],[0,.5,0,1],[0,1,.6,1],[.6,1,.6,0],[.6,0,0,0]]};
+/* x,y,z : bas gauche du texte ; ux,uz : sens de lecture (unitaire) ; sz : hauteur des lettres */
+function neonText(g,x,y,z,ux,uz,sz,txt,m,r0){r0=r0||sz*0.045;let o=0;
+  for(const ch of txt){const G=GLYPH[ch];if(G)for(const [a0,b0,a1,b1] of G)g.rod(x+ux*(o+a0*sz),y+b0*sz,z+uz*(o+a0*sz),x+ux*(o+a1*sz),y+b1*sz,z+uz*(o+a1*sz),r0,m,5);o+=sz*(ADV[ch]||0.85);}
+  return o;}
+const ADV={I:0.4,'1':0.6,' ':0.5};
+const textW=(t,sz)=>[...t].reduce((w,ch)=>w+sz*(ADV[ch]||0.85),0)-sz*0.25;
+
+/* ---- bowling : dix pistes d'érable ciré, des quilles sous la lumière, des néons ---- */
 function pins(g,a,b,S){S=S||1;for(let row=0;row<4;row++)for(let k=0;k<=row;k++){const x=a+(k-row/2)*0.3*S,z=b-row*0.26*S;
   g.ell(x,0.17*S,z,0.062*S,0.17*S,0.062*S,0,S>1?ICO2:ICO1);g.cyl(x,z,0.033*S,0.28*S,0.31*S,48,false,6);g.sphere(x,0.36*S,z,0.04*S,0,S>1?ICO1:ICO0);}}
+function ballReturn(g,a,z0,dark){ /* capot arrondi, rails chromés, boules de couleur */
+  g.box(a-0.32,0,z0,a+0.32,0.55,z0+1.4,47);g.ell(a,0.55,z0+0.35,0.34,0.32,0.4,dark?12:49,ICO1);
+  for(const s of[-1,1])g.rod(a+s*0.12,0.72,z0+0.55,a+s*0.12,0.72,z0+1.45,0.018,50,6);
+  for(let q=0;q<4;q++)g.sphere(a,0.79,z0+0.72+q*0.23,0.11,[48,49,72,34][q],ICO1);
+  g.box(a-0.06,0,z0-0.02,a+0.06,0.07,z0+0.02,47,false);}
 function bowlCell(g,c,i,j,r){
   const T=c.type,H=4.2;g.m=SYM[0];g.box(-24,-0.8,-24,24,0,24,58);
   if(T===5){ /* la piste géante : on est la boule */
-    g.box(-24,H*4,-24,24,H*4+0.5,24,12,false);g.box(-10,0,-24,10,0.12,24,41);for(const s of[-1,1])g.box(s*10,0,-24,s*12,0.06,24,50);
+    g.box(-24,H*4,-24,24,H*4+0.5,24,12,false);g.box(-10,0,-24,10,0.12,24,88);for(const s of[-1,1])g.rod(s*11,-0.2,-24,s*11,-0.2,24,1.0,50,10);
     for(let k=0;k<7;k++)g.obox(-6+k*2,0.125,2,0.3,0.004,0.7,0,0,47);for(let k=0;k<10;k++)g.cyl(-7+k*1.55,12,0.12,0.12,0.125,47,false,10);
     pins(g,0,-14,10);g.item(0,1.1,0);g.statue(14,0);g.statue(-15,-8);
-    for(const s of[-1,1])g.box(s*16,0,-24,s*24,H*4,24,12);return;}
+    for(const s of[-1,1])g.box(s*16,0,-24,s*24,H*4,24,12);neonText(g,-textW('STRIKE',2.4)/2,H*2.4,-23.5,1,0,2.4,'STRIKE',71,0.09);return;}
   g.box(-24,H,-24,24,H+0.4,24,12);
   if(T===3||T===4){ /* salle des anniversaires / comptoir des chaussures */
     g.box(-24,0,-24,24,H,-23.7,0);
-    if(T===3){for(let k=0;k<4;k++){const a=-15+k*10;g.box(a-2,0.72,-5,a+2,0.78,5,0);g.box(a-1.9,0.78,-4.9,a+1.9,0.785,4.9,34,false);g.box(a-0.05,0,-0.05,a+0.05,0.72,0.05,50,false);
-        for(let q=0;q<6;q++){const z=-4+q*1.6;if(Math.abs(z)<0.5)continue;for(const s of[-1,1]){g.box(a+s*2.4-0.2,0.42,z-0.2,a+s*2.4+0.2,0.46,z+0.2,16);g.obox(a+s*2.62,0.68,z,0.02,0.22,0.2,0,0,16);}}
+    if(T===3){for(let k=0;k<4;k++){const a=-15+k*10;g.box(a-2,0.72,-5,a+2,0.78,5,0);g.box(a-1.9,0.78,-4.9,a+1.9,0.785,4.9,34,false);for(const s of[-1,1])for(const t of[-1,1])g.rod(a+s*1.8,0,t*4.7,a+s*1.8,0.72,t*4.7,0.03,50,6);
+        for(let q=0;q<6;q++){const z=-4+q*1.6;if(Math.abs(z)<0.5)continue;for(const s of[-1,1]){g.box(a+s*2.4-0.2,0.42,z-0.2,a+s*2.4+0.2,0.46,z+0.2,16);g.obox(a+s*2.62,0.68,z,0.02,0.22,0.2,0,0,16);for(const t of[-1,1])for(const u of[-1,1])g.rod(a+s*2.4+t*0.16,0,z+u*0.16,a+s*2.4+t*0.16,0.42,z+u*0.16,0.012,50,4);}}
         g.cyl(a,0,0.3,0.78,0.98,34,false,16);g.cyl(a,0,0.22,0.98,1.12,0,false,16);g.cyl(a,0,0.23,1.12,1.14,48,false,16);for(let q=0;q<6;q++)g.cyl(a+Math.cos(q)*0.15,Math.sin(q)*0.15,0.008,1.14,1.22,36,false,4);
-        for(let q=0;q<3;q++){const x=a-1.5+q*1.5,z=4+r();g.cyl(x,z,0.004,0.78,2.6,0,false,3);g.ell(x,2.8,z,0.25,0.3,0.25,34+q,ICO2);}
+        for(let q=0;q<3;q++){const x=a-1.5+q*1.5,z=4+r();g.rod(x,0.78,z,x,2.6,z,0.004,0,3);g.ell(x,2.8,z,0.25,0.3,0.25,34+q,ICO1);}
         for(let q=0;q<2;q++){const z=-3+q*6;g.box(a+0.8,0.78,z-0.2,a+1.2,1.1,z+0.2,[49,48][q]);g.box(a+0.98,0.78,z-0.21,a+1.02,1.11,z+0.21,36,false);}}
       for(let k=0;k<16;k++){const a=-12+k*1.6;g.obox(a,3.2-Math.sin(k*0.39)*0.15,-23.6,0.25,0.3,0.01,0,0,34+k%4);}
+      neonText(g,-textW('ANNIVERSAIRES',0.5)/2,2.2,-23.6,1,0,0.5,'ANNIVERSAIRES',71);
       if(isFar(i,j,3,3))g.souv(6.85,0.95,0);else if(r()<0.5)g.item(-5,1.1,0);g.npc(10,0,8,r()*6.28);}
-    else{g.box(-10,0,-10,10,1.05,-9,41);g.box(-10.05,1.05,-10.05,10.05,1.1,-8.95,59,false);
+    else{g.box(-10,0,-10,10,1.05,-9,81);g.box(-10.05,1.05,-10.05,10.05,1.1,-8.95,59,false);for(let k=0;k<8;k++)g.box(-9.6+k*2.45,0.15,-8.99,-7.6+k*2.45,0.95,-8.97,81,false);
       for(const y of[0.3,0.9,1.5,2.1]){g.box(-10,y,-13,10,y+0.04,-12.2,50,false);for(let k=0;k<26;k++){const x=-9.6+k*0.75;for(const q of[0,0.14]){g.box(x+q,y+0.04,-12.9,x+q+0.12,y+0.1,-12.45,[48,49,0][k%3],false);g.box(x+q,y+0.04,-12.5,x+q+0.12,y+0.14,-12.35,0,false);}}}
-      g.box(-10,0,-13.2,10,2.6,-13.1,12);c3sign(g,0,2.8,-13.05,6,0.5,true,1,72,r);g.npc(0,0,-11.5,0);g.statue(-8,4);g.statue(8,-2);g.item(0,1.1,6);}
+      g.box(-10,0,-13.2,10,2.6,-13.1,12);neonText(g,-textW('CHAUSSURES',0.42)/2,2.75,-13.05,1,0,0.42,'CHAUSSURES',72);g.npc(0,0,-11.5,0);g.statue(-8,4);g.statue(8,-2);g.item(0,1.1,6);
+      for(const x of[-6,0,6])c3bench(g,x,4,true,2.4);}
     return;}
-  /* huit pistes le long de z ; deux couloirs de service relient les rangées */
-  const dark=T===2;
-  for(let k=0;k<8;k++){const a=-15.75+k*4.5;
-    g.box(a-0.53,0,-22,a+0.53,0.08,14,41);
-    for(const s of[-1,1]){g.obox(a+s*0.66,0.03,-4,0.13,0.015,18,0,0,50);g.box(a+s*0.8-0.03,0,-22,a+s*0.8+0.03,0.12,14,12,false);}
-    for(let q=0;q<7;q++){const x=a-0.42+q*0.14;g.obox(x,0.082,4.5-Math.abs(q-3)*0.35,0.025,0.001,0.09,0,0,47);g.cyl(x,10.5,0.012,0.081,0.083,47,false,6);}
-    pins(g,a,-20.6);g.box(a-0.75,0,-23.7,a+0.75,0.6,-22,12);
-    if(k%2===0){const rx=a+2.25;g.box(rx-0.9,0,-22,rx+0.9,0.22,14,59);g.box(rx-0.5,0,10.2,rx+0.5,0.75,13.6,50);g.ell(rx,0.75,11.2,0.45,0.42,0.5,dark?12:49,ICO2);
-      for(const s of[-1,1])g.box(rx+s*0.18-0.02,0.75,11.6,rx+s*0.18+0.02,0.8,13.6,50,false);for(let q=0;q<4;q++)g.sphere(rx,0.88,12.2+q*0.34,0.11,[48,49,34,72][q],ICO2);}
-    g.box(a-0.9,1.4,-22.35,a+0.9,3.4,-21.95,12,false);g.box(a-0.7,2.5,-21.95,a+0.7,3.1,-21.93,dark?47:(k%2?71:72),false);g.ell(a,2.8,-21.92,0.35,0.22,0.01,dark?12:0,ICO2);}
-  g.box(-18.1,1.2,-22.3,18.1,H,-21.9,12,false);
-  for(const s of[-1,1]){g.box(s*18.1,0,-22,s*19,H,14,12);g.box(s*21,0,-22,s*24,H,14,12);for(let b=-18;b<14;b+=8)c3sign(g,s*18.08,2.2,b,3,0.4,false,-s,s>0?71:72,r);}
+  /* dix pistes d'érable, gouttières arrondies, séparations noires ; deux couloirs de service sur les côtés */
+  const dark=T===2,N=10,SP=1.9,A0=-(N-1)*SP/2,lane=k=>A0+k*SP;
+  g.box(-9.6,0,-23.7,9.6,0.02,14,47,false);
+  for(let k=0;k<N;k++){const a=lane(k);
+    g.box(a-0.53,0,-22,a+0.53,0.08,17.6,88);
+    for(const s of[-1,1])g.rod(a+s*0.645,-0.02,-22,a+s*0.645,-0.02,14,0.1,50,8);
+    for(let q=0;q<7;q++){const x=a-0.42+q*0.14;g.obox(x,0.082,9.6-Math.abs(q-3)*0.32,0.03,0.001,0.1,0,0,dark?12:48);g.cyl(x,12.2,0.012,0.081,0.083,47,false,6);}
+    g.box(a-0.53,0.08,13.98,a+0.53,0.085,14.02,48,false);
+    pins(g,a,-20.6);g.box(a-0.62,0.08,-21.9,a+0.62,0.1,-20.1,0,false);}
+  for(let k=0;k<=N;k++){const x=A0-SP/2+k*SP;g.box(x-0.19,0,-22,x+0.19,0.16,14,47);if(!dark)g.rod(x,0.17,-22,x,0.17,14,0.012,k%2?71:72,4);}
+  /* la façade des quilles : un grand panneau noir peint de vagues de néon, une rampe de lumière sur les quilles */
+  g.box(-9.6,1.25,-22.2,9.6,3.7,-21.95,47,false);g.box(-9.6,1.15,-21.9,9.6,1.25,-21.5,dark?12:17,false);g.box(-9.6,0,-23.7,9.6,H,-23.6,47);
+  if(!dark){for(let k=0;k<N;k++){const a=lane(k),m=k%2?71:72;let p=[a-0.85,2.2];for(let q=1;q<=8;q++){const n=[a-0.85+q*0.21,2.2+0.28*Math.sin(q*0.9+k)];g.rod(p[0],p[1],-21.93,n[0],n[1],-21.93,0.025,m,5);p=n;}
+      const t=String(k+1);neonText(g,a-textW(t,0.38)/2,2.85,-21.93,1,0,0.38,t,m==71?72:71);}
+    neonText(g,-textW('STRIKE',0.55)/2,3.95,-23.55,1,0,0.55,'STRIKE',71);}
+  /* les murs de la salle, le bar d'un côté, les râteliers de boules de l'autre */
+  for(const s of[-1,1]){g.box(s*18.1,0,-22,s*19,H,14,12);g.box(s*21,0,-22,s*24,H,14,12);
+    if(!dark)for(let q=0;q<3;q++)g.rod(s*18.05,0.9+q*0.12,-21.5,s*18.05,0.9+q*0.12,13.5,0.02,[71,72,71][q],5);}
+  if(!dark){const L='BOWLING',sz=1.3;neonText(g,-18.04,2.2,6+textW(L,sz)/2,0,-1,sz,L,72,0.05);neonText(g,18.04,2.2,6-textW(L,sz)/2,0,1,sz,L,71,0.05);}
+  /* le bar, à gauche */
+  g.box(-17.2,0,-14,-16.2,1.05,-2,81);g.box(-17.25,1.05,-14.05,-16.05,1.1,-1.95,50,false);g.box(-16.21,0.1,-14,-16.19,0.95,-2,78,false);
+  g.box(-18.05,1.0,-14,-17.75,2.6,-2,81,false);for(const y of[1.35,1.95])g.box(-18.05,y,-14,-17.6,y+0.03,-2,13,false);
+  for(let q=0;q<22;q++){const z=-13.6+q*0.53,y=q%2?1.38:1.98;g.cone(-17.8,z,0.04,0.03,y,y+0.24,[13,51,48,36][q%4],6);}
+  for(let q=0;q<5;q++){const z=-12.8+q*2.4;g.rod(-15.6,0,z,-15.6,0.72,z,0.025,50,6);g.cone(-15.6,z,0.17,0.17,0.72,0.8,48,12);g.torus(-15.6,0.3,z,0.13,0.01,[0,1,0],50,10,3);}
+  if(!dark)neonText(g,-18.04,2.75,-6.6,0,-1,0.6,'BAR',71,0.03);
+  /* les râteliers de boules, à droite */
+  for(const z of[-12,-6]){for(const y of[0.45,0.95])for(const t of[-1,1])g.rod(16.6+t*0.12,y,z-2,16.6+t*0.12,y,z+2,0.02,50,6);
+    for(const zz of[z-2,z+2])g.rod(16.6,0,zz,16.6,1.0,zz,0.03,50,6);
+    for(let q=0;q<14;q++)g.sphere(16.6,q<7?0.56:1.06,z-1.7+(q%7)*0.57,0.11,[48,49,72,34,51,36,71][(q+Math.floor(z))%7],ICO1);}
+  for(let q=0;q<3;q++)c3bench(g,15.2,2+q*3,false,2.2);
   g.box(-24,0,-24,-21,H,-23.7,12);g.box(-19,0,-24,19,H,-23.7,12);g.box(21,0,-24,24,H,-23.7,12);
-  /* l'aire de lancer : canapés, consoles, écrans des scores */
-  g.box(-18,0.005,14,18,0.012,24,58,false);
-  for(let k=0;k<4;k++){const a=-13.5+k*9;
-    g.box(a-2.3,0,18.2,a+2.3,0.42,19.0,16);g.box(a-2.3,0.42,18.75,a+2.3,0.95,19.0,16,false);for(const s of[-1,1]){g.box(a+s*2.3-0.15,0,16.8,a+s*2.3+0.15,0.42,19.0,16);g.box(a+s*2.3-0.15,0.42,16.8,a+s*2.3+0.15,0.95,17.0,16,false);}
-    g.box(a-0.6,0,16.3,a+0.6,0.65,16.9,59);g.obox(a,0.75,16.6,0.25,0.18,0.02,Math.PI,0.4,12);g.obox(a,0.75,16.58,0.21,0.14,0.005,Math.PI,0.4,dark?47:61);
-    g.box(a-1.6,2.9,14.25,a+1.6,3.9,14.45,12,false);g.box(a-1.5,3.0,14.22,a+1.5,3.8,14.25,dark?47:61,false);for(let q=0;q<10;q++)g.box(a-1.45+q*0.3,3.0,14.21,a-1.43+q*0.3,3.8,14.22,12,false);
-    g.box(a-0.05,3.9,14.32,a+0.05,H,14.38,12,false);}
-  const act=dark?-1:Math.floor(r()*8);if(act>=0){const a=-15.75+act*4.5;g.phone(a,0.6,14.6);g.box(a-0.12,0,14.5,a+0.12,0.55,14.7,50,false);g.sphere(a,0.66,14.6,0.11,48,ICO2);}
-  if(!dark)for(let k=0;k<8;k++)g.hdoor(-15.75+k*4.5,-20.2);
-  for(let k=0;k<2;k++)if(r()<0.5)g.statue(-15.75+Math.floor(r()*8)*4.5,-6+r()*14);
-  if(r()<0.35)g.npc(-10+r()*20,0,21,r()*6.28);
-  g.item(-15.75+Math.floor(r()*8)*4.5,1.1,-4+r()*10);
+  /* l'aire de lancer : moquette, retours de boules, canapés en arc, écrans des scores */
+  g.box(-18,0.005,17.6,18,0.012,24,58,false);
+  for(let p=0;p<N/2;p++){const ac=(lane(2*p)+lane(2*p+1))/2;ballReturn(g,ac,14.3,dark);
+    sofa2(g,ac,19.9,0.95,1,[49,48,83,49,48][p],50);for(const s of[-1,1])g.ell(ac+s*1.5,0.3,18.6,0.28,0.3,0.28,[49,48,83,49,48][p],ICO1);
+    g.box(ac-0.25,0,17.9,ac+0.25,0.7,18.2,47);g.obox(ac,0.82,18.05,0.24,0.16,0.02,Math.PI,0.45,12);g.obox(ac,0.82,18.03,0.21,0.13,0.005,Math.PI,0.45,dark?47:61);
+    for(const q of[-0.55,0.55]){g.box(ac+q-0.5,2.95,14.3,ac+q+0.5,3.6,14.42,12,false);g.box(ac+q-0.46,2.99,14.28,ac+q+0.46,3.56,14.3,dark?47:61,false);}
+    g.rod(ac,3.6,14.36,ac,H,14.36,0.02,50,5);}
+  for(let k=0;k<6;k++)g.cyl(-15+k*6,16,0.25,H-0.02,H,dark?12:17,false,10);
+  const act=dark?-1:Math.floor(r()*(N/2));if(act>=0){const ac=(lane(2*act)+lane(2*act+1))/2;g.phone(ac,0.85,14.9);}
+  if(!dark)for(let k=0;k<N;k++)g.hdoor(lane(k),-20.2);
+  for(let k=0;k<2;k++)if(r()<0.5)g.statue(lane(Math.floor(r()*N)),-6+r()*14);
+  if(r()<0.35)g.npc(-10+r()*20,0,21.5,r()*6.28);
+  g.item(lane(Math.floor(r()*N)),1.1,-4+r()*10);
 }
 
 /* ---- parc aquatique vidé : bassins secs, toboggans, palmiers morts sous la verrière ---- */
@@ -1663,40 +1706,119 @@ function houseRoom(g,a0,b0,kind,r){ /* une pièce de 8 m : le mobilier reste dan
     for(let q=0;q<3;q++)g.box(cx-0.2+(q-1)*0.6,0,cz-0.2,cx+0.15+(q-1)*0.6,0.12,cz+0.15,[48,12,0][q],false);
   }
 }
-function houseSoldCell(g,c,i,j,r){
-  const T=c.type,H=2.6,S=8;g.m=SYM[0];
-  g.box(-24,-0.8,-24,24,0,24,63);g.box(-24,H,-24,24,H+0.3,24,0);
-  /* murs tous les huit mètres, chacun percé d'une porte encadrée de bois */
-  for(let k=-3;k<=3;k++){const w=k*S;
-    for(let u=-3;u<3;u++){const u0=u*S,u1=u0+S,dc=houseDoor(i,j,k,u);
-      for(const az of[true,false]){const B=(p0,y0,p1,y1,m,s,d)=>{d=d||0.08;return az?g.box(p0,y0,w-d,p1,y1,w+d,m,s):g.box(w-d,y0,p0,w+d,y1,p1,m,s);};
-        if(Math.abs(k)===3&&k>0)continue;
-        B(u0,0,dc-0.6,H,0);B(dc+0.6,0,u1,H,0);B(dc-0.6,2.1,dc+0.6,H,0);
-        B(dc-0.68,0,dc-0.6,2.18,41,false,0.11);B(dc+0.6,0,dc+0.68,2.18,41,false,0.11);B(dc-0.68,2.1,dc+0.68,2.18,41,false,0.11);
-        B(u0,0,dc-0.68,0.1,0,false,0.095);B(dc+0.68,0,u1,0.1,0,false,0.095);
-        if(hash(i*3+k,j*3+u,73)<0.5){if(az)g.obox(dc-0.6+0.04,1.05,w+0.55,0.03,1.04,0.52,0,0,41);else g.obox(w+0.55,1.05,dc-0.6+0.04,0.42,1.04,0.03,0,0,41);}}}}
-  const chair=T===6&&isFar(i,j,6,2);
-  for(let ra=-3;ra<3;ra++)for(let rb=-3;rb<3;rb++){const a0=ra*S,b0=rb*S,a=a0+S/2,b=b0+S/2;
-    g.cyl(a,b,0.02,H-0.35,H,12,false,4);g.cyl(a,b,0.22,H-0.55,H-0.35,0,false,8);g.box(a-0.15,H-0.56,b-0.15,a+0.15,H-0.55,b+0.15,25,false);
-    if(chair&&ra===-2&&rb===-2)continue;
-    for(let q=0;q<2;q++)if(r()<0.6){const fa=a0+1.8+r()*4.4;g.box(fa-0.4,1.3,b0+0.09,fa+0.4,1.9,b0+0.1,16,false);g.box(fa-0.02,1.88,b0+0.09,fa+0.02,1.93,b0+0.12,50,false);}
-    g.box(a0+0.6,1.2,b0+0.09,a0+0.68,1.32,b0+0.11,0,false);
-    const kind=Math.floor(hash(i*11+ra,j*13+rb,77)*6);houseRoom(g,a0,b0,kind,r);
-    if(r()<0.5){const n=1+Math.floor(r()*2);for(let q=0;q<n;q++){const ca=a-1.5+r()*3,cb=b-1.5+r()*3;g.box(ca-0.3,0,cb-0.25,ca+0.3,0.45,cb+0.25,70);}}
-    if(r()<0.16){const ca=a+1.5,cb=b-1.5;g.box(ca-0.3,0,cb-0.25,ca+0.3,0.42,cb+0.25,70);for(const s of[-1,1]){g.obox(ca+s*0.42,0.5,cb,0.13,0.012,0.25,0,0,70);g.obox(ca,0.5,cb+s*0.37,0.3,0.012,0.12,0,0,70);}
-      for(let q=0;q<3;q++)g.box(ca-0.2+q*0.13,0.3,cb-0.1,ca-0.1+q*0.13,0.5,cb+0.1,[34,49,0][q],false);g.phone(ca,0.5,cb);}
-    if(r()<0.12)g.visitor(a+(r()-0.5)*3,b+(r()-0.5)*3);
-    if(r()<0.06)g.item(a,1.1,b);
-  }
-  /* fenêtres de fin d'après-midi, rideaux, radiateurs */
-  for(let u=-3;u<3;u++){const a=u*S+S/2;g.box(a-1.2,0.9,-23.9,a+1.2,2.1,-23.88,17,false);g.box(a-1.25,0.86,-23.92,a+1.25,0.92,-23.75,0,false);g.box(a-0.02,0.9,-23.9,a+0.02,2.1,-23.86,0,false);g.box(a-1.25,1.48,-23.9,a+1.25,1.52,-23.86,0,false);
-    for(const s of[-1,1])for(let q=0;q<4;q++)g.box(a+s*(1.3+q*0.12)-0.06,0.1,-23.88+(q%2)*0.05,a+s*(1.3+q*0.12)+0.06,2.3,-23.84+(q%2)*0.05,[16,36][u&1],false);
-    g.box(a-1.4,2.3,-23.9,a+1.4,2.33,-23.86,50,false);for(let q=0;q<10;q++)g.box(a-0.9+q*0.2,0.15,-23.9,a-0.82+q*0.2,0.75,-23.82,0,false);}
-  if(isFar(i,j,4,3)){g.souv(-21,0.95,-21);g.box(-21.4,0,-21.4,-20.6,0.85,-20.6,41);g.box(-21.45,0.85,-21.45,-20.55,0.9,-20.55,41,false);}
-  if(chair){ /* ta chambre : vide, sa chaise bleue au milieu, face à la fenêtre */
-    const a=-12,b=-12;g.box(a-0.25,0.45,b-0.25,a+0.25,0.5,b+0.25,16);for(const s of[-1,1])for(const t of[-1,1])g.box(a+s*0.22-0.02,0,b+t*0.22-0.02,a+s*0.22+0.02,0.45,b+t*0.22+0.02,50,false);
-    g.box(a-0.25,0.5,b+0.2,a+0.25,1.0,b+0.25,16,false);g.hdoor(a,b);g.box(a-1.4,0.9,b-3.9,a+1.4,2.2,b-3.88,17,false);g.box(a-1.6,0.005,b-1.2,a-1.2,0.01,b+1.6,16,false);
-    g.box(a+1.0,0.005,b+1.5,a+3.0,0.008,b+3.3,0,false);for(let q=0;q<4;q++)g.box(-15.99,0.4+q*0.35,b-0.3+q*0.05,-15.97,0.405+q*0.35,b-0.1+q*0.05,47,false);}
+function houseSoldCell(g,c,i,j,r){ /* plus de rêve : une vraie maison, un jardin, une haie, la rue */
+  g.m=SYM[0];
+  if(i||j){ /* les alentours : pelouses, la rue, les maisons des voisins ; on ne passe pas la haie */
+    g.box(-24,-0.8,-24,24,0,24,9);
+    if(j===1){g.box(-24,0,-14,24,0.02,-6,20,false);for(const z of[-15,-5])g.box(-24,0,z-1,24,0.12,z+1,59,false);for(let k=-3;k<=3;k++)g.box(k*7-1.5,0.021,-10.08,k*7+1.5,0.025,-9.92,22,false);
+      for(const x of[-14,0,14]){if(i===0&&x===0)continue;g.box(x-5,0,2,x+5,5.2,10,42);gable(g,x-5.4,1.6,x+5.4,10.4,5.2,2.2,46,42);for(const q of[-3,0,3])g.box(x+q-0.6,1.0,1.98,x+q+0.6,2.2,2.0,25,false);}
+      g.cyl(-8,-4.5,0.06,0,4.2,50,false,6);g.rod(-8,4.2,-4.5,-8,4.3,-5.6,0.05,50,5);g.cone(-8,-5.7,0.18,0.08,4.0,4.3,25,8);}
+    else{const n=2+Math.floor(r()*3);for(let q=0;q<n;q++)tree(g,-18+r()*36,-18+r()*36,r,1.3);
+      if(Math.abs(i)+Math.abs(j)===1&&r()<0.8){const x=(r()-0.5)*20,z=(r()-0.5)*20;g.box(x-5,0,z-4,x+5,5.2,z+4,[42,0][Math.floor(r()*2)]);gable(g,x-5.4,z-4.4,x+5.4,z+4.4,5.2,2.2,46,42);}}
+    return;}
+  const H=2.6,Wt=0.2;
+  /* le jardin : pelouse, allée, haie qui ferme tout, portail, panneau VENDU, un arbre, un banc */
+  g.box(-24,-0.8,-24,24,0,24,9);
+  for(const s of[-1,1]){g.box(-21,0,s*20-0.5,21,2.2,s*20+0.5,15);g.box(s*20-0.5,0,-21,s*20+0.5,2.2,21,15);}
+  g.box(0.6,0,19.4,3.4,1.1,20.6,0);for(let q=0;q<9;q++)g.box(0.75+q*0.3,0.1,19.45,0.82+q*0.3,1.05,20.55,0,false);
+  for(let q=0;q<6;q++){const z=8.4+q*1.9;g.box(1.3,0,z-0.55,2.7,0.03,z+0.55,59,false);}
+  g.box(-1,0,7.2,5,0.12,8.2,59);
+  {const x=-4,z=13;g.box(x-0.04,0,z-0.04,x+0.04,1.6,z+0.04,41);g.box(x-0.9,1.0,z-0.03,x+0.9,1.6,z+0.03,0,false);
+    neonText(g,x-textW('VENDU',0.42)/2,1.09,z+0.035,1,0,0.42,'VENDU',48,0.028);neonText(g,x+textW('VENDU',0.42)/2,1.09,z-0.035,-1,0,0.42,'VENDU',48,0.028);}
+  tree(g,-13,13,r,1.4);tree(g,13,-14,r,1.2);tree(g,14,12,r,1.0);c3bench(g,-13,9.5,true,1.8);
+  for(let q=0;q<8;q++){const x=-8+q*2;if(x>0&&x<4)continue;g.ell(x,0.35,8.6,0.5,0.4,0.4,15,ICO1);}
+  /* la maison : murs, sol, plafond, toit */
+  const win=[],door=[];
+  const wallX=(z,x0,x1,ops,m,t)=>{t=t||Wt;let x=x0;const S=[...ops].sort((p,q)=>p[0]-q[0]);
+    for(const [c,w,y0,y1] of S){g.box(x,0,z-t/2,c-w/2,H,z+t/2,m);if(y0>0)g.box(c-w/2,0,z-t/2,c+w/2,y0,z+t/2,m);g.box(c-w/2,y1,z-t/2,c+w/2,H,z+t/2,m);x=c+w/2;
+      if(y0>0){win.push([c-w/2,y0,z,c+w/2,y1,z,1]);}else door.push([c-w/2,z,c+w/2,z,y1]);}
+    g.box(x,0,z-t/2,x1,H,z+t/2,m);};
+  const wallZ=(x,z0,z1,ops,m,t)=>{t=t||Wt;let z=z0;const S=[...ops].sort((p,q)=>p[0]-q[0]);
+    for(const [c,w,y0,y1] of S){g.box(x-t/2,0,z,x+t/2,H,c-w/2,m);if(y0>0)g.box(x-t/2,0,c-w/2,x+t/2,y0,c+w/2,m);g.box(x-t/2,y1,c-w/2,x+t/2,H,c+w/2,m);z=c+w/2;
+      if(y0>0){win.push([x,y0,c-w/2,x,y1,c+w/2,0]);}else door.push([x,c-w/2,x,c+w/2,y1]);}
+    g.box(x-t/2,0,z,x+t/2,H,z1,m);};
+  g.box(-9,0,-7,9,0.03,7,89,false);g.box(-8.9,0.031,-6.9,1.14,0.04,-0.06,10,false);g.box(2.86,0.031,-1.94,8.9,0.04,1.44,10,false);
+  g.box(-9.1,H,-7.1,9.1,H+0.18,7.1,0);gable(g,-9.6,-7.7,9.6,7.7,H+0.18,2.5,46,42);
+  wallX(7,-9.1,9.1,[[-6.5,2.2,0.9,2.1],[-2.5,1.4,0.9,2.1],[2,1.0,0,2.15],[6,1.6,0.9,2.1]],42);
+  wallX(-7,-9.1,9.1,[[-5,1.8,1.05,2.0],[6,1.4,0.9,2.1]],42);
+  wallZ(-9,-7,7,[[3.5,1.8,0.9,2.1],[-3.5,1.2,1.0,2.0]],42);
+  wallZ(9,-7,7,[[4.2,1.4,0.9,2.1],[-0.3,0.7,1.45,2.0],[-4.5,1.2,0.9,2.1]],42);
+  wallZ(1.2,-6.9,6.9,[[4,0.9,0,2.1],[-4,0.9,0,2.1]],0,0.12);
+  wallZ(2.8,-6.9,6.9,[[4.3,0.9,0,2.1],[-0.25,0.8,0,2.1],[-4.6,0.9,0,2.1]],0,0.12);
+  wallX(0,-8.9,1.14,[[-4.7,2.6,0,2.3]],0,0.12);wallX(1.5,2.86,8.9,[],0,0.12);wallX(-2,2.86,8.9,[],0,0.12);
+  /* fenêtres : cadre blanc, croisillons, appui, un rideau ; personne ne passe par là */
+  for(const [x0,y0,z0,x1,y1,z1,ax] of win){g.solid(Math.min(x0,x1)-0.12,y0,Math.min(z0,z1)-0.12,Math.max(x0,x1)+0.12,y1,Math.max(z0,z1)+0.12);
+    const B=(u0,v0,u1,v1,d0,d1,m)=>ax?g.box(u0,v0,z0+d0,u1,v1,z0+d1,m,false):g.box(x0+d0,v0,u0,x0+d1,v1,u1,m,false),u0=ax?x0:z0,u1=ax?x1:z1,um=(u0+u1)/2;
+    B(u0,y0-0.04,u1,y0,-0.18,0.18,0);B(u0,y1,u1,y1+0.04,-0.12,0.12,0);B(u0-0.04,y0,u0,y1,-0.12,0.12,0);B(u1,y0,u1+0.04,y1,-0.12,0.12,0);
+    B(um-0.02,y0,um+0.02,y1,-0.03,0.03,0);B(u0,(y0+y1)/2-0.02,u1,(y0+y1)/2+0.02,-0.03,0.03,0);}
+  for(const [x0,z0,x1,z1,h] of door){const ax=z0===z1,B=(u0,v0,u1,v1,d0,d1,m)=>ax?g.box(u0,v0,z0+d0,u1,v1,z0+d1,m,false):g.box(x0+d0,v0,u0,x0+d1,v1,u1,m,false),u0=ax?x0:z0,u1=ax?x1:z1;
+    B(u0-0.07,0,u0,h+0.07,-0.13,0.13,0);B(u1,0,u1+0.07,h+0.07,-0.13,0.13,0);B(u0-0.07,h,u1+0.07,h+0.07,-0.13,0.13,0);}
+  g.obox(2.0+0.48,1.07,7.3,0.48,1.07,0.03,-1.2,0,81);g.sphere(2.9,1.0,7.6,0.03,78,ICO0);
+  /* plafonniers */
+  for(const [x,z] of[[-4,3.5],[-4,-3.5],[2,3],[2,-3],[6,4.3],[6,-0.3],[6,-4.5]]){g.cyl(x,z,0.22,H-0.12,H,0,false,12);g.cyl(x,z,0.18,H-0.13,H-0.12,17,false,12);}
+  for(const [x0,z0,x1,z1] of[[-8.9,0.06,1.14,0.1],[-8.9,6.84,1.14,6.89],[-8.9,0.06,-8.85,6.89],[1.08,0.06,1.14,6.89]])g.box(x0,0,z0,x1,0.1,z1,0,false);
+  /* LE SALON */
+  g.box(-2.3,0,0.08,0.3,0.5,0.55,81);g.box(-2.25,0.5,0.15,0.25,0.52,0.5,47,false);g.box(-1.75,0.52,0.25,-0.25,1.38,0.32,47);g.box(-1.7,0.57,0.33,-0.3,1.33,0.335,61,false);
+  g.box(-3,0.005,2.4,0.9,0.015,5.2,66,false);sofa2(g,-1,5.9,1.25,1,83,81);sofa2(g,-6.6,6.2,0.45,1,83,81);
+  g.box(-1.7,0.38,3.1,-0.3,0.42,4.0,81);for(const s of[-1,1])for(const t of[-1,1])g.rod(-1+s*0.6,0,3.55+t*0.38,-1+s*0.6,0.38,3.55+t*0.38,0.025,81,6);
+  g.box(-1.4,0.42,3.3,-1.1,0.45,3.55,[36,49][0],false);g.cone(-0.6,3.6,0.04,0.04,0.42,0.52,0,8);
+  {const F=furn(g,true,5.6,-8.9,1);F.B(-1.1,1.1,0,2.2,0,0.36,81);for(let q=0;q<5;q++){const y=0.08+q*0.44;F.B(-1.06,1.06,y,y+0.03,0.03,0.36,81,false);
+      let u=-1.0;while(u<0.9){const w=0.03+r()*0.05,h=0.22+r()*0.15;F.B(u,y+0.03,u+w,y+0.03+h,0.06,0.32,[48,49,51,36,0,41,47][Math.floor(r()*7)],false);u+=w+0.005;if(r()<0.1)u+=0.12;}}}
+  g.note(-8.6,1.42,5.3);
+  {const x=0.5,z=6.4;g.cone(x,z,0.16,0.12,0,0.04,78,10);g.rod(x,0.04,z,x,1.5,z,0.012,78,5);g.cone(x,z,0.25,0.16,1.45,1.75,84,12);}
+  potPlant(g,-8.3,6.3,1.4,47);
+  {const F=furn(g,false,-4,6.9,-1);F.B(-0.6,0.6,1.2,1.75,0,0.04,78,false);F.B(-0.52,0.52,1.27,1.68,0.04,0.05,86,false);}
+  {const x=-5.3,z=4.7;g.box(x-0.3,0,z-0.25,x+0.3,0.45,z+0.25,70);for(const s of[-1,1]){g.obox(x+s*0.42,0.5,z,0.13,0.012,0.25,0,0,70);g.obox(x,0.5,z+s*0.37,0.3,0.012,0.12,0,0,70);}g.phone(x,0.5,z);
+    for(let q=0;q<3;q++){const xx=x+1.1+(q%2)*0.65,h=q*0.46;g.box(xx-0.3,q>1?0.46:0,z-0.6-0.25,xx+0.3,(q>1?0.46:0)+0.45,z-0.6+0.25,70);}}
+  for(const [x,z] of[[-6.5,6.8],[-2.5,6.8]])for(const s of[-1,1])for(let q=0;q<3;q++)g.box(x+s*(1.0+q*0.1)-0.05,0.05,z-0.08+(q%2)*0.04,x+s*(1.0+q*0.1)+0.05,2.3,z-0.04+(q%2)*0.04,16,false);
+  /* LA CUISINE */
+  {const z0=-6.9;g.box(-8.9,0,z0,-3,0.86,z0+0.62,44);g.box(-8.92,0.86,z0,-2.98,0.9,z0+0.66,59,false);
+    for(let q=0;q<8;q++){const x=-8.8+q*0.72;g.box(x,0.1,z0+0.62,x+0.68,0.8,z0+0.63,44,false);g.box(x+0.28,0.7,z0+0.63,x+0.4,0.72,z0+0.65,50,false);}
+    g.box(-6,0.84,z0+0.1,-5.2,0.9,z0+0.5,50,false);g.rod(-5.6,0.9,z0+0.08,-5.6,1.15,z0+0.08,0.015,50,5);g.rod(-5.6,1.15,z0+0.08,-5.6,1.15,z0+0.25,0.012,50,5);
+    g.box(-4.4,0.86,z0+0.02,-3.4,0.9,z0+0.6,47,false);for(const [x,zz] of[[-4.15,0.17],[-3.65,0.17],[-4.15,0.45],[-3.65,0.45]])g.torus(x,0.91,z0+zz,0.07,0.012,[0,1,0],50,10,3);
+    for(const x of[-8.8,-7.9,-3.95])g.box(x,1.5,z0,x+0.85,2.2,z0+0.35,44);
+    g.box(-2.6,0,z0,-1.75,1.85,z0+0.7,0);g.box(-2.6,1.2,z0+0.7,-1.75,1.21,z0+0.71,12,false);g.box(-1.84,0.3,z0+0.7,-1.8,1.1,z0+0.74,50,false);g.box(-1.84,1.3,z0+0.7,-1.8,1.7,z0+0.74,50,false);
+    for(let q=0;q<5;q++)g.box(-2.5+q*0.13,1.35+(q%2)*0.1,z0+0.71,-2.42+q*0.13,1.43+(q%2)*0.1,z0+0.72,[48,36,49,35,34][q],false);g.note(-2.15,1.55,z0+0.9);}
+  {const x=-5,z=-3.2;g.box(x-0.9,0.74,z-0.55,x+0.9,0.78,z+0.55,81);for(const s of[-1,1])for(const t of[-1,1])g.rod(x+s*0.8,0,z+t*0.45,x+s*0.8,0.74,z+t*0.45,0.03,81,6);
+    for(const [dx,dz,f] of[[0,-0.95,-1],[0,0.95,1],[-1.25,0,0],[1.25,0,0]]){const cx=x+dx,cz=z+dz;g.box(cx-0.21,0.44,cz-0.21,cx+0.21,0.48,cz+0.21,81);for(const s of[-1,1])for(const t of[-1,1])g.rod(cx+s*0.18,0,cz+t*0.18,cx+s*0.18,0.44,cz+t*0.18,0.015,81,4);
+      if(f)g.box(cx-0.21,0.48,cz+f*0.17,cx+0.21,0.95,cz+f*0.21,81,false);else{const s2=Math.sign(dx);g.box(cx+s2*0.17,0.48,cz-0.21,cx+s2*0.21,0.95,cz+0.21,81,false);}}
+    g.box(x-0.3,0.78,z-0.1,x-0.02,0.783,z+0.12,0,false);g.souv(x+0.25,0.92,z);g.cone(x+0.55,z-0.3,0.045,0.04,0.78,0.88,0,8);}
+  {const x=-1.2,z=-2.0;g.box(x-0.3,0,z-0.25,x+0.3,0.45,z+0.25,70);for(const s of[-1,1]){g.obox(x+s*0.42,0.5,z,0.13,0.012,0.25,0,0,70);g.obox(x,0.5,z+s*0.37,0.3,0.012,0.12,0,0,70);}g.phone(x,0.5,z);
+    for(let q=0;q<4;q++)g.box(x-0.22+q*0.12,0.3,z-0.08,x-0.14+q*0.12,0.5,z+0.1,[0,50,13,0][q],false);}
+  /* L'ENTRÉE ET LE COULOIR */
+  g.box(1.3,0.005,-6.5,2.7,0.012,6.6,66,false);
+  g.box(1.26,1.55,5.2,1.3,1.62,6.4,81,false);for(let q=0;q<4;q++)g.rod(1.3,1.6,5.35+q*0.3,1.42,1.6,5.35+q*0.3,0.012,78,4);
+  g.ell(1.42,1.12,5.95,0.07,0.48,0.24,49,ICO1);g.ell(1.42,1.52,5.95,0.08,0.1,0.26,49,ICO1);g.box(1.36,1.0,5.6,1.4,1.55,5.68,48,false);g.box(1.36,1.0,5.74,1.4,1.4,5.8,48,false);g.note(1.55,1.5,5.65);
+  g.box(1.75,0,6.5,2.0,0.1,6.85,47,false);g.box(2.05,0,6.55,2.3,0.1,6.85,47,false);
+  {const F=furn(g,true,-1.5,2.74,-1);F.B(-0.6,0.6,0.78,0.82,0,0.35,81);F.B(-0.55,0.55,0,0.78,0.02,0.04,81,false);for(const u of[-0.55,0.55])F.B(u-0.03,u+0.03,0,0.78,0.3,0.34,81,false);
+    const p=F.P(-0.2,0.18);g.box(p[0]-0.09,0.82,p[1]-0.12,p[0]+0.09,0.84,p[1]+0.12,49,false);g.note(p[0],0.98,p[1]);const l=F.P(0.35,0.18);tableLamp(g,l[0],0.82,l[1],0.8);}
+  for(const z of[2.2,0.8,-2.3])g.box(2.73,1.35,z-0.25,2.74,1.75,z+0.25,78,false);
+  /* LA SALLE DE BAIN */
+  g.box(2.86,0.04,-1.94,2.9,1.3,1.44,10,false);g.box(8.86,0.04,-1.94,8.9,1.3,1.44,10,false);g.box(2.86,0.04,-1.98,8.9,1.3,-1.94,10,false);g.box(2.86,0.04,1.44,8.9,1.3,1.48,10,false);
+  g.box(7.1,0,-1.92,8.88,0.58,-1.1,0);g.box(7.2,0.45,-1.85,8.8,0.585,-1.17,13,false);g.rod(8.7,0.58,-1.5,8.7,0.75,-1.5,0.02,50,5);
+  g.box(5.2,0.85,1.0,5.9,0.92,1.42,0);g.cone(5.55,1.21,0.06,0.05,0,0.85,0,8);g.box(5.25,1.15,1.41,5.85,1.8,1.43,13,false);g.box(5.2,1.1,1.42,5.9,1.85,1.44,50,false);g.note(5.75,1.08,1.15);
+  g.box(3.2,0,0.9,3.6,0.4,1.4,0);g.ell(3.4,0.43,0.95,0.2,0.05,0.25,0,ICO1);g.box(3.15,0.4,1.25,3.65,0.82,1.42,0);
+  for(let q=0;q<3;q++)g.box(4.1+q*0.3,1.0,1.38,4.3+q*0.3,1.45,1.42,[0,49,36][q],false);
+  /* TA CHAMBRE : le lit, le bureau, l'étagère des souvenirs, sa chaise bleue */
+  g.box(7.0,0,4.6,8.88,0.38,6.88,81);g.box(7.05,0.38,4.65,8.83,0.55,6.83,76);g.box(7.0,0.55,4.8,8.88,0.6,6.5,66,false);g.ell(8.0,0.62,6.5,0.45,0.08,0.2,76,ICO1);g.box(7.0,0.38,6.85,8.88,1.05,6.9,81,false);
+  {const F=furn(g,true,5.2,2.86,1);F.B(-0.2,1.6,0.72,0.76,0,0.6,81);for(const u of[-0.15,1.55])F.B(u-0.03,u+0.03,0,0.72,0.04,0.56,81,false);
+    const l=F.P(1.3,0.3);tableLamp(g,l[0],0.76,l[1],0.8);
+    F.B(-0.3,1.7,1.45,1.48,0,0.25,81,false);F.B(-0.3,1.7,1.95,1.98,0,0.25,81,false);for(let k=0;k<6;k++){const p=F.P(-0.1+k*0.3,0.12);keepsake(g,k,p[0],k<3?1.48:1.98,p[1]);}}
+  g.box(3.5,1.3,6.88,4.4,2.0,6.89,[34,72,35][0],false);
+  {const x=5.6,z=4.6;g.box(x-0.25,0.45,z-0.25,x+0.25,0.5,z+0.25,16);for(const s of[-1,1])for(const t of[-1,1])g.rod(x+s*0.22,0,z+t*0.22,x+s*0.22,0.45,z+t*0.22,0.016,50,5);
+    g.box(x-0.25,0.5,z-0.25,x+0.25,1.0,z-0.2,16,false);g.hdoor(x,z);}
+  {const x=4.0,z=2.3;g.box(x-0.3,0,z-0.25,x+0.3,0.45,z+0.25,70);for(const s of[-1,1]){g.obox(x+s*0.42,0.5,z,0.13,0.012,0.25,0,0,70);g.obox(x,0.5,z+s*0.37,0.3,0.012,0.12,0,0,70);}g.phone(x,0.5,z);}
+  /* SA CHAMBRE : la porte est restée entrouverte. On n'entre pas. */
+  {const th=0.55,hx=2.8,hz=-5.05,dx=Math.sin(th),dz=Math.cos(th);g.obox(hx+dx*0.45,1.05,hz+dz*0.45,0.45,1.05,0.025,Math.atan2(-dz,dx),0,81);g.sphere(hx+dx*0.82+0.05,1.0,hz+dz*0.82,0.03,78,ICO0);
+    g.solid(2.7,0,-5.1,3.2,2.1,-4.1);g.spot=g.P(2.2,0,-4.4);g.spot.push(0.5);}
+  g.box(2.86,0.1,-6.9,8.9,H,-6.89,42,false);
+  g.box(6.4,0,-6.88,8.88,0.4,-4.9,81);g.box(6.45,0.4,-6.83,8.83,0.6,-4.95,76);g.box(6.4,0.6,-6.4,8.88,0.64,-4.95,66,false);g.box(6.4,0.4,-6.92,8.88,1.15,-6.86,81,false);for(const x of[7.0,8.3])g.ell(x,0.68,-6.6,0.4,0.08,0.18,76,ICO1);
+  {const x=5.9,z=-6.6;g.box(x-0.22,0,z-0.22,x+0.22,0.55,z+0.22,81);g.box(x-0.12,0.55,z-0.02,x+0.12,0.75,z,41,false);}
+  armoire(g,furn(g,true,-3.0,8.88,-1),0,1.3,0.6,81);
+  g.box(4.0,H-0.22,-6.9,4.25,H,-2.1,81,false);
+  g.rod(4.12,H-0.22,-3.3,4.12,1.8,-3.3,0.017,91,6);g.torus(4.12,1.66,-3.3,0.13,0.017,[1,0,0],91,12,4);
+  {const x=4.3,z=-2.95;g.rod(x,0.2,z,x+0.035,0.2,z,0.17,81,12,0.17,true);for(let k=0;k<3;k++){const t=k/3*6.283+0.3,ly=0.2+Math.sin(t)*0.12,lz=z+Math.cos(t)*0.12;g.rod(x+0.03,ly,lz,x+0.5,0.2+Math.sin(t)*0.2,z+Math.cos(t)*0.2,0.018,81,5);}}
+  g.box(4.6,0.005,-4.6,6.0,0.012,-3.0,58,false);
 }
 
 function genCell(i,j){
@@ -1736,6 +1858,6 @@ function genCell(i,j){
     if(r()<0.5){const q2=q*0.5,H2=H+8+r()*30;g.box(-q2,H+0.7,-q2,q2,H2,q2,2,false);}
   }
   const hasAsc=c.exists&&c.type===T_ASC;
-  return {verts:new Float32Array(g.v),col:new Float32Array(g.col),door,items:g.items,pads:g.pads,npcs:g.npcs,wat:g.wat,pearls:g.pearls,course:g.course,car:g.car,sit:g.sit,lifts:g.lifts,swings:g.swings,hdoors:g.hdoors,conv:g.conv,crabs:g.crabs,statues:g.statues,guards:g.guards,visitors:g.visitors,souvs:g.souvs,scr:g.scr,notes:g.notes,phones:g.phones,watch:g.watch,blades:g.gr.length?g.blades(r):null,
+  return {verts:new Float32Array(g.v),col:new Float32Array(g.col),door,items:g.items,pads:g.pads,npcs:g.npcs,wat:g.wat,pearls:g.pearls,course:g.course,car:g.car,sit:g.sit,spot:g.spot,lifts:g.lifts,swings:g.swings,hdoors:g.hdoors,conv:g.conv,crabs:g.crabs,statues:g.statues,guards:g.guards,visitors:g.visitors,souvs:g.souvs,scr:g.scr,notes:g.notes,phones:g.phones,watch:g.watch,blades:g.gr.length?g.blades(r):null,
           asc:hasAsc?{x:cx,z:cz,top:c.h+ascLayout(i,j).H}:null};
 }

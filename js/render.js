@@ -335,6 +335,17 @@ void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
         alb=mix(land,sky,smoothstep(hz-.01,hz+.01,t))*(.85+.25*vn(vec2(u*30.,t*12.)));gloss=.3;
       }else if(m==87){ /* ouïes de casier : fentes sombres en biais */
         float sl=fract(vW.y*26.);alb=mix(vec3(.04,.045,.05),vec3(.55,.58,.6),smoothstep(.45,.6,sl));gloss=.3;
+      }else if(m==88){ /* érable des pistes : lattes étroites, vernis miroir */
+        float lx=vW.x*25.,id=floor(lx);float e=smoothstep(.0,.06,fract(lx))*smoothstep(1.,.94,fract(lx));
+        alb=mix(vec3(.62,.42,.24),vec3(.86,.66,.42),h21(vec2(id,floor(vW.z*.35+id*.37))))*(.9+.1*vn(vec2(lx*.3,vW.z*3.)))*(.86+.14*e);gloss=.95;refl=.45;
+      }else if(m==89){ /* parquet de maison : lames de chêne de 14 cm */
+        vec2 q=vec2(uv.x/.14,uv.y/1.2+floor(uv.x/.14)*.43);vec2 id=floor(q),fw=fwidth(q);
+        float lx=smoothstep(.5-fw.x*1.5-.03,.5,abs(fract(q.x)-.5)),ly=smoothstep(.5-fw.y*1.5-.006,.5,abs(fract(q.y)-.5));
+        alb=vec3(.56,.38,.22)*(.8+.3*h21(id))*(.88+.12*vn(vec2(uv.x*30.,uv.y*2.)))*(1.-.35*max(lx,ly));gloss=.45;refl=.1;
+      }else if(m==90){ /* papier peint : rayures douces, petits brins */
+        float st=smoothstep(.3,.5,abs(fract((n.x*n.x>n.z*n.z?vW.z:vW.x)*3.2)-.5));alb=mix(vec3(.80,.74,.62),vec3(.70,.63,.52),st)*(.94+.06*fbm3(uv*3.));
+      }else if(m==91){ /* corde : chanvre torsadé */
+        float tw=fract((vW.y*14.+atan(n.x,n.z)*.32));alb=vec3(.58,.48,.32)*(.75+.35*smoothstep(.0,.5,tw)*smoothstep(1.,.5,tw));
       }else if(m==80){ /* tôle peinte des casiers et armoires métalliques : vert d'eau, rayures fines */
         alb=vec3(.42,.55,.54)*(.9+.1*fbm3(uv*1.5))*(1.-.12*smoothstep(.75,.95,vn(uv*vec2(3.,40.))));gloss=.45;refl=.12;
       }else if(m==81){ /* acajou verni : veines serrées */

@@ -44,7 +44,7 @@ const STORY=[
  {t:'Les pièces de un franc',a:['La salle d\'arcade. Thomas et toi, tous les mercredis. Papa vous donnait des pièces et attendait dehors, sur le banc.','Thomas a déménagé. Vous vous étiez promis d\'écrire.'],e:'Il reste une partie, celle que vous n\'avez jamais finie : la borne qui clignote au fond.'},
  {t:'Les anniversaires',a:['Le bowling des anniversaires. Papa lançait de travers, exprès, pour te faire rire.','Les chaussures de location sentaient le désinfectant. Tu donnerais tout pour cette odeur.'],e:'Va jusqu\'au bout d\'une piste, là où tombent les quilles.'},
  {t:'Les étés',a:['Le parc aquatique a été vidé. Les toboggans descendent dans des bassins secs.','C\'est là qu\'il t\'a appris à nager. Tu te souviens de sa main sous ton ventre, et puis plus de main.'],e:'Descends le grand toboggan, jusqu\'au fond du bassin.'},
- {t:'Vendue',a:['La maison est vendue. Des inconnus la visitent ; ils mesurent les murs, ils parlent fort.','La porte de sa chambre à lui est restée fermée depuis novembre. Personne ne l\'a rouverte.','Il faut finir les cartons. Après, ce ne sera plus chez toi.'],e:'Ta chambre. Sa chaise y est encore.'},
+ {t:'Vendue',a:['Ce n\'est pas un rêve. Pas un souvenir. Pour la première fois depuis longtemps, tu es vraiment là.','La maison est vendue. Les nouveaux propriétaires arrivent lundi.','Il reste des cartons à fermer, ses affaires à rassembler, et les clés à prendre sur la table de la cuisine.'],e:'Ta chambre. Sa chaise y est encore.'},
 ];
 const END2=['Un bip. Puis un autre, plus rapide.','Le plafond blanc. Il est à la bonne distance, cette fois.','Sur la chaise, papa se réveille en sursaut. Il a vieilli de dix ans.','« Tu m\'entends ? »','Oui.','Il se met à pleurer. Il répète pardon, pardon, et tu ne sais pas encore pourquoi.'];
 const HUBL=[
@@ -58,10 +58,11 @@ const END3=['Tu t\'assois sur la chaise. Elle a encore un peu la forme de quelqu
 const WAKE=['Tu t\'endors à l\'arrière. La radio, très bas.','Papa bâille. Il ouvre la fenêtre pour se tenir éveillé.','« Dors. On arrive bientôt. »','Des phares. Beaucoup trop de phares.','…','Blanc.','Un bip. Tu dors encore. Mais ce n\'est plus le même sommeil.'];
 /* les silhouettes assises qui veillent : ce qu'on comprend en s'approchant (par générateur) */
 const SITL={3:['Il porte la veste de papa. Il ne se retourne pas.','« Je suis là. Je ne bouge pas. Nage, je te regarde. »'],
+  21:['La porte de sa chambre. Elle est restée entrouverte depuis ce matin-là. Personne n\'a eu la force de la refermer.','Tu n\'entres pas.'],
   14:['Papa. Il dort la bouche ouverte, la main tendue vers le lit.','Il a gardé ses chaussures. Il n\'est pas rentré depuis des semaines.','Sur ses genoux, la petite voiture rouge.']};
 let sitSaid=-1;
 function sitTalk(){if(mode==='obs'||sitSaid===W||!started||paused)return;const T=SITL[WORLDS[W].gen];if(!T)return;
-  for(const c of cells.values()){if(!c.sit)continue;const big=(c.sit[3]||1)>2;if(Math.hypot(c.sit[0]-pos.x,c.sit[2]-pos.z)<(big?16:5)){sitSaid=W;story(T);return;}}}
+  for(const c of cells.values()){const sp=c.sit||c.spot;if(!sp)continue;const k=sp[3]||1,R=k>2?16:k<1?1.4:5;if(Math.hypot(sp[0]-pos.x,sp[2]-pos.z)<R){sitSaid=W;story(T);return;}}}
 const storyEl=document.getElementById('story');let storyQ=[],storyT=0,wakeT=0,wakeKind=0,lieT=0,beltT=0;
 function story(lines,ink){if(mode==='obs')return;storyQ=lines.slice();storyT=0;storyEl.classList.toggle('ink',!!ink);storyEl.classList.remove('on');}
 function storyTick(dt){
@@ -300,7 +301,7 @@ const shades=[];
 function lookPan(x,z){const dx=x-pos.x,dz=z-pos.z,d=Math.hypot(dx,dz);return Math.max(-1,Math.min(1,(dx*Math.cos(yaw)+dz*Math.sin(yaw))/Math.max(d,1)));}
 function standable(x,z){const cr=crouch;crouch=false;const ok=!test(x,pos.y+0.05,z)&&(test(x,pos.y-0.6,z)||WORLDS[W].full);crouch=cr;return ok;}
 function horror(dt){
-  if(mode!=='classic'){shades.length=0;chaser=null;return;}
+  if(mode!=='classic'||GEN===21){shades.length=0;chaser=null;return;} /* la maison : on ne rêve plus, rien ne rôde */
   chaserTick(dt);
   for(let k=shades.length-1;k>=0;k--){const a=shades[k],dx=a.x-pos.x,dz=a.z-pos.z,d=Math.hypot(dx,dz),fw=(dx*Math.sin(yaw)-dz*Math.cos(yaw))/Math.max(d,0.1);
     if(fw>0.88)a.seen+=dt;a.life-=dt;
@@ -778,7 +779,7 @@ function farHorror(){if(!ac)return;const keys=['scream','smiler','impact'].filte
   const pn=ac.createStereoPanner?ac.createStereoPanner():ac.createGain();if(pn.pan)pn.pan.value=Math.random()*1.6-0.8;const g=ac.createGain();g.gain.value=k==='impact'?0.16:0.1;
   const dl=ac.createDelay(1),fb=ac.createGain(),wet=ac.createGain();dl.delayTime.value=0.23+Math.random()*0.15;fb.gain.value=0.45;wet.gain.value=0.5;
   s.connect(lp);lp.connect(g);g.connect(pn);g.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(pn);pn.connect(master);s.start(t,0,k==='scream'?6+Math.random()*8:undefined);}
-function farTick(dt){if(mode!=='classic'||paused||!started)return;farT-=dt;if(farT<0){farT=35+Math.random()*50;farHorror();}}
+function farTick(dt){if(mode!=='classic'||paused||!started||GEN===21)return;farT-=dt;if(farT<0){farT=35+Math.random()*50;farHorror();}}
 function doorSfx(){
   if(!ac)return;const t=ac.currentTime;
   [880,660].forEach((f,i)=>{const o=ac.createOscillator();o.frequency.value=f;const g=ac.createGain();g.gain.setValueAtTime(0,t+i*0.22);g.gain.linearRampToValueAtTime(0.05,t+i*0.22+0.02);g.gain.exponentialRampToValueAtTime(0.0005,t+i*0.22+0.5);o.connect(g);g.connect(master);o.start(t);o.stop(t+1.1);});

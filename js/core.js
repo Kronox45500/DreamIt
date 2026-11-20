@@ -136,11 +136,12 @@ const WORLDS=[
   pal:{sun:[0.3,0.85,0.4],zen:[.10,.14,.16],mid:[.10,.14,.16],hor:[.09,.12,.13],seaC:[.09,.12,.13],ambUp:[.34,.40,.42],ambDn:[.26,.30,.30],sunC:[0,0,0],
        indoor:[.20,.24,.25],fogD:80,cl0:[.3,.3,.3],cl1:[.5,.5,.5],se0:[.3,.3,.3],se1:[.4,.4,.4],accent:[.25,.62,.72],glow:[0,0,0],
        water:1,night:0,stripe:[0.2,0.4],cloud:.2,lampC:[.55,.70,.72],lampP:[12,12,7,7.5],lampO:[0,0],ground:null}},
- {name:'La maison vendue',gen:21,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,phones:5},music:[19],spawn:[1,0,1],
+ {name:'La maison vendue',gen:21,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{souv:1,notes:5,phones:3},music:[19],spawn:[2,0,14],
   souv:{n:'les clés',k:5,t:4,r:3},
-  acts:{L:'Cartons',s:'carton ouvert',verb:'E · fermer le carton',snd:'box',lines:['Ses pulls. Ils sentent encore la lessive qu\'il achetait toujours.','Des cassettes, avec son écriture : « Vacances », « Noël », « À garder ».','Ta première chaussure. Il l\'avait gardée. Tu ne le savais pas.','Des factures, des clés de rien, un ticket de cinéma. Le tien.','Le carton est lourd. Tu le fermes quand même.']},
-  pal:{sun:[0.3,0.85,0.4],zen:[.34,.30,.30],mid:[.34,.30,.30],hor:[.40,.32,.28],seaC:[.40,.32,.28],ambUp:[.52,.46,.42],ambDn:[.40,.34,.30],sunC:[0,0,0],
-       indoor:[.34,.29,.25],fogD:50,cl0:[.3,.3,.3],cl1:[.5,.5,.5],se0:[.3,.3,.3],se1:[.4,.4,.4],accent:[.62,.52,.42],glow:[0,0,0],
+  notes:{L:'Ses affaires',s:'une de ses affaires',c:[1.0,0.86,0.6],t:['Ses lunettes, sur l\'étagère. Une branche tient avec du scotch. Il disait qu\'il les changerait « après ».','La photo du frigo. Vous deux sur la plage, avant. Il l\'avait retournée, face contre la porte.','Son écharpe, au portemanteau. Elle sent encore le tabac froid et l\'après-rasage.','Son carnet. Des listes de courses, des rendez-vous. Et à chaque page, en haut, la date de l\'accident, recopiée.','Sa montre, sur le lavabo. Elle s\'est arrêtée un matin de novembre. Personne ne l\'a remontée.']},
+  acts:{L:'Cartons',s:'carton ouvert',verb:'E · fermer le carton',snd:'box',lines:['Ses pulls. Ils sentent encore la lessive qu\'il achetait toujours. Tu fermes le carton.','Des cassettes, avec son écriture : « Vacances », « Noël », « À garder ». Tu fermes le carton.','Ta première chaussure. Il l\'avait gardée. Tu ne le savais pas. Tu fermes le dernier carton.']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.50,.58,.68],mid:[.62,.66,.70],hor:[.80,.74,.66],seaC:[.80,.74,.66],ambUp:[.62,.58,.54],ambDn:[.44,.40,.36],sunC:[0,0,0],
+       indoor:[.42,.38,.34],fogD:70,cl0:[.3,.3,.3],cl1:[.5,.5,.5],se0:[.3,.3,.3],se1:[.4,.4,.4],accent:[.62,.52,.42],glow:[0,0,0],
        water:0,night:0,stripe:[0,0],cloud:.2,lampC:[1.0,.75,.48],lampP:[8,8,2.5,3.6],lampO:[4,4],ground:null}},
 ];
 /* les chapitres : tranches de la liste des espaces */
