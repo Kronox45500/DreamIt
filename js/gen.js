@@ -1891,42 +1891,76 @@ function room4(g,x0,z0,x1,z1,H,m,ops,t){t=t||0.15;
     for(const [,c,w,h] of O){B(a,c-w/2,0,H);B(c-w/2,c+w/2,h,H);a=c+w/2;}B(a,a1,0,H);};
   side('n',x0,x1,z0,true);side('s',x0,x1,z1,true);side('w',z0,z1,x0,false);side('e',z0,z1,x1,false);}
 const hasX=(a,b)=>Math.abs(a)+Math.abs(b)>=2;
+/* un battant de porte : gond (hx,hz), sens fermé (cx,cz) le long du mur, côté ouvert (nx,nz), ouverture th */
+function leafAt(g,hx,hz,cx,cz,nx,nz,th,m){m=m||81;const u=[cx*Math.cos(th)+nx*Math.sin(th),cz*Math.cos(th)+nz*Math.sin(th)],nr=[u[1],-u[0]],yaw=Math.atan2(-u[1],u[0]);
+  g.obox(hx+u[0]*0.45,1.04,hz+u[1]*0.45,0.45,1.04,0.024,yaw,0,m);
+  for(const f of[-1,1]){for(const [t,y,h] of[[0.25,0.6,0.32],[0.68,0.6,0.32],[0.25,1.52,0.38],[0.68,1.52,0.38]])g.obox(hx+u[0]*t*0.9+nr[0]*f*0.026,y,hz+u[1]*t*0.9+nr[1]*f*0.026,0.15,h,0.005,yaw,0,m);
+    const p=[hx+u[0]*0.8+nr[0]*f*0.026,hz+u[1]*0.8+nr[1]*f*0.026],q=[p[0]+nr[0]*f*0.05,p[1]+nr[1]*f*0.05];g.rod(p[0],1.0,p[1],q[0],1.0,q[1],0.008,78,6);g.rod(q[0],1.0,q[1],q[0]-u[0]*0.11,1.0,q[1]-u[1]*0.11,0.008,78,6,0.008,true);}}
 function houseNightCell(g,c,i,j,r){ /* la maison du chapitre 3, mais elle ne finit plus */
   const T=c.type,H=2.5,t=0.12;g.m=SYM[0];g.box(-24,-0.8,-24,24,0,24,89);g.box(-24,H,-24,24,H+0.3,24,0,false);
   const ajar=[];
-  /* un mur le long de x (z fixe) ou de z (x fixe), de u0 à u1, avec des portes aux positions D */
   const wall=(alongX,fix,u0,u1,D,m,ajarSide)=>{let u=u0;const S=[...D].sort((p,q)=>p-q);
-    const B=(a0,a1,y0,y1)=>{if(a1-a0<0.01)return;alongX?g.box(a0,y0,fix-t/2,a1,y1,fix+t/2,m):g.box(fix-t/2,y0,a0,fix+t/2,y1,a1,m);};
-    for(const d of S){B(u,d-0.5,0,H);B(d-0.5,d+0.5,2.1,H);u=d+0.5;
-      const fr=(a0,a1,y0,y1)=>alongX?g.box(a0,y0,fix-0.1,a1,y1,fix+0.1,0,false):g.box(fix-0.1,y0,a0,fix+0.1,y1,a1,0,false);fr(d-0.56,d-0.5,0,2.16);fr(d+0.5,d+0.56,0,2.16);fr(d-0.56,d+0.56,2.1,2.16);
+    const B=(a0,a1,y0,y1,mm,sol)=>{if(a1-a0<0.01)return;alongX?g.box(a0,y0,fix-t/2,a1,y1,fix+t/2,mm,sol):g.box(fix-t/2,y0,a0,fix+t/2,y1,a1,mm,sol);};
+    const Bp=(a0,a1)=>{if(a1-a0<0.01)return;alongX?g.box(a0,0,fix-t/2-0.014,a1,0.09,fix+t/2+0.014,0,false):g.box(fix-t/2-0.014,0,a0,fix+t/2+0.014,0.09,a1,0,false);
+      alongX?g.box(a0,H-0.06,fix-t/2-0.03,a1,H,fix+t/2+0.03,0,false):g.box(fix-t/2-0.03,H-0.06,a0,fix+t/2+0.03,H,a1,0,false);};
+    for(const d of S){B(u,d-0.5,0,H,m);Bp(u,d-0.5);B(d-0.5,d+0.5,2.1,H,m);u=d+0.5;
+      const fr=(a0,a1,y0,y1)=>alongX?g.box(a0,y0,fix-0.1,a1,y1,fix+0.1,0,false):g.box(fix-0.1,y0,a0,fix+0.1,y1,a1,0,false);fr(d-0.57,d-0.5,0,2.17);fr(d+0.5,d+0.57,0,2.17);fr(d-0.57,d+0.57,2.1,2.17);
       if(ajarSide&&r()<0.3)ajar.push([alongX,fix,d,ajarSide]);}
-    B(u,u1,0,H);};
+    B(u,u1,0,H,m);Bp(u,u1);};
   for(const s of[-1,1]){
     wall(true,s*1.2,-24,-1.2,[-18,-6],90,s);wall(true,s*1.2,1.2,24,[6,18],90,s);
     wall(false,s*1.2,-24,-1.2,[-18,-6],90,s);wall(false,s*1.2,1.2,24,[6,18],90,s);
-    wall(true,s*24,-24,-1.2,[-12],0);wall(true,s*24,1.2,24,[12],0);wall(false,s*24,-24,-1.2,[-12],0);wall(false,s*24,1.2,24,[12],0);
-    for(const q of[-1,1]){wall(true,s*12.6,q>0?1.2:-24,q>0?24:-1.2,[q*12],0);}}
-  for(let q=-22;q<=22;q+=4){if(Math.abs(q)<2)continue;g.cyl(q,0,0.15,H-0.05,H,25,false,8);g.cyl(0,q,0.15,H-0.05,H,25,false,8);}
-  g.box(-1.1,0.005,-24,1.1,0.012,24,66,false);g.box(-24,0.005,-1.1,24,0.012,1.1,66,false);
-  /* les portes de sa chambre : entrouvertes sur le noir, on ne passe pas, on peut les refermer */
-  for(const [ax,fix,d,sd] of ajar){const into=sd; /* la pièce est du côté de sd */
-    const th=0.35+r()*0.25;if(ax){const hx=d-0.45,dx=Math.cos(th),dz=into*Math.sin(th);g.obox(hx+dx*0.45,1.05,fix+dz*0.45,0.45,1.05,0.025,Math.atan2(-dz,dx),0,81);
-      g.box(d-0.5,0,Math.min(fix+into*0.07,fix+into*1.4),d+0.5,2.1,Math.max(fix+into*0.07,fix+into*1.4),28,false);g.solid(d-0.5,0,Math.min(fix,fix+into*0.5),d+0.5,2.1,Math.max(fix,fix+into*0.5));
-      if(r()<0.7)g.phone(d,1.0,fix-into*0.45);}
-    else{const hz=d-0.45,dz=Math.cos(th),dx=into*Math.sin(th);g.obox(fix+dx*0.45,1.05,hz+dz*0.45,0.45,1.05,0.025,Math.atan2(-dz,dx),0,81);
-      g.box(Math.min(fix+into*0.07,fix+into*1.4),0,d-0.5,Math.max(fix+into*0.07,fix+into*1.4),2.1,d+0.5,28,false);g.solid(Math.min(fix,fix+into*0.5),0,d-0.5,Math.max(fix,fix+into*0.5),2.1,d+0.5);
-      if(r()<0.7)g.phone(fix-into*0.45,1.0,d);}}
-  /* les pièces : un salon, un lit, une table, des cartons, une plante ; toujours un peu de travers */
-  for(const sa of[-1,1])for(const sb of[-1,1])for(const far of[0,1]){if(T===5&&sa>0&&sb<0&&far)continue;
-    const fx=sa*12+(r()-0.5)*6,fz=sb*(far?18.3:6.9),kind=Math.floor(r()*5);
-    if(kind===0){sofa2(g,fx,fz+sb*1.5,1.2,sb,83,81);tableLamp(g,fx+2.4,0,fz+sb*2.2,1);g.box(fx-0.8,0.38,fz-0.5,fx+0.8,0.42,fz+0.3,81);}
-    else if(kind===1){g.box(fx-1,0,fz-1.1,fx+1,0.42,fz+1.1,81);g.box(fx-0.95,0.42,fz-1.05,fx+0.95,0.58,fz+1.05,76);g.box(fx-1,0.58,fz-0.6,fx+1,0.62,fz+1.05,66,false);}
-    else if(kind===2){g.box(fx-1,0.74,fz-0.6,fx+1,0.78,fz+0.6,81);for(const a of[-0.8,0.8])for(const bb of[-0.45,0.45])g.rod(fx+a,0,fz+bb,fx+a,0.74,fz+bb,0.03,81,6);if(r()<0.5)g.cone(fx,fz,0.04,0.035,0.78,0.88,0,8);}
-    else if(kind===3){for(let q=0;q<6;q++){const x=fx-1.5+(q%3)*1.0,y=q<3?0:0.46;g.box(x,y,fz-0.25,x+0.6,y+0.45,fz+0.25,70);}}
-    else potPlant(g,fx,fz,1.3,47);
-    if(r()<0.18)g.note(fx+1.6,1.0,fz-0.8);}
+    wall(true,s*24,-24,-1.2,[-12],42);wall(true,s*24,1.2,24,[12],42);wall(false,s*24,-24,-1.2,[-12],42);wall(false,s*24,1.2,24,[12],42);
+    for(const q of[-1,1])wall(true,s*12.6,q>0?1.2:-24,q>0?24:-1.2,[q*12],42);}
+  /* le couloir : tapis, appliques de laiton, cadres de famille, plafonniers qui grésillent */
+  g.box(-1.0,0.005,-24,1.0,0.012,24,66,false);g.box(-24,0.005,-1.0,24,0.012,1.0,66,false);
+  for(let q=-22;q<=22;q+=4){if(Math.abs(q)<2)continue;g.cyl(q,0,0.18,H-0.04,H,0,false,10);g.cyl(q,0,0.15,H-0.05,H-0.04,17,false,10);g.cyl(0,q,0.18,H-0.04,H,0,false,10);g.cyl(0,q,0.15,H-0.05,H-0.04,17,false,10);}
+  for(const s of[-1,1])for(let q=-21;q<=21;q+=6){if(Math.abs(q)<3)continue;const w=s*1.13;
+    g.box(q-0.05,1.62,w-0.02*s,q+0.05,1.8,w,78,false);g.rod(q,1.7,w,q,1.76,w-s*0.14,0.01,78,4);g.cone(q,w-s*0.14,0.08,0.05,1.74,1.9,84,8);
+    if(r()<0.6){const x=q+1.6,fw=0.22+r()*0.15,fh=0.28+r()*0.12;g.box(x-fw,1.3,w-0.025*s,x+fw,1.3+fh*2,w,78,false);g.box(x-fw+0.04,1.34,w-0.03*s,x+fw-0.04,1.26+fh*2,w-0.025*s,r()<0.3?47:86,false);}
+    const z=q,x2=s*1.13;g.box(x2-0.02*s,1.62,z-0.05,x2,1.8,z+0.05,78,false);g.rod(x2,1.7,z,x2-s*0.14,1.76,z,0.01,78,4);g.cone(x2-s*0.14,z,0.08,0.05,1.74,1.9,84,8);}
+  /* les portes de sa chambre : entrouvertes sur le noir. Refermées, elles le restent. */
+  for(const [ax,fix,d,sd] of ajar){const into=sd,th=0.35+r()*0.25,hasP=r()<0.7,key=i+','+j+','+g.phones.length,closed=hasP&&typeof answered!=='undefined'&&answered.has(key);
+    if(ax){leafAt(g,d-0.45,fix,1,0,0,into,closed?0:th);if(!closed)g.box(d-0.5,0,Math.min(fix+into*0.07,fix+into*0.1),d+0.5,2.1,Math.max(fix+into*0.07,fix+into*0.1),28,false);
+      g.solid(d-0.5,0,Math.min(fix,fix+into*0.5),d+0.5,2.1,Math.max(fix,fix+into*0.5));if(hasP)g.phone(d,1.0,fix-into*0.45);}
+    else{leafAt(g,fix,d-0.45,0,1,into,0,closed?0:th);if(!closed)g.box(Math.min(fix+into*0.07,fix+into*0.1),0,d-0.5,Math.max(fix+into*0.07,fix+into*0.1),2.1,d+0.5,28,false);
+      g.solid(Math.min(fix,fix+into*0.5),0,d-0.5,Math.max(fix,fix+into*0.5),2.1,d+0.5);if(hasP)g.phone(fix-into*0.45,1.0,d);}}
+  /* les pièces : chacune meublée comme une vraie pièce, contre son mur du fond */
+  const room=(sa,sb,far)=>{const bz=sb*(far?23.94:12.54),mz=sb*(far?18.3:6.9),kind=Math.floor(r()*5),X=v=>sa*v;
+    g.cyl(X(12),mz,0.25,H-0.05,H,0,false,12);g.cyl(X(12),mz,0.2,H-0.06,H-0.05,17,false,12);
+    const B=(x0,x1,y0,y1,d0,d1,m,sol)=>g.box(Math.min(X(x0),X(x1)),y0,Math.min(bz-sb*d0,bz-sb*d1),Math.max(X(x0),X(x1)),y1,Math.max(bz-sb*d0,bz-sb*d1),m,sol);
+    const P=(x,d)=>[X(x),bz-sb*d];
+    if(kind===0){ /* salon */
+      const p=P(5.5,0.55);sofa2(g,p[0],p[1],1.25,sb,83,81);B(4.5,6.5,0.38,0.42,1.6,2.4,81);B(3.5,7.5,0.005,0.012,1.2,3.4,66,false);
+      B(4.3,6.7,1.25,1.95,0.0,0.04,78,false);B(4.4,6.6,1.32,1.88,0.04,0.05,86,false);
+      {const q=P(8.3,0.4);g.cone(q[0],q[1],0.16,0.12,0,0.04,78,10);g.rod(q[0],0.04,q[1],q[0],1.5,q[1],0.012,78,5);g.cone(q[0],q[1],0.25,0.16,1.45,1.75,84,12);}
+      B(17.4,19.6,0,2.0,0,0.35,81);for(let y=0.1;y<1.9;y+=0.45){B(17.45,19.55,y,y+0.03,0.02,0.35,81,false);let x=17.5;while(x<19.4){const w=0.04+r()*0.05;B(x,x+w,y+0.03,y+0.25+r()*0.12,0.06,0.32,[48,49,51,36,0,41][Math.floor(r()*6)],false);x+=w+0.006;}}
+      const a=P(11.5,3.8);sofa2(g,a[0],a[1],0.42,sb,83,81);}
+    else if(kind===1){ /* chambre */
+      B(4.5,6.5,0,0.38,0.05,2.15,81);B(4.55,6.45,0.38,0.56,0.08,2.1,76);B(4.5,6.5,0.56,0.6,0.7,2.15,66,false);B(4.5,6.5,0.38,1.15,0.0,0.06,81,false);
+      for(const x of[5.0,6.0]){const q=P(x,0.35);g.ell(q[0],0.64,q[1],0.4,0.08,0.17,76,ICO1);}
+      for(const x of[3.95,7.05]){B(x-0.25,x+0.25,0,0.55,0.05,0.5,81);const q=P(x,0.28);tableLamp(g,q[0],0.55,q[1],0.75);}
+      armoire(g,furn(g,false,X(18.5),bz,-sb),0,1.4,0.6,81);B(3.6,7.4,0.005,0.012,2.2,3.6,58,false);}
+    else if(kind===2){ /* cuisine */
+      B(2.5,9.5,0,0.86,0,0.62,44);B(2.48,9.52,0.86,0.9,0,0.66,59,false);B(2.5,9.5,0.9,1.5,0,0.012,10,false);for(let x=2.6;x<9.4;x+=0.72){B(x,x+0.68,0.1,0.8,0.62,0.63,44,false);B(x+0.28,x+0.4,0.7,0.72,0.63,0.65,50,false);}
+      B(9.7,10.55,0,1.85,0,0.7,0);B(10.46,10.5,0.3,1.1,0.7,0.74,50,false);B(5,6,0.84,0.9,0.1,0.5,50,false);
+      for(const x of[2.6,3.5,6.6,7.5])B(x,x+0.85,1.5,2.2,0,0.35,44);
+      const q=P(12,4.2);g.box(q[0]-0.9,0.74,q[1]-0.55,q[0]+0.9,0.78,q[1]+0.55,81);for(const a of[-0.8,0.8])for(const bb of[-0.45,0.45])g.rod(q[0]+a,0,q[1]+bb,q[0]+a,0.74,q[1]+bb,0.03,81,6);
+      for(const [dx,dz] of[[0,-0.95],[0,0.95],[-1.25,0],[1.25,0]]){const cx=q[0]+dx,cz=q[1]+dz;g.box(cx-0.21,0.44,cz-0.21,cx+0.21,0.48,cz+0.21,81);for(const a of[-0.18,0.18])for(const bb of[-0.18,0.18])g.rod(cx+a,0,cz+bb,cx+a,0.44,cz+bb,0.014,81,4);}
+      g.cone(q[0]+0.3,q[1],0.045,0.04,0.78,0.88,0,8);}
+    else if(kind===3){ /* bureau */
+      B(4.4,6.6,0.72,0.76,0,0.7,81);for(const x of[4.45,6.55])B(x-0.04,x+0.04,0,0.72,0.04,0.66,81,false);B(4.5,5.2,0,0.72,0.05,0.65,81);
+      {const q=P(6.2,0.3);tableLamp(g,q[0],0.76,q[1],0.7);const k=P(5.5,1.15);g.box(k[0]-0.22,0.44,k[1]-0.22,k[0]+0.22,0.48,k[1]+0.22,49);g.rod(k[0],0,k[1],k[0],0.44,k[1],0.03,50,6);B(5.28,5.72,0.48,1.0,1.33,1.38,49,false);}
+      for(let q=0;q<5;q++)B(5.2+q*0.12,5.3+q*0.12,0.76,0.765+q*0.004,0.15,0.45,0,false);
+      const F=furn(g,false,X(18.5),bz,-sb);for(let q=0;q<3;q++)filing(g,F,(q-1)*0.55,0.62,80);}
+    else{ /* débarras : des cartons, des meubles sous des draps blancs */
+      for(let q=0;q<9;q++){const x=3+(q%5)*1.0+r()*0.3,y=q<5?0:0.5,d=0.4+r()*0.4;B(x,x+0.6,y,y+0.48,d,d+0.5,70);}
+      for(let q=0;q<3;q++){const p=P(15+q*2.8,1.4+r());g.ell(p[0],0.55+q*0.1,p[1],0.65,0.6+q*0.12,0.45,76,ICO1);g.box(p[0]-0.55,0,p[1]-0.38,p[0]+0.55,0.05,p[1]+0.38,76,false);}
+      {const p=P(11,0.4);g.obox(p[0],0.95,p[1],0.35,0.9,0.03,0,0.08,81);g.obox(p[0],0.95,p[1]-sb*0.035,0.3,0.84,0.005,0,0.08,13);}}
+    if(r()<0.2){const p=P(12+(r()-0.5)*6,2.5+r()*2);g.note(p[0],1.0,p[1]);}};
+  for(const sa of[-1,1])for(const sb of[-1,1])for(const far of[0,1]){if(T===5&&sa>0&&sb<0&&far)continue;room(sa,sb,far);}
   if(T===5&&hasX(i,j)){ /* la porte d'entrée, éclairée, au bout d'une pièce vide */
-    g.box(22.4,0,-19.8,23.9,2.3,-18.2,81);g.box(22.3,0.05,-19.7,22.4,2.25,-18.3,25,false);g.box(22.2,2.3,-20,23.9,2.45,-18,17,false);g.hdoor(21.7,-19);}
+    g.box(22.4,0,-19.8,23.9,2.3,-18.2,81);g.box(22.3,0.05,-19.7,22.4,2.25,-18.3,25,false);g.box(22.2,2.3,-20,23.9,2.45,-18,17,false);g.box(21.4,0.005,-20.2,22.3,0.012,-17.8,25,false);g.hdoor(21.7,-19);}
   if(r()<0.55)g.watchAt(r()<0.5?-21:21,0);
   if(r()<0.35)g.npc(-6+r()*12,0,r()<0.5?-0.4:0.4,r()*6.28);
   if(r()<0.4)g.note(r()<0.5?-10:10,1.0,0.6);
@@ -1945,6 +1979,14 @@ function waitCell(g,c,i,j,r){ /* la salle d'attente : la nuit de l'appel, sans f
   g.box(-9,0,-23.6,-8.4,1.3,-23.1,0);g.box(-8.95,0.95,-23.1,-8.45,1.05,-23.08,48,false);g.box(-8.8,0.7,-23.1,-8.6,0.74,-22.9,0,false);
   g.box(-15,0,-23.7,-14,1.9,-23,47);g.box(-14.95,0.9,-23,-14.05,1.8,-22.99,13,false);
   potPlant(g,-22.5,-22.5,1.4,0);potPlant(g,22.5,22.5,1.4,0);
+  for(let a=-24;a<=24;a+=1.2)g.box(a-0.015,H-0.02,-24,a+0.015,H,24,50,false);for(let b=-24;b<=24;b+=1.2)g.box(-24,H-0.02,b-0.015,24,H,b+0.015,50,false);
+  {const x=4,y=2.45,z=-23.58;g.rod(x,y,z,x,y,z+0.06,0.32,0,24,0.32,true);g.torus(x,y,z+0.06,0.32,0.025,[0,0,1],12,24,4);for(let k=0;k<12;k++){const a=k/12*6.283;g.box(x+Math.cos(a)*0.27-0.012,y+Math.sin(a)*0.27-0.012,z+0.065,x+Math.cos(a)*0.27+0.012,y+Math.sin(a)*0.27+0.012,z+0.07,12,false);}
+    g.rod(x,y,z+0.075,x+0.16,y+0.05,z+0.075,0.012,12,4);g.rod(x,y,z+0.08,x-0.05,y+0.22,z+0.08,0.008,12,4);}
+  {const x=-20,z=-23.2;g.box(x-0.18,0,z-0.18,x+0.18,1.0,z+0.18,0);g.box(x-0.12,0.6,z+0.17,x+0.12,0.7,z+0.2,50,false);g.cone(x,z,0.15,0.15,1.0,1.42,13,12);g.ell(x,1.45,z,0.15,0.06,0.15,13,ICO1);}
+  for(const [x,c] of[[-4.5,49],[-18,36],[14,35]]){g.box(x-0.45,1.3,-23.62,x+0.45,2.4,-23.6,c,false);g.box(x-0.38,1.4,-23.6,x+0.38,1.7,-23.59,0,false);g.box(x-0.38,1.8,-23.6,x+0.1,1.86,-23.59,0,false);}
+  for(let q=0;q<12;q++)g.box(-14.92+(q%4)*0.22,1.0+Math.floor(q/4)*0.26,-23.0,-14.76+(q%4)*0.22,1.18+Math.floor(q/4)*0.26,-22.99,[48,49,36,35,34][q%5],false);
+  for(const [c,o] of[[49,-0.4],[48,0.4]])g.box(-24,0.002,o-0.08,24,0.006,o+0.08,c,false);
+  for(const a of[-11,1,13]){const b=-12;g.box(a-0.5,0.4,b-0.3,a+0.5,0.44,b+0.3,0);g.rod(a,0,b,a,0.4,b,0.04,50,6);g.box(a-0.3,0.44,b-0.15,a+0.05,0.45,b+0.15,[36,49][0],false);g.box(a-0.1,0.45,b-0.18,a+0.25,0.46,b+0.12,0,false);}
   for(const s of[-1,1]){g.box(-24,0,s*23.8-0.2,-3,H,s*23.8+0.2,0);g.box(3,0,s*23.8-0.2,24,H,s*23.8+0.2,0);g.box(s*23.8-0.2,0,-24,s*23.8+0.2,H,-3,0);g.box(s*23.8-0.2,0,3,s*23.8+0.2,H,24,0);}
   if(T===5&&hasX(i,j)){ /* le guichet : la vitre, la lampe, ton numéro */
     g.box(10,0,20,22,1.1,21.2,0);g.box(10,1.1,21.1,22,2.4,21.2,13,false);g.box(10,2.4,20.8,22,3.2,21.2,0);g.box(14,2.5,20.78,18,2.95,20.8,47,false);
@@ -1957,10 +1999,17 @@ function waitCell(g,c,i,j,r){ /* la salle d'attente : la nuit de l'appel, sans f
 function funeralCell(g,c,i,j,r){ /* le funérarium : des chaises, des fleurs, un cercueil fermé */
   const T=c.type,H=4.4;g.m=SYM[0];g.box(-24,-0.8,-24,24,0,24,58);g.box(-24,H,-24,24,H+0.3,24,12,false);
   for(const s of[-1,1]){g.box(-24,0,s*23.8-0.2,-3,H,s*23.8+0.2,81);g.box(3,0,s*23.8-0.2,24,H,s*23.8+0.2,81);g.box(s*23.8-0.2,0,-24,s*23.8+0.2,H,-3,81);g.box(s*23.8-0.2,0,3,s*23.8+0.2,H,24,81);}
-  for(let k=-20;k<=20;k+=5){g.cone(k,-23.4,0.12,0.18,2.6,2.8,84,10);g.cone(k,23.4,0.12,0.18,2.6,2.8,84,10);}
+  for(let k=-20;k<=20;k+=5){for(const s2 of[-1,1]){const z=s2*23.58;g.box(k-0.06,2.45,z-0.02*s2,k+0.06,2.75,z,78,false);g.rod(k,2.6,z,k,2.66,z-s2*0.16,0.01,78,4);g.cone(k,z-s2*0.16,0.11,0.07,2.62,2.84,84,10);}}
+  for(const s2 of[-1,1])for(let k=-23;k<=23;k+=0.32)if(Math.abs(k)>3.2)g.box(k,0.1,s2*23.55-(Math.floor(k*3)%2?0.03:0)*s2,k+0.3,4.3,s2*23.6,83,false);
+  g.box(-0.8,0.005,-13.8,0.8,0.012,22,48,false);g.box(-0.85,0.004,-13.8,0.85,0.006,22,78,false);
   /* l'estrade, le cercueil fermé, les couronnes, les cierges */
   g.box(-6,0,-20,6,0.3,-14,81);g.box(-6.1,0.3,-20.1,6.1,0.32,-13.9,58,false);
-  g.box(-1.2,0.3,-18.2,1.2,0.95,-16.2,81);g.box(-1.25,0.95,-18.25,1.25,1.1,-16.15,81);g.box(-0.6,1.1,-17.9,0.6,1.12,-16.5,0,false);
+  g.box(-1.3,0.3,-18.15,1.3,0.42,-16.25,47);for(const x of[-1.0,1.0])for(const z of[-17.9,-16.5])g.rod(x,0.3,z,x,0.62,z,0.05,78,8);
+  g.box(-1.12,0.62,-17.95,1.12,1.02,-16.45,81);g.box(-1.16,1.0,-17.99,1.16,1.06,-16.41,81);g.obox(0,1.1,-17.2,1.1,0.05,0.62,0,0,81);g.ell(0,1.12,-17.2,1.08,0.08,0.6,81,ICO1);
+  for(const x of[-0.7,0,0.7])for(const s2 of[-1,1])g.rod(x-0.15,0.82,-17.2+s2*0.79,x+0.15,0.82,-17.2+s2*0.79,0.018,78,6);
+  {const x=2.4,z=-15.4;g.rod(x,0.3,z+0.3,x,1.7,z,0.02,81,4);g.rod(x-0.35,0.3,z-0.2,x,1.7,z,0.02,81,4);g.rod(x+0.35,0.3,z-0.2,x,1.7,z,0.02,81,4);
+    g.obox(x,1.3,z+0.05,0.3,0.38,0.02,0,-0.2,78);g.obox(x,1.3,z+0.07,0.25,0.33,0.005,0,-0.2,47);}
+  for(const x of[-5,5]){g.rod(x,0,-15,x,1.0,-15,0.035,78,6);g.cone(x,-15,0.2,0.12,0,0.04,78,10);g.cone(x,-15,0.14,0.2,1.0,1.18,47,10);for(let q=0;q<9;q++)g.sphere(x+Math.cos(q*0.7)*0.17,1.25+(q%3)*0.06,-15+Math.sin(q*0.7)*0.17,0.07,[0,45,48,0,15][q%5],ICO0);}
   for(const s of[-1,1]){g.torus(s*3,1.2,-19.5,0.55,0.12,[0,0,1],15,14,5);for(let q=0;q<10;q++){const t=q/10*6.28;g.sphere(s*3+Math.cos(t)*0.55,1.2+Math.sin(t)*0.55,-19.38,0.08,[0,45,48,36][q%4],ICO0);}
     g.rod(s*3,0.3,-19.6,s*3-0.3,0.65,-19.6,0.012,50,4);g.rod(s*3,0.3,-19.6,s*3+0.3,0.65,-19.6,0.012,50,4);
     for(const q of[1.6,2.0]){g.cyl(s*q,-15.2,0.05,0.3,1.4,0,false,8);g.ell(s*q,1.46,-15.2,0.025,0.05,0.025,25,ICO0);}}
@@ -1984,6 +2033,12 @@ function graveyardCell(g,c,i,j,r){ /* le cimetière sous la pluie : toutes les t
     if(r()<0.2)g.cone(x+0.3,z+0.3,0.06,0.05,0,0.16,48,6);};
   for(const sa of[-1,1])for(const sb of[-1,1])for(let a=0;a<5;a++)for(let b=0;b<4;b++){if(T===5&&sa>0&&sb<0&&a<2&&b<2)continue;tomb(sa*(4+a*3.8),sb*(4+b*4.8),Math.floor(r()*12));}
   for(const [x,z] of[[-2.6,-10],[2.6,10],[-2.6,14],[2.6,-18]]){g.rod(x,0,z,x,1.2,z,0.1,27,6);g.cone(x,z,0.75,0.05,1.0,6.5,15,10);}
+  for(let q=0;q<3;q++){if(r()<0.5)continue;const x=(r()<0.5?-1:1)*(4+Math.floor(r()*5)*3.8),z=(r()<0.5?-1:1)*(4+Math.floor(r()*4)*4.8);
+    for(const [a0,b0,a1,b1] of[[-0.75,-0.3,0.75,-0.3],[-0.75,2.2,0.75,2.2],[-0.75,-0.3,-0.75,2.2],[0.75,-0.3,0.75,2.2]]){const L=Math.hypot(a1-a0,b1-b0),n=Math.round(L/0.14);
+      g.rod(x+a0,0.62,z+b0,x+a1,0.62,z+b1,0.012,12,4);g.rod(x+a0,0.3,z+b0,x+a1,0.3,z+b1,0.012,12,4);for(let k=0;k<=n;k++){const t=k/n,px=x+a0+(a1-a0)*t,pz=z+b0+(b1-b0)*t;g.rod(px,0,pz,px,0.7,pz,0.008,12,4);g.cone(px,pz,0.02,0.002,0.7,0.76,12,4);}}}
+  for(let q=0;q<4;q++){const x=(r()<0.5?-1:1)*(4.3+Math.floor(r()*5)*3.8),z=(r()<0.5?-1:1)*(4.6+Math.floor(r()*4)*4.8);g.box(x-0.06,0,z-0.06,x+0.06,0.22,z+0.06,47);g.box(x-0.045,0.06,z-0.045,x+0.045,0.18,z+0.045,25,false);g.cone(x,z,0.07,0.01,0.22,0.3,47,4);}
+  for(let q=0;q<3;q++){const x=(r()-0.5)*3,z=(r()-0.5)*40;g.box(x-0.4-r()*0.5,0.031,z-0.3,x+0.4+r()*0.5,0.034,z+0.3,47,false);}
+  if(r()<0.3){const x=-14,z=-14;g.box(x-2,0,z-1.6,x+2,2.6,z+1.6,59);gable(g,x-2.2,z-1.8,x+2.2,z+1.8,2.6,1.0,59,59);g.box(x-0.6,0,z+1.6,x+0.6,1.9,z+1.65,12,false);for(let k=0;k<5;k++)g.box(x-0.55+k*0.27,0.1,z+1.66,x-0.5+k*0.27,1.85,z+1.68,50,false);}
   if(r()<0.5){g.cyl(2.2,2.2,0.06,0,3.6,50,false,6);g.cone(2.2,2.2,0.2,0.1,3.4,3.7,25,8);}
   if(T===5&&hasX(i,j)){ /* sa tombe : la terre est encore fraîche, quelqu'un a laissé des fleurs */
     const x=8,z=-8;g.box(x-0.5,0,z-0.12,x+0.5,1.0,z+0.12,0);g.cyl(x,z,0.5,1.0,1.01,0,false,14);g.box(x-0.6,0,z+0.15,x+0.6,0.22,z+2.1,27);
@@ -2005,7 +2060,15 @@ function boxesCell(g,c,i,j,r){ /* l'entrepôt : toute une vie dans des cartons, 
     for(const y of[0.15,1.7,3.3,4.9]){for(const sg of[-1,1]){const a0=sg>0?2:-21,a1=sg>0?21:-2;g.box(a0,y,zl,a1,y+0.12,zl+0.08,48,false);g.box(a0,y,zh-0.08,a1,y+0.12,zh,48,false);g.box(a0,y+0.12,zl,a1,y+0.14,zh,41,false);
         let a=a0+0.1;while(a<a1-0.6){const w=0.5+r()*0.7,h=0.35+r()*0.9;if(r()<0.85)g.box(a,y+0.14,zl+0.15+r()*0.2,a+w,y+0.14+Math.min(h,1.3),zh-0.15,70,false);a+=w+0.08;}}}
     g.solid(-21,0,zl,-2,6.3,zh);g.solid(2,0,zl,21,6.3,zh);}
-  for(let k=0;k<5;k++){const a=-20+r()*40,b=(r()<0.5?-1:1)*(1.2+r()*1.4);if(Math.abs(a)<2.5)continue;const n=1+Math.floor(r()*3);for(let q=0;q<n;q++)g.box(a-0.3,q*0.5,b-0.3,a+0.3,q*0.5+0.5,b+0.3,70);}
+  for(let k=0;k<5;k++){const a=-20+r()*40,b=(r()<0.5?-1:1)*(1.2+r()*1.4);if(Math.abs(a)<2.5)continue;const n=1+Math.floor(r()*3);
+    for(let q=0;q<3;q++)g.box(a-0.6,0.12,b-0.4+q*0.37,a+0.6,0.15,b-0.34+q*0.37,41,false);for(const dx of[-0.55,0,0.55])g.box(a+dx-0.05,0,b-0.4,a+dx+0.05,0.12,b+0.4,41,false);
+    for(let q=0;q<n;q++)g.box(a-0.5,0.15+q*0.5,b-0.35,a+0.5,0.15+q*0.5+0.49,b+0.35,70);g.solid(a-0.6,0,b-0.4,a+0.6,0.15+n*0.5,b+0.4);}
+  for(const s2 of[-1,1]){for(let q=0;q<3;q++){const z=s2*(2.9+q*7);g.box(-0.18,0,z-0.18,0.18,H,z+0.18,59);for(let y=0;y<1.2;y+=0.2)g.box(-0.19,y,z-0.19,0.19,y+0.1,z+0.19,(y*5)%2<1?36:47,false);}
+    g.box(-0.6,5.6,s2*5.1-0.02,0.6,6.1,s2*5.1+0.02,49,false);neonText(g,-0.25,5.68,s2*5.1+0.025*s2,s2,0,0.32,s2>0?'A':'B',0,0.02);}
+  {const x=-1.0,z=-0.9;g.box(x-0.12,1.0,z-0.02,x+0.12,1.5,z+0.02,48,false);g.cyl(x+20.5,1.0,0.09,0.4,0.95,48,false,10);}
+  if(r()<0.4){const a=8+r()*8,b=-1.5;g.box(a-0.6,0.15,b-0.45,a+0.6,0.95,b+0.45,36);g.box(a+0.3,0.95,b-0.42,a+0.6,1.9,b+0.42,36);g.box(a-0.62,1.9,b-0.45,a+0.62,1.95,b+0.45,47,false);
+    for(const dz of[-0.42,0.42]){g.rod(a-0.55,0.95,b+dz,a-0.55,1.9,b+dz,0.025,47,5);}g.box(a-0.8,0,b-0.35,a-0.6,2.4,b-0.28,50);g.box(a-0.8,0,b+0.28,a-0.6,2.4,b+0.35,50);g.box(a-1.7,0.05,b-0.3,a-0.62,0.1,b-0.2,50,false);g.box(a-1.7,0.05,b+0.2,a-0.62,0.1,b+0.3,50,false);
+    for(const dx of[-0.4,0.4])for(const dz of[-0.46,0.46])g.rod(a+dx,0.18,b+dz,a+dx,0.18,b+dz+(dz>0?0.08:-0.08),0.18,47,10,0.18,true);g.solid(a-1.7,0,b-0.5,a+0.65,1.95,b+0.5);}
   if(r()<0.7){const a=(r()<0.5?-1:1)*(6+r()*12),b=(r()<0.5?-1:1)*1.8;g.box(a-0.35,0,b-0.3,a+0.35,0.6,b+0.3,70);g.box(a-0.2,0.3,b+0.301,a+0.2,0.45,b+0.302,0,false);g.phone(a,0.75,b);}
   if(r()<0.4)g.note(-4+r()*8,1.0,(r()<0.5?-1:1)*1.5);
   if(T===5&&hasX(i,j)){ /* le quai : le rideau métallique à demi levé, la lumière du dehors */
@@ -2020,7 +2083,11 @@ function nightRoadCell(g,c,i,j,r){ /* la route de nuit : sans fin, et c'est toi 
     for(let k=-24;k<24;k+=6)g.box(k,0.041,-0.07,k+3,0.045,0.07,0,false);
     for(const s of[-1,1]){for(let k=-24;k<=24;k+=4)g.box(k-0.05,0,s*7-0.05,k+0.05,0.7,s*7+0.05,50,false);g.box(-24,0.45,s*7-0.02,24,0.72,s*7+0.04,50,false);
       for(const k of[-12,12]){g.cyl(k,s*7.6,0.07,0,7,50,false,6);g.rod(k,7,s*7.6,k,7.1,s*5.8,0.05,50,5);g.box(k-0.25,6.85,s*5.6-0.18,k+0.25,7.0,s*5.6+0.18,i%3===0?12:25,false);}}
-    if(r()<0.5){const x=-10+r()*20,s=r()<0.5?-1:1;g.rod(x,0,s*8.2,x,2.4,s*8.2,0.05,50,5);g.box(x-1.1,2.2,s*8.2-0.03,x+1.1,3.1,s*8.2+0.03,51,false);g.box(x-1.0,2.3,s*8.2+0.03*s,x+1.0,3.0,s*8.2+0.035*s,0,false);g.note(x,1.4,s*7.8);}
+    if(r()<0.5){const x=-10+r()*20,s=r()<0.5?-1:1,txt=['MAISON','SORTIE','PAUSE'][Math.floor(r()*3)];for(const dx of[-1.0,1.0])g.rod(x+dx,0,s*8.6,x+dx,3.6,s*8.6,0.05,50,6);
+      g.box(x-1.5,2.4,s*8.6-0.03,x+1.5,3.6,s*8.6+0.03,51,false);g.box(x-1.42,2.48,s*8.6-0.035,x+1.42,3.52,s*8.6-0.03,0,false);g.box(x-1.38,2.52,s*8.6-0.04,x+1.38,3.48,s*8.6-0.035,51,false);
+      neonText(g,x+textW(txt,0.42)/2,2.8,s*8.6-0.045,-1,0,0.42,txt,0,0.03);g.note(x,1.4,s*7.8);}
+    for(const s2 of[-1,1])for(let k=-24;k<24;k+=8){g.box(k-0.06,0,s2*6.6-0.06,k+0.06,1.0,s2*6.6+0.06,0,false);g.box(k-0.065,0.75,s2*6.6-0.065,k+0.065,0.9,s2*6.6+0.065,s2>0?48:36,false);}
+    if(r()<0.2){const x=(r()-0.5)*30;g.box(x-0.25,0,7.6,x+0.25,1.3,7.95,36);g.box(x-0.2,0.8,7.58,x+0.2,1.15,7.6,47,false);}
     if(i!==0&&r()<0.45){car(g,(r()-0.5)*20,-4.2,true,r);const p=g.car;}
     if(r()<0.25)g.npc((r()-0.5)*30,0,(r()<0.5?-1:1)*6.6,r()*6.28);
     if(r()<0.4)g.watchAt((r()-0.5)*30,(r()<0.5?-1:1)*2.5);}
@@ -2034,7 +2101,10 @@ function morningCell(g,c,i,j,r){ /* l'épilogue : le cimetière au matin. Ce n'e
   for(let q=0;q<7;q++)g.rod(-1.35+q*0.45,0,20,-1.35+q*0.45,1.8,20,0.02,12,4);g.obox(-0.8,0.9,20.6,0.72,0.9,0.02,0.8,0,12);
   g.box(-1.4,0,-20,1.4,0.03,20,59,false);g.box(-20,0,-1.4,20,0.03,1.4,59,false);
   for(const sa of[-1,1])for(const sb of[-1,1])for(let a=0;a<4;a++)for(let b=0;b<3;b++){if(sa<0&&sb<0&&a===0&&b===0)continue;const x=sa*(4+a*4),z=sb*(4+b*5);g.box(x-0.4,0,z-0.1,x+0.4,0.75,z+0.1,59);g.box(x-0.5,0,z+0.15,x+0.5,0.2,z+1.9,59);if(r()<0.4)g.cone(x+0.3,z+0.3,0.06,0.05,0,0.16,[48,45,0][Math.floor(r()*3)],6);}
-  for(const [x,z] of[[-12,-14],[12,14],[14,-12],[-14,12]])tree(g,x,z,r,1.3);c3bench(g,-3,8,true,1.8);
+  for(const [x,z] of[[-12,-14],[12,14],[14,-12],[-14,12]])tree(g,x,z,r,1.3);c3bench(g,-3,8,true,1.8);c3bench(g,3,-8,true,1.8);
+  {const x=0,z=-17;g.box(x-3,0,z-2.5,x+3,3.4,z+2.5,59);gable(g,x-3.3,z-2.8,x+3.3,z+2.8,3.4,2.0,46,59);g.box(x-0.7,0,z+2.5,x+0.7,2.3,z+2.56,81,false);g.cyl(x,z+2.55,0.5,2.6,2.62,13,false,14);g.box(x-0.12,5.4,z-0.12,x+0.12,6.4,z+0.12,59);}
+  {const x=-3.3,z=-3.2;g.cone(x,z,0.1,0.12,0,0.22,49,10);g.rod(x+0.1,0.15,z,x+0.32,0.3,z,0.015,49,4);g.torus(x,0.26,z,0.08,0.012,[1,0,0],49,10,3);}
+  for(let q=0;q<12;q++){const a=q/12*6.283;g.rod(-4+Math.cos(a)*0.5,0,-1.4+Math.sin(a)*0.2,-4+Math.cos(a)*0.5,0.2,-1.4+Math.sin(a)*0.2,0.008,15,3);g.sphere(-4+Math.cos(a)*0.5,0.22,-1.4+Math.sin(a)*0.2,0.04,[48,36,45,0][q%4],ICO0);}
   /* sa tombe : une pierre simple, son prénom ; on y pose la petite voiture rouge */
   const x=-4,z=-4;g.box(x-0.55,0,z-0.13,x+0.55,1.05,z+0.13,0);g.cyl(x,z,0.55,1.05,1.06,0,false,14);g.box(x-0.65,0,z+0.16,x+0.65,0.25,z+2.2,9,false);g.box(x-0.68,0,z+0.15,x+0.68,0.26,z+0.18,0,false);g.box(x-0.68,0,z+2.18,x+0.68,0.26,z+2.21,0,false);
   neonText(g,x-textW('PAPA',0.24)/2,0.55,z+0.135,1,0,0.24,'PAPA',12,0.012);

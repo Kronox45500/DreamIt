@@ -160,8 +160,11 @@ function talk(){
 function answer(){
   answered.add(nearPhone.key);ringing=null;ringT=2.5;const A=WORLDS[W].acts;if(A){actSound(A.snd);}if(curRing&&ac){curRing.gain.cancelScheduledValues(ac.currentTime);curRing.gain.setValueAtTime(0,ac.currentTime);curRing=null;}const L=WORLDS[W].calls||['« … »'];
   if(G.phones&&ex.phones<G.phones){ex.phones++;toast(lab('phones')+' · '+ex.phones+'/'+G.phones,3);}
-  if(!A)ping();story([(A?A.lines:L)[(answered.size-1)%(A?A.lines:L).length]]);checkGoal();nearPhone=null;
+  if(!A)ping();story([(A?A.lines:L)[(answered.size-1)%(A?A.lines:L).length]]);checkGoal();
+  if(GEN===22){const q=nearPhone.key.split(',');rebuildCell(+q[0],+q[1]);} /* la porte refermée : on reconstruit la pièce */
+  nearPhone=null;
 }
+function rebuildCell(i,j){const k=i+','+j,old=cells.get(k);if(!old)return;cells.delete(k);ensureCell(i,j);freeCell(old);}
 function interact(){
   if(mode!=='obs'&&nearPhone&&G.phones){answer();return;}
   if(mode!=='obs'&&nearNpc){talk();return;}
