@@ -1706,6 +1706,32 @@ function houseRoom(g,a0,b0,kind,r){ /* une pièce de 8 m : le mobilier reste dan
     for(let q=0;q<3;q++)g.box(cx-0.2+(q-1)*0.6,0,cz-0.2,cx+0.15+(q-1)*0.6,0.12,cz+0.15,[48,12,0][q],false);
   }
 }
+/* une corde de chanvre : trois torons tordus autour d'un chemin (points), une âme au centre */
+function ropeAlong(g,P,r,m,pitch){m=m||91;pitch=pitch||0.05;const S=[];
+  for(let k=0;k<P.length-1;k++){const a=P[k],b=P[k+1],L=Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]),n=Math.max(1,Math.ceil(L/0.022));for(let q=0;q<n;q++){const t=q/n;S.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]);}}
+  S.push(P[P.length-1]);let n1=null,acc=0,prev=null;const pts=[];
+  for(let k=0;k<S.length;k++){const p=S[k],q=S[Math.min(k+1,S.length-1)],o=S[Math.max(k-1,0)];let T=[q[0]-o[0],q[1]-o[1],q[2]-o[2]];const tl=Math.hypot(...T)||1;T=T.map(x=>x/tl);
+    if(!n1){const up=Math.abs(T[1])<0.9?[0,1,0]:[1,0,0];n1=[T[1]*up[2]-T[2]*up[1],T[2]*up[0]-T[0]*up[2],T[0]*up[1]-T[1]*up[0]];}
+    const d=n1[0]*T[0]+n1[1]*T[1]+n1[2]*T[2];n1=[n1[0]-d*T[0],n1[1]-d*T[1],n1[2]-d*T[2]];const nl=Math.hypot(...n1)||1;n1=n1.map(x=>x/nl);
+    const n2=[T[1]*n1[2]-T[2]*n1[1],T[2]*n1[0]-T[0]*n1[2],T[0]*n1[1]-T[1]*n1[0]];if(prev)acc+=Math.hypot(p[0]-prev[0],p[1]-prev[1],p[2]-prev[2]);prev=p;
+    pts.push([p,n1.slice(),n2,acc]);}
+  for(let k=0;k<pts.length-1;k++){const [p,,,]=pts[k],[q]=pts[k+1];g.rod(p[0],p[1],p[2],q[0],q[1],q[2],r*0.6,m,5);
+    for(let s=0;s<3;s++){const off=(e,len)=>{const a=s*2.094+len/pitch*6.283,c=Math.cos(a)*r*0.5,si=Math.sin(a)*r*0.5;return [e[0][0]+e[1][0]*c+e[2][0]*si,e[0][1]+e[1][1]*c+e[2][1]*si,e[0][2]+e[1][2]*c+e[2][2]*si];};
+      const A=off(pts[k],pts[k][3]),B=off(pts[k+1],pts[k+1][3]);g.rod(A[0],A[1],A[2],B[0],B[1],B[2],r*0.5,m,5);}}}
+/* un tabouret de bois tourné, couché sur le flanc. O : centre de l'axe au sol ; phi : direction de l'assise */
+function stoolDown(g,O,phi,m){m=m||41;const U=[Math.cos(phi),0,Math.sin(phi)],X=[0,1,0],Z=[U[1]*X[2]-U[2]*X[1],U[2]*X[0]-U[0]*X[2],U[0]*X[1]-U[1]*X[0]];
+  const T=(lx,ly,lz)=>[O[0]+X[0]*lx+U[0]*ly+Z[0]*lz,O[1]+X[1]*lx+U[1]*ly+Z[1]*lz,O[2]+X[2]*lx+U[2]*ly+Z[2]*lz];
+  const R=(a,b,r0,r1,n,caps)=>{g.rod(a[0],a[1],a[2],b[0],b[1],b[2],r0,m,n||8,r1,caps);};
+  {const a=T(0,0.42,0),b=T(0,0.455,0);R(a,b,0.17,0.17,18,true);const c=T(0,0.438,0);g.torus(c[0],c[1],c[2],0.168,0.019,U,m,18,5);const d=T(0,0.405,0),e=T(0,0.42,0);R(d,e,0.13,0.15,14,true);}
+  const leg=[];for(let k=0;k<4;k++){const a=Math.PI/4+k*Math.PI/2,top=T(Math.cos(a)*0.11,0.41,Math.sin(a)*0.11),bot=T(Math.cos(a)*0.19,0,Math.sin(a)*0.19);
+    R(top,bot,0.021,0.015,8,true);const mid=T(Math.cos(a)*0.148,0.22,Math.sin(a)*0.148);g.sphere(mid[0],mid[1],mid[2],0.025,m,ICO1);
+    const r2=T(Math.cos(a)*0.17,0.1,Math.sin(a)*0.17);g.torus(r2[0],r2[1],r2[2],0.019,0.006,U,m,8,3);leg.push(a);}
+  for(let k=0;k<4;k++){const a=leg[k],b=leg[(k+1)%4],y=k%2?0.16:0.12,rr=0.19-0.08*y/0.41;R(T(Math.cos(a)*rr,y,Math.sin(a)*rr),T(Math.cos(b)*rr,y,Math.sin(b)*rr),0.011,0.011,6,true);}}
+/* un battant de porte à panneaux. Gond (hx,hz) dans un mur le long de z ; s : sens du battant le long de z ; w : vers x ; th : ouverture */
+function doorLeaf(g,hx,hz,s,w,th,m){m=m||0;const u=[w*Math.sin(th),s*Math.cos(th)],nr=[u[1],-u[0]],yaw=Math.atan2(-u[1],u[0]);
+  g.obox(hx+u[0]*0.44,1.04,hz+u[1]*0.44,0.44,1.04,0.022,yaw,0,m);
+  for(const f of[-1,1]){for(const [t,y,h] of[[0.24,0.58,0.33],[0.64,0.58,0.33],[0.24,1.5,0.38],[0.64,1.5,0.38]])g.obox(hx+u[0]*t*0.9+nr[0]*f*0.024,y,hz+u[1]*t*0.9+nr[1]*f*0.024,0.15,h,0.005,yaw,0,m);
+    const a=[hx+u[0]*0.8+nr[0]*f*0.025,hz+u[1]*0.8+nr[1]*f*0.025],b=[a[0]+nr[0]*f*0.05,a[1]+nr[1]*f*0.05];g.rod(a[0],1.0,a[1],b[0],1.0,b[1],0.008,78,6);g.rod(b[0],1.0,b[1],b[0]-u[0]*0.11,1.0,b[1]-u[1]*0.11,0.008,78,6,0.008,true);}}
 function houseSoldCell(g,c,i,j,r){ /* plus de rêve : une vraie maison, un jardin, une haie, la rue */
   g.m=SYM[0];
   if(i||j){ /* les alentours : pelouses, la rue, les maisons des voisins ; on ne passe pas la haie */
@@ -1730,13 +1756,13 @@ function houseSoldCell(g,c,i,j,r){ /* plus de rêve : une vraie maison, un jardi
   /* la maison : murs, sol, plafond, toit */
   const win=[],door=[];
   const wallX=(z,x0,x1,ops,m,t)=>{t=t||Wt;let x=x0;const S=[...ops].sort((p,q)=>p[0]-q[0]);
-    for(const [c,w,y0,y1] of S){g.box(x,0,z-t/2,c-w/2,H,z+t/2,m);if(y0>0)g.box(c-w/2,0,z-t/2,c+w/2,y0,z+t/2,m);g.box(c-w/2,y1,z-t/2,c+w/2,H,z+t/2,m);x=c+w/2;
+    for(const [c,w,y0,y1] of S){g.box(x,0,z-t/2,c-w/2,H,z+t/2,m);g.box(x,0,z-t/2-0.014,c-w/2,0.09,z+t/2+0.014,0,false);g.box(x,H-0.07,z-t/2-0.03,c-w/2,H,z+t/2+0.03,0,false);if(y0>0)g.box(c-w/2,0,z-t/2,c+w/2,y0,z+t/2,m);g.box(c-w/2,y1,z-t/2,c+w/2,H,z+t/2,m);x=c+w/2;
       if(y0>0){win.push([c-w/2,y0,z,c+w/2,y1,z,1]);}else door.push([c-w/2,z,c+w/2,z,y1]);}
-    g.box(x,0,z-t/2,x1,H,z+t/2,m);};
+    g.box(x,0,z-t/2,x1,H,z+t/2,m);g.box(x,0,z-t/2-0.014,x1,0.09,z+t/2+0.014,0,false);g.box(x,H-0.07,z-t/2-0.03,x1,H,z+t/2+0.03,0,false);};
   const wallZ=(x,z0,z1,ops,m,t)=>{t=t||Wt;let z=z0;const S=[...ops].sort((p,q)=>p[0]-q[0]);
-    for(const [c,w,y0,y1] of S){g.box(x-t/2,0,z,x+t/2,H,c-w/2,m);if(y0>0)g.box(x-t/2,0,c-w/2,x+t/2,y0,c+w/2,m);g.box(x-t/2,y1,c-w/2,x+t/2,H,c+w/2,m);z=c+w/2;
+    for(const [c,w,y0,y1] of S){g.box(x-t/2,0,z,x+t/2,H,c-w/2,m);g.box(x-t/2-0.014,0,z,x+t/2+0.014,0.09,c-w/2,0,false);g.box(x-t/2-0.03,H-0.07,z,x+t/2+0.03,H,c-w/2,0,false);if(y0>0)g.box(x-t/2,0,c-w/2,x+t/2,y0,c+w/2,m);g.box(x-t/2,y1,c-w/2,x+t/2,H,c+w/2,m);z=c+w/2;
       if(y0>0){win.push([x,y0,c-w/2,x,y1,c+w/2,0]);}else door.push([x,c-w/2,x,c+w/2,y1]);}
-    g.box(x-t/2,0,z,x+t/2,H,z1,m);};
+    g.box(x-t/2,0,z,x+t/2,H,z1,m);g.box(x-t/2-0.014,0,z,x+t/2+0.014,0.09,z1,0,false);g.box(x-t/2-0.03,H-0.07,z,x+t/2+0.03,H,z1,0,false);};
   g.box(-9,0,-7,9,0.03,7,89,false);g.box(-8.9,0.031,-6.9,1.14,0.04,-0.06,10,false);g.box(2.86,0.031,-1.94,8.9,0.04,1.44,10,false);
   g.box(-9.1,H,-7.1,9.1,H+0.18,7.1,0);gable(g,-9.6,-7.7,9.6,7.7,H+0.18,2.5,46,42);
   wallX(7,-9.1,9.1,[[-6.5,2.2,0.9,2.1],[-2.5,1.4,0.9,2.1],[2,1.0,0,2.15],[6,1.6,0.9,2.1]],42);
@@ -1751,8 +1777,15 @@ function houseSoldCell(g,c,i,j,r){ /* plus de rêve : une vraie maison, un jardi
     const B=(u0,v0,u1,v1,d0,d1,m)=>ax?g.box(u0,v0,z0+d0,u1,v1,z0+d1,m,false):g.box(x0+d0,v0,u0,x0+d1,v1,u1,m,false),u0=ax?x0:z0,u1=ax?x1:z1,um=(u0+u1)/2;
     B(u0,y0-0.04,u1,y0,-0.18,0.18,0);B(u0,y1,u1,y1+0.04,-0.12,0.12,0);B(u0-0.04,y0,u0,y1,-0.12,0.12,0);B(u1,y0,u1+0.04,y1,-0.12,0.12,0);
     B(um-0.02,y0,um+0.02,y1,-0.03,0.03,0);B(u0,(y0+y1)/2-0.02,u1,(y0+y1)/2+0.02,-0.03,0.03,0);}
+  for(const [x0,y0,z0,x1,y1,z1,ax] of win){if(y0>1.2)continue;const inn=ax?-Math.sign(z0):-Math.sign(x0),c0=ax?(x0+x1)/2:(z0+z1)/2,hw=Math.min(0.55,(ax?x1-x0:z1-z0)*0.35);
+    for(let q=-hw;q<=hw+1e-3;q+=0.07){if(ax)g.box(c0+q-0.022,0.16,z0+inn*0.12,c0+q+0.022,0.68,z0+inn*0.2,0,false);else g.box(x0+inn*0.12,0.16,c0+q-0.022,x0+inn*0.2,0.68,c0+q+0.022,0,false);}
+    if(ax)g.box(c0-hw,0.6,z0+inn*0.11,c0+hw,0.64,z0+inn*0.2,0,false);else g.box(x0+inn*0.11,0.6,c0-hw,x0+inn*0.2,0.64,c0+hw,0,false);}
+  doorLeaf(g,1.2,4.45,-1,-1,1.45);doorLeaf(g,1.2,-3.55,-1,-1,1.45);doorLeaf(g,2.8,3.85,1,1,1.45);doorLeaf(g,2.8,0.15,-1,1,1.4);
+  for(const [x,z] of[[1.27,4.75],[1.27,-3.25],[2.73,3.6],[2.73,-0.85],[2.73,-5.25]]){g.box(x-0.01,1.08,z-0.04,x+0.01,1.18,z+0.04,0,false);}
   for(const [x0,z0,x1,z1,h] of door){const ax=z0===z1,B=(u0,v0,u1,v1,d0,d1,m)=>ax?g.box(u0,v0,z0+d0,u1,v1,z0+d1,m,false):g.box(x0+d0,v0,u0,x0+d1,v1,u1,m,false),u0=ax?x0:z0,u1=ax?x1:z1;
     B(u0-0.07,0,u0,h+0.07,-0.13,0.13,0);B(u1,0,u1+0.07,h+0.07,-0.13,0.13,0);B(u0-0.07,h,u1+0.07,h+0.07,-0.13,0.13,0);}
+  g.box(-5.6,H+1.2,-2.6,-4.8,H+3.9,-1.8,59);g.box(-5.7,H+3.9,-2.7,-4.7,H+4.0,-1.7,59,false);for(const s of[-1,1])g.rod(-9.6,H+0.12,s*7.75,9.6,H+0.12,s*7.75,0.06,50,6);
+  g.box(2.75,1.95,7.1,2.95,2.25,7.2,78,false);g.cone(2.85,7.25,0.06,0.08,2.0,2.2,25,8);g.box(3.6,0,20.7,3.7,1.0,20.8,12);g.box(3.45,1.0,20.6,3.85,1.3,21.0,48);
   g.obox(2.0+0.48,1.07,7.3,0.48,1.07,0.03,-1.2,0,81);g.sphere(2.9,1.0,7.6,0.03,78,ICO0);
   /* plafonniers */
   for(const [x,z] of[[-4,3.5],[-4,-3.5],[2,3],[2,-3],[6,4.3],[6,-0.3],[6,-4.5]]){g.cyl(x,z,0.22,H-0.12,H,0,false,12);g.cyl(x,z,0.18,H-0.13,H-0.12,17,false,12);}
@@ -1777,11 +1810,14 @@ function houseSoldCell(g,c,i,j,r){ /* plus de rêve : une vraie maison, un jardi
     g.box(-6,0.84,z0+0.1,-5.2,0.9,z0+0.5,50,false);g.rod(-5.6,0.9,z0+0.08,-5.6,1.15,z0+0.08,0.015,50,5);g.rod(-5.6,1.15,z0+0.08,-5.6,1.15,z0+0.25,0.012,50,5);
     g.box(-4.4,0.86,z0+0.02,-3.4,0.9,z0+0.6,47,false);for(const [x,zz] of[[-4.15,0.17],[-3.65,0.17],[-4.15,0.45],[-3.65,0.45]])g.torus(x,0.91,z0+zz,0.07,0.012,[0,1,0],50,10,3);
     for(const x of[-8.8,-7.9,-3.95])g.box(x,1.5,z0,x+0.85,2.2,z0+0.35,44);
+    g.box(-8.9,0.9,z0,-3,1.5,z0+0.012,10,false);g.box(-4.45,1.62,z0,-3.35,1.78,z0+0.5,50,false);g.box(-4.15,1.78,z0,-3.65,H,z0+0.25,50,false);
     g.box(-2.6,0,z0,-1.75,1.85,z0+0.7,0);g.box(-2.6,1.2,z0+0.7,-1.75,1.21,z0+0.71,12,false);g.box(-1.84,0.3,z0+0.7,-1.8,1.1,z0+0.74,50,false);g.box(-1.84,1.3,z0+0.7,-1.8,1.7,z0+0.74,50,false);
     for(let q=0;q<5;q++)g.box(-2.5+q*0.13,1.35+(q%2)*0.1,z0+0.71,-2.42+q*0.13,1.43+(q%2)*0.1,z0+0.72,[48,36,49,35,34][q],false);g.note(-2.15,1.55,z0+0.9);}
   {const x=-5,z=-3.2;g.box(x-0.9,0.74,z-0.55,x+0.9,0.78,z+0.55,81);for(const s of[-1,1])for(const t of[-1,1])g.rod(x+s*0.8,0,z+t*0.45,x+s*0.8,0.74,z+t*0.45,0.03,81,6);
     for(const [dx,dz,f] of[[0,-0.95,-1],[0,0.95,1],[-1.25,0,0],[1.25,0,0]]){const cx=x+dx,cz=z+dz;g.box(cx-0.21,0.44,cz-0.21,cx+0.21,0.48,cz+0.21,81);for(const s of[-1,1])for(const t of[-1,1])g.rod(cx+s*0.18,0,cz+t*0.18,cx+s*0.18,0.44,cz+t*0.18,0.015,81,4);
       if(f)g.box(cx-0.21,0.48,cz+f*0.17,cx+0.21,0.95,cz+f*0.21,81,false);else{const s2=Math.sign(dx);g.box(cx+s2*0.17,0.48,cz-0.21,cx+s2*0.21,0.95,cz+0.21,81,false);}}
+    g.rod(x,H,z,x,1.75,z,0.006,47,4);g.cone(x,z,0.2,0.06,1.55,1.75,47,14);g.sphere(x,1.58,z,0.045,25,ICO1);
+    g.cyl(x-0.5,z+0.2,0.13,0.78,0.84,0,false,12);for(let q=0;q<4;q++)g.sphere(x-0.5+Math.cos(q*1.6)*0.06,0.86,z+0.2+Math.sin(q*1.6)*0.06,0.04,[48,36,35,48][q],ICO1);
     g.box(x-0.3,0.78,z-0.1,x-0.02,0.783,z+0.12,0,false);g.souv(x+0.25,0.92,z);g.cone(x+0.55,z-0.3,0.045,0.04,0.78,0.88,0,8);}
   {const x=-1.2,z=-2.0;g.box(x-0.3,0,z-0.25,x+0.3,0.45,z+0.25,70);for(const s of[-1,1]){g.obox(x+s*0.42,0.5,z,0.13,0.012,0.25,0,0,70);g.obox(x,0.5,z+s*0.37,0.3,0.012,0.12,0,0,70);}g.phone(x,0.5,z);
     for(let q=0;q<4;q++)g.box(x-0.22+q*0.12,0.3,z-0.08,x-0.14+q*0.12,0.5,z+0.1,[0,50,13,0][q],false);}
@@ -1793,31 +1829,56 @@ function houseSoldCell(g,c,i,j,r){ /* plus de rêve : une vraie maison, un jardi
   {const F=furn(g,true,-1.5,2.74,-1);F.B(-0.6,0.6,0.78,0.82,0,0.35,81);F.B(-0.55,0.55,0,0.78,0.02,0.04,81,false);for(const u of[-0.55,0.55])F.B(u-0.03,u+0.03,0,0.78,0.3,0.34,81,false);
     const p=F.P(-0.2,0.18);g.box(p[0]-0.09,0.82,p[1]-0.12,p[0]+0.09,0.84,p[1]+0.12,49,false);g.note(p[0],0.98,p[1]);const l=F.P(0.35,0.18);tableLamp(g,l[0],0.82,l[1],0.8);}
   for(const z of[2.2,0.8,-2.3])g.box(2.73,1.35,z-0.25,2.74,1.75,z+0.25,78,false);
+  g.box(1.26,1.0,-1.9,1.3,1.9,-1.1,78,false);g.box(1.3,1.04,-1.86,1.305,1.86,-1.14,13,false);
   /* LA SALLE DE BAIN */
   g.box(2.86,0.04,-1.94,2.9,1.3,1.44,10,false);g.box(8.86,0.04,-1.94,8.9,1.3,1.44,10,false);g.box(2.86,0.04,-1.98,8.9,1.3,-1.94,10,false);g.box(2.86,0.04,1.44,8.9,1.3,1.48,10,false);
   g.box(7.1,0,-1.92,8.88,0.58,-1.1,0);g.box(7.2,0.45,-1.85,8.8,0.585,-1.17,13,false);g.rod(8.7,0.58,-1.5,8.7,0.75,-1.5,0.02,50,5);
   g.box(5.2,0.85,1.0,5.9,0.92,1.42,0);g.cone(5.55,1.21,0.06,0.05,0,0.85,0,8);g.box(5.25,1.15,1.41,5.85,1.8,1.43,13,false);g.box(5.2,1.1,1.42,5.9,1.85,1.44,50,false);g.note(5.75,1.08,1.15);
   g.box(3.2,0,0.9,3.6,0.4,1.4,0);g.ell(3.4,0.43,0.95,0.2,0.05,0.25,0,ICO1);g.box(3.15,0.4,1.25,3.65,0.82,1.42,0);
   for(let q=0;q<3;q++)g.box(4.1+q*0.3,1.0,1.38,4.3+q*0.3,1.45,1.42,[0,49,36][q],false);
+  g.rod(7.1,2.0,-1.08,8.88,2.0,-1.08,0.012,50,5);for(let q=0;q<9;q++)g.box(7.15+q*0.19,0.65,-1.11+(q%2)*0.025,7.3+q*0.19,1.98,-1.09+(q%2)*0.025,0,false);g.box(6.2,0.005,-1.5,7.0,0.012,-0.9,49,false);
+  g.rod(4.1,1.48,1.36,4.95,1.48,1.36,0.01,50,5);
   /* TA CHAMBRE : le lit, le bureau, l'étagère des souvenirs, sa chaise bleue */
   g.box(7.0,0,4.6,8.88,0.38,6.88,81);g.box(7.05,0.38,4.65,8.83,0.55,6.83,76);g.box(7.0,0.55,4.8,8.88,0.6,6.5,66,false);g.ell(8.0,0.62,6.5,0.45,0.08,0.2,76,ICO1);g.box(7.0,0.38,6.85,8.88,1.05,6.9,81,false);
   {const F=furn(g,true,5.2,2.86,1);F.B(-0.2,1.6,0.72,0.76,0,0.6,81);for(const u of[-0.15,1.55])F.B(u-0.03,u+0.03,0,0.72,0.04,0.56,81,false);
     const l=F.P(1.3,0.3);tableLamp(g,l[0],0.76,l[1],0.8);
     F.B(-0.3,1.7,1.45,1.48,0,0.25,81,false);F.B(-0.3,1.7,1.95,1.98,0,0.25,81,false);for(let k=0;k<6;k++){const p=F.P(-0.1+k*0.3,0.12);keepsake(g,k,p[0],k<3?1.48:1.98,p[1]);}}
-  g.box(3.5,1.3,6.88,4.4,2.0,6.89,[34,72,35][0],false);
+  g.box(3.5,1.3,6.88,4.4,2.0,6.89,[34,72,35][0],false);g.box(3.6,1.4,6.87,4.3,1.9,6.875,49,false);
+  g.box(4.4,0.005,2.6,6.6,0.012,4.6,66,false);armoire(g,furn(g,false,7.6,1.56,1),0,1.1,0.55,41);
+  g.box(6.55,0,6.2,6.95,0.5,6.85,41);tableLamp(g,6.75,0.5,6.5,0.7);
   {const x=5.6,z=4.6;g.box(x-0.25,0.45,z-0.25,x+0.25,0.5,z+0.25,16);for(const s of[-1,1])for(const t of[-1,1])g.rod(x+s*0.22,0,z+t*0.22,x+s*0.22,0.45,z+t*0.22,0.016,50,5);
     g.box(x-0.25,0.5,z-0.25,x+0.25,1.0,z-0.2,16,false);g.hdoor(x,z);}
   {const x=4.0,z=2.3;g.box(x-0.3,0,z-0.25,x+0.3,0.45,z+0.25,70);for(const s of[-1,1]){g.obox(x+s*0.42,0.5,z,0.13,0.012,0.25,0,0,70);g.obox(x,0.5,z+s*0.37,0.3,0.012,0.12,0,0,70);}g.phone(x,0.5,z);}
-  /* SA CHAMBRE : la porte est restée entrouverte. On n'entre pas. */
-  {const th=0.55,hx=2.8,hz=-5.05,dx=Math.sin(th),dz=Math.cos(th);g.obox(hx+dx*0.45,1.05,hz+dz*0.45,0.45,1.05,0.025,Math.atan2(-dz,dx),0,81);g.sphere(hx+dx*0.82+0.05,1.0,hz+dz*0.82,0.03,78,ICO0);
-    g.solid(2.7,0,-5.1,3.2,2.1,-4.1);g.spot=g.P(2.2,0,-4.4);g.spot.push(0.5);}
+  /* SA CHAMBRE : la porte est restée entrouverte. Le noir. Seule la lumière du couloir entre, de biais. On n'entre pas. */
+  doorLeaf(g,2.8,-5.05,1,1,0.55,81);g.solid(2.7,0,-5.1,3.25,2.1,-4.1);g.spot=g.P(2.2,0,-4.4);g.spot.push(0.5);
+  g.cyl(2.0,-4.4,0.22,H-0.12,H,0,false,12);g.cyl(2.0,-4.4,0.18,H-0.13,H-0.12,17,false,12);
   g.box(2.86,0.1,-6.9,8.9,H,-6.89,42,false);
-  g.box(6.4,0,-6.88,8.88,0.4,-4.9,81);g.box(6.45,0.4,-6.83,8.83,0.6,-4.95,76);g.box(6.4,0.6,-6.4,8.88,0.64,-4.95,66,false);g.box(6.4,0.4,-6.92,8.88,1.15,-6.86,81,false);for(const x of[7.0,8.3])g.ell(x,0.68,-6.6,0.4,0.08,0.18,76,ICO1);
-  {const x=5.9,z=-6.6;g.box(x-0.22,0,z-0.22,x+0.22,0.55,z+0.22,81);g.box(x-0.12,0.55,z-0.02,x+0.12,0.75,z,41,false);}
+  /* le lit fait au carré, comme s'il allait revenir */
+  g.box(6.4,0,-6.88,8.88,0.38,-4.9,81);g.box(6.45,0.38,-6.83,8.83,0.58,-4.95,76);g.box(6.4,0.58,-6.3,8.88,0.62,-4.92,66,false);g.box(6.38,0.3,-6.3,6.41,0.6,-4.92,66,false);g.box(8.87,0.3,-6.3,8.9,0.6,-4.92,66,false);
+  g.box(6.4,0.58,-6.45,8.88,0.66,-6.3,76,false);for(const x of[7.05,8.25])g.ell(x,0.7,-6.62,0.42,0.09,0.18,76,ICO1);
+  g.box(6.4,0.38,-6.95,8.88,1.25,-6.88,81,false);for(let q=0;q<7;q++)g.box(6.55+q*0.33,0.45,-6.88,6.65+q*0.33,1.15,-6.86,81,false);
+  for(const dz of[-0.06,0.08])g.ell(6.25,0.04,-5.0+dz,0.05,0.035,0.12,49,ICO1);
+  /* la table de nuit : la lampe éteinte, le réveil, un verre, une photo retournée */
+  {const x=5.95,z=-6.55;g.box(x-0.24,0.08,z-0.24,x+0.24,0.55,z+0.24,81);g.box(x-0.26,0.55,z-0.26,x+0.26,0.58,z+0.26,81);for(const a of[-0.2,0.2])for(const b of[-0.2,0.2])g.rod(x+a,0,z+b,x+a,0.08,z+b,0.015,81,4);
+    g.box(x-0.2,0.3,z+0.24,x+0.2,0.5,z+0.25,81,false);g.sphere(x,0.4,z+0.26,0.015,78,ICO0);
+    g.cone(x-0.12,z-0.1,0.06,0.045,0.58,0.61,78,8);g.rod(x-0.12,0.61,z-0.1,x-0.12,0.86,z-0.1,0.008,78,4);g.cone(x-0.12,z-0.1,0.12,0.07,0.84,1.0,0,12);
+    g.box(x+0.06,0.58,z-0.14,x+0.18,0.66,z-0.1,47,false);g.cone(x+0.1,z+0.1,0.03,0.028,0.58,0.69,13,8);g.obox(x-0.02,0.59,z+0.12,0.08,0.006,0.1,0.4,0,78);}
+  /* la chaise, sa veste sur le dossier ; ses chaussures alignées */
+  {const x=7.9,z=-3.0;g.box(x-0.22,0.44,z-0.22,x+0.22,0.48,z+0.22,81);for(const a of[-0.19,0.19])for(const b of[-0.19,0.19])g.rod(x+a,0,z+b,x+a,0.44,z+b,0.014,81,5);
+    for(const a of[-0.19,0.19])g.rod(x+a,0.48,z+0.19,x+a,0.98,z+0.21,0.014,81,5);g.box(x-0.21,0.82,z+0.18,x+0.21,0.96,z+0.23,81,false);
+    g.ell(x,0.72,z+0.25,0.26,0.32,0.08,49,ICO1);g.ell(x,0.98,z+0.23,0.24,0.06,0.09,49,ICO1);g.box(x-0.18,0.48,z-0.15,x+0.18,0.53,z+0.1,49,false);}
+  for(const q of[0,0.22])g.ell(8.6,0.05,-2.5-q,0.07,0.05,0.14,47,ICO1);
   armoire(g,furn(g,true,-3.0,8.88,-1),0,1.3,0.6,81);
-  g.box(4.0,H-0.22,-6.9,4.25,H,-2.1,81,false);
-  g.rod(4.12,H-0.22,-3.3,4.12,1.8,-3.3,0.017,91,6);g.torus(4.12,1.66,-3.3,0.13,0.017,[1,0,0],91,12,4);
-  {const x=4.3,z=-2.95;g.rod(x,0.2,z,x+0.035,0.2,z,0.17,81,12,0.17,true);for(let k=0;k<3;k++){const t=k/3*6.283+0.3,ly=0.2+Math.sin(t)*0.12,lz=z+Math.cos(t)*0.12;g.rod(x+0.03,ly,lz,x+0.5,0.2+Math.sin(t)*0.2,z+Math.cos(t)*0.2,0.018,81,5);}}
+  /* les rideaux tirés ; un trait de jour entre les deux */
+  for(let q=0;q<10;q++){const z=-5.15+q*0.13+(q>4?0.03:0);g.box(8.74-(q%2)*0.03,0.25,z,8.8-(q%2)*0.03,2.35,z+0.13,83,false);}g.box(8.81,0.4,-4.52,8.82,2.2,-4.49,17,false);g.rod(8.77,2.42,-5.3,8.77,2.42,-3.7,0.015,78,5);
+  /* la poutre, la corde, le tabouret renversé */
+  g.box(3.98,H-0.24,-6.9,4.26,H,-2.07,81,false);for(let q=0;q<2;q++)g.box(3.97,H-0.24,-6.9+q*0.002,4.27,H-0.235,-2.07,27,false);
+  for(const dz of[-0.07,0,0.07])g.torus(4.12,H-0.12,-3.3+dz,0.165,0.017,[0,0,1],91,18,5);
+  ropeAlong(g,[[4.12,H-0.26,-3.3],[4.12,1.98,-3.3],[4.12,1.78,-3.3]],0.016);
+  for(let q=0;q<7;q++)g.torus(4.12,1.8+q*0.026,-3.3,0.03,0.014,[0,1,0],91,12,5);
+  {const P=[],R=0.13,cy=1.64;for(let k=0;k<=20;k++){const a=k/20*6.283;P.push([4.12,cy+Math.cos(a)*R,-3.3+Math.sin(a)*R*0.92]);}ropeAlong(g,P,0.015);}
+  ropeAlong(g,[[4.12,1.98,-3.3],[4.13,2.04,-3.28],[4.15,2.02,-3.24]],0.014);
+  stoolDown(g,[4.6,0.17,-2.85],0.55,41);
   g.box(4.6,0.005,-4.6,6.0,0.012,-3.0,58,false);
 }
 

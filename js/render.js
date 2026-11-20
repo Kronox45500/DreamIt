@@ -21,7 +21,7 @@ vec4 fin(vec3 c){c=clamp(c,0.,1.);c=mix(c,c*c*(3.-2.*c),.42);
 `;
 const LIGHT=`
 uniform mat4 uSVP,uTVP;uniform sampler2DShadow uSh;uniform sampler2D uTop;uniform float uTopR;
-uniform vec3 uLampC;uniform vec4 uLampP;uniform vec2 uLampO;
+uniform vec3 uLampC;uniform vec4 uLampP;uniform vec2 uLampO;uniform vec4 uDark;uniform vec3 uDarkL;
 const vec2 PO[8]=vec2[8](vec2(-.61,.42),vec2(.17,.88),vec2(.72,.31),vec2(.35,-.36),vec2(-.28,-.14),vec2(-.83,-.47),vec2(-.12,-.93),vec2(.90,-.38));
 float shadow(vec3 wp,vec3 n){
   vec4 sp=uSVP*vec4(wp+n*.07,1.);vec3 s=sp.xyz*.5+.5;
@@ -359,7 +359,13 @@ void main(){gl_FragDepth=log2(1.+max(vWd,0.))*0.07160311;
         vec3 r1=cross(dpy,n),r2=cross(n,dpx);float det=dot(dpx,r1);
         if(abs(det)>1e-9){vec3 gr=(hx*r1+hy*r2)/det;n=normalize(n-clamp(gr*bump,-.6,.6)*(1.-d/60.));ndl=max(dot(n,uSun),0.);}}
       vec3 amb=mix(uIndoor,mix(uAmbDn,uAmbUp,n.y*.5+.5),vis);
-      col=alb*(amb*(.82+.18*uSunK)+uSunC*ndl*sh*uSunK+lamps(vW,n))+em;emi=max(emi,min(1.,dot(em,vec3(.6))));
+      vec3 Lt=amb*(.82+.18*uSunK)+uSunC*ndl*sh*uSunK+lamps(vW,n);
+      /* une pièce sans lumière : seul le couloir, par la porte entrouverte, y dépose un coin jaune */
+      if(uDark.z>uDark.x&&vW.x>uDark.x&&vW.x<uDark.z&&vW.z>uDark.y&&vW.z<uDark.w&&vW.y<2.75){
+        vec3 D=vW-uDarkL;float dd=length(D);vec3 dir=D/max(dd,.001);
+        float cone=smoothstep(.55,.92,dot(dir,normalize(vec3(1.,-.25,.42))))*smoothstep(.2,.9,dd);
+        Lt=amb*.035+uLampC*(cone*2.4/(dd*dd*.42+.6))*(max(dot(n,-dir),0.)*.85+.15);gloss*=.15;refl*=.1;}
+      col=alb*Lt+em;emi=max(emi,min(1.,dot(em,vec3(.6))));
       if(gloss>0.){vec3 R=reflect(-V,n);float fr=pow(1.-max(dot(n,V),0.),4.);
         vec3 env=mix(uIndoor*1.3,skyGrad(R.y),vis);
         col=mix(col,env,refl*(.25+.75*fr)+gloss*fr*.25);
@@ -511,6 +517,7 @@ function setPal(p,doorC){
   if(u.uCl0){gl.uniform3fv(u.uCl0,P.cl0);gl.uniform3fv(u.uCl1,P.cl1);}if(u.uSe0){gl.uniform3fv(u.uSe0,P.se0);gl.uniform3fv(u.uSe1,P.se1);}
   if(u.uCloud)gl.uniform1f(u.uCloud,P.cloud);if(u.uCloudY)gl.uniform1f(u.uCloudY,WORLDS[W].cloudY);
   if(u.uLampC){gl.uniform3fv(u.uLampC,P.lampC);gl.uniform4fv(u.uLampP,P.lampP);gl.uniform2fv(u.uLampO,P.lampO);}
+  if(u.uDark){gl.uniform4fv(u.uDark,GEN===21?[2.8,-6.95,8.95,-2.0]:[0,0,0,0]);gl.uniform3fv(u.uDarkL,[2.78,1.25,-4.3]);}
   if(u.uDoorC)gl.uniform3fv(u.uDoorC,doorC||[1.04,1.03,1.0]);if(u.uRot)gl.uniform2f(u.uRot,1,0);
   if(u.uTilt)gl.uniform2f(u.uTilt,1,0);if(u.uBend)gl.uniform3fv(u.uBend,BENDV);
 }

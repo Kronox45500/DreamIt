@@ -15,7 +15,7 @@ const LABEL={summits:'Sommets',courses:'Courses',stations:'Stations',talks:'Renc
 function lab(k){return k==='notes'&&WORLDS[W].notes?WORLDS[W].notes.L:k==='phones'&&WORLDS[W].acts?WORLDS[W].acts.L:LABEL[k];}
 let ex={stations:0,talks:0,pearls:0,courses:0,car:0,notes:0,phones:0,souv:0},nearPhone=null,ringT=0,ringing=null,elevT=-9,swim=false,crouch=false,swimY=0,air=1,run=null,courseCool=-9,nearNpc=null,hint=null,carT=null,beepT=-9,touchMode=false;
 let lingerKey=null,lingerT=0,gps=false,liftCool=0,mode='calm',clipT=0,exitT=0,padExit=-9,ride=null,rideT=0;
-try{const m=localStorage.getItem('ether-mode');if(m==='obs'||m==='calm'||m==='classic')mode=m;}catch(e){}
+try{const m=localStorage.getItem('ether-mode');if(m==='obs'||m==='calm')mode=m;}catch(e){}
 /* la sortie de chaque espace, une fois l'objectif rempli (indexé par générateur) */
 const PASSH=['sautez dans le vide','montez dans une rame et laissez-vous emporter','prenez un tremplin','restez sous l\'eau jusqu\'au bout','retournez à votre voiture','courez contre un mur','sautez de la galerie dans le vide central','balancez-vous','entrez dans une maison','prenez l\'ascenseur','montez dans le lit vide','fermez les yeux : accroupissez-vous (C) sans bouger','laissez-vous porter par un tapis roulant','nagez vers le large','montez dans le lit, jusqu\'à l\'oreiller, et ouvrez les yeux','passez la porte allumée','prenez l\'ascenseur de l\'aire de restauration','asseyez-vous au premier rang (C)','jouez la partie qui reste : la borne qui clignote','marchez jusqu\'aux quilles','descendez le grand toboggan, jusqu\'au fond','asseyez-vous sur sa chaise','sortez par la porte d\'entrée éclairée','allez au guichet','passez le rideau derrière l\'estrade','trouvez sa tombe','passez sous le rideau du quai','retrouvez la voiture et appuyez sur E','sortez par le portail'
 ];
@@ -54,7 +54,7 @@ const STORY=[
  {t:'L\'entrepôt des cartons',a:['Tout ce qu\'il possédait tient dans des cartons. Des milliers de cartons.','Il faut décider ce qu\'on garde. Tu voudrais tout garder, et ne plus jamais les ouvrir.','Certains sont marqués « À garder », de son écriture.'],e:'Le rideau du quai est à demi levé. Il fait jour, dehors.'},
  {t:'La route de nuit',a:['La route. Celle de cette nuit-là, ou une autre. Elles se ressemblent toutes, la nuit.','Cette fois, c\'est toi qui as les clés. La place à côté de toi est vide.','Ne t\'endors pas. Surtout, ne t\'endors pas.'],e:'La voiture est là. Rentre.'},
  {t:'Le matin',a:['Tu t\'es endormi, et pour une fois, tu as dormi sans rêver.','Il fait jour. Le cimetière est calme, l\'herbe est mouillée, les oiseaux sont revenus.','La petite voiture rouge est dans ta poche.'],e:'Tu peux partir, maintenant. Le portail est ouvert.'}];
-const END2=['Un bip. Puis un autre, plus rapide.','Le plafond blanc. Il est à la bonne distance, cette fois.','Sur la chaise, papa se réveille en sursaut. Il a vieilli de dix ans.','« Tu m\'entends ? »','Oui.','Il se met à pleurer. Il répète pardon, pardon, et tu ne sais pas encore pourquoi.'];
+const END2=['Il y a un bruit régulier, quelque part à gauche.','Tu ouvres les yeux. C\'est blanc, et ça fait mal.','Papa dort sur la chaise, la tête contre le mur. Il a une barbe que tu ne lui connaissais pas.','Tu essaies de dire papa. Rien ne sort.','Il se réveille quand même.','Il ne dit rien pendant longtemps. Il te tient la main trop fort.','Et puis il dit pardon. Il le répète tellement de fois que tu te rendors avant qu\'il ait fini.'];
 const HUBL=[
  ['Six ans ont passé depuis le réveil. Tu marches de nouveau, sans canne.','Papa, lui, ne s\'est jamais réveillé de cette nuit-là. Il venait à tous tes rendez-vous, il souriait, et il ne se pardonnait rien.','Un matin de novembre, il n\'est pas descendu. Il avait laissé sur la table de la cuisine une lettre, et les clés de la maison.','Tu n\'as pas ouvert la lettre. Il faut vider la maison. Et la nuit, tu retournes dans les lieux qui ont fermé, chercher ce qui reste de lui.'],
  ['La petite voiture rouge. Tu la poses sur l\'étagère. Une roue grince encore.','Il l\'avait gardée dans sa poche, à l\'hôpital, tout le temps du coma.'],
@@ -62,9 +62,9 @@ const HUBL=[
  ['Le ticket gagnant. Thomas, si tu savais. Il faudrait lui écrire.','Papa aussi voulait t\'écrire. Il a écrit, à la fin. Une seule fois.'],
  ['La photo du gâteau. Il a de la crème jusqu\'au nez. Il rit.','Après l\'accident, il n\'a plus jamais ri comme ça. Tu l\'avais remarqué. Tu n\'avais rien dit.'],
  ['La serviette rayée. Elle sent encore le chlore et l\'été.','Il ne reste que la maison. Et la lettre, dans ta poche, toujours fermée.']];
-const END3=['Tu t\'assois sur la chaise. Elle a encore un peu la forme de quelqu\'un.','Pendant des mois, il a attendu ici que tu reviennes. Tu es revenu. Lui, il est resté sur le bord de cette route.','Tu ouvres enfin la lettre. Il n\'y a qu\'une ligne, de son écriture penchée :','« Pardon pour la route. »','Tu aurais voulu lui dire que tu ne lui en avais jamais voulu. Pas une seule fois.','Alors tu le dis, tout haut, dans la chambre vide.','Ce n\'était pas ta faute, papa.','Cette nuit-là, pour la première fois depuis novembre, tu t\'endors. Et les cauchemars commencent.'];
-const END4=['Tu passes le portail. Derrière toi, le cimetière reste au soleil.','On ne guérit pas de ça. Mais un jour ça pèse un peu moins lourd, et puis un autre jour encore.','Les cauchemars reviendront peut-être. Tu sais maintenant qu\'on peut se réveiller.','Il t\'a attendu pendant des mois, sur une chaise. À ton tour, tu attendras d\'aller mieux. Tu iras mieux.','Fin.','Si tu portes quelque chose de trop lourd, parle à quelqu\'un. En France, le 3114 répond jour et nuit.'];
-const WAKE=['Tu t\'endors à l\'arrière. La radio, très bas.','Papa bâille. Il ouvre la fenêtre pour se tenir éveillé.','« Dors. On arrive bientôt. »','Des phares. Beaucoup trop de phares.','…','Blanc.','Un bip. Tu dors encore. Mais ce n\'est plus le même sommeil.'];
+const END3=['Tu t\'assois sur sa chaise. Elle est restée dans ta chambre, tout ce temps.','Tu sors la lettre de ta poche. Tu la gardes depuis novembre sans l\'avoir ouverte.','Il n\'y a qu\'une phrase. Son écriture tremble un peu.','« Pardon pour la route. »','Tu la relis. Tu retournes la feuille, au cas où. Il n\'y a rien derrière.','Tu dis « c\'était pas ta faute », tout haut. Ta voix sonne bizarrement dans la chambre vide.','Tu aurais dû le lui dire avant. Tu le savais, pourtant.','Tu t\'endors sur la chaise, la lettre dans la main.'];
+const END4=['Tu passes le portail. Tu ne te retournes pas tout de suite.','Le soleil est déjà haut. Quelque part, quelqu\'un tond sa pelouse.','Tu as faim. Ça ne t\'était pas arrivé depuis longtemps.','Tu reviendras dimanche. Tu lui raconteras ta semaine, même si c\'est bête.','Fin.'];
+const WAKE=['Tu dors à l\'arrière.','À la radio, une chanson qu\'il connaît par cœur. Il chante faux, tout bas, pour ne pas te réveiller.','Il baisse un peu la vitre. L\'air froid entre.','« On est bientôt arrivés, mon grand. »','Des phares.','…','Un bip. Puis un autre. Quelqu\'un dit ton prénom, tout près de ton oreille.'];
 /* les silhouettes assises qui veillent : ce qu'on comprend en s'approchant (par générateur) */
 const SITL={3:['Il porte la veste de papa. Il ne se retourne pas.','« Je suis là. Je ne bouge pas. Nage, je te regarde. »'],
   21:['La porte de sa chambre. Elle est restée entrouverte depuis ce matin-là. Personne n\'a eu la force de la refermer.','Tu n\'entres pas.'],
@@ -319,8 +319,8 @@ const shades=[];
 function lookPan(x,z){const dx=x-pos.x,dz=z-pos.z,d=Math.hypot(dx,dz);return Math.max(-1,Math.min(1,(dx*Math.cos(yaw)+dz*Math.sin(yaw))/Math.max(d,1)));}
 function standable(x,z){const cr=crouch;crouch=false;const ok=!test(x,pos.y+0.05,z)&&(test(x,pos.y-0.6,z)||WORLDS[W].full);crouch=cr;return ok;}
 function horror(dt){
-  if(mode!=='classic'||GEN===21||GEN===28){shades.length=0;chaser=null;return;} /* la maison : on ne rêve plus, rien ne rôde */
-  chaserTick(dt);
+  if(mode==='obs'||GEN===21||GEN===28){shades.length=0;chaser=null;return;} /* la maison, le matin : on ne rêve plus, rien ne rôde */
+  if(mode==='classic')chaserTick(dt);
   for(let k=shades.length-1;k>=0;k--){const a=shades[k],dx=a.x-pos.x,dz=a.z-pos.z,d=Math.hypot(dx,dz),fw=(dx*Math.sin(yaw)-dz*Math.cos(yaw))/Math.max(d,0.1);
     if(fw>0.88)a.seen+=dt;a.life-=dt;
     if(a.seen>0.06||d<4||a.life<0){if(a.seen>0.06&&Math.random()<0.6)scareSound(3,lookPan(a.x,a.z));shades.splice(k,1);}}
@@ -331,7 +331,7 @@ function horror(dt){
   /* juste à la lisière du regard, ou dans le dos */
   for(let k=0;k<8;k++){const side=Math.random()<0.5?-1:1,edge=Math.random()<0.65,an=yaw+side*(edge?0.88+Math.random()*0.3:1.7+Math.random()*1.1),d=7+Math.random()*10,
       x=pos.x+Math.sin(an)*d,z=pos.z-Math.cos(an)*d;
-    if(standable(x,z)){shades.push({x,y:pos.y,z,seen:0,life:edge?4+Math.random()*4:20,fig:Math.random()<0.3});return;}}
+    if(standable(x,z)){shades.push({x,y:pos.y,z,seen:0,life:edge?4+Math.random()*4:20,fig:false});return;}}
 }
 /* l'ombre qui chasse : quand tout est rempli, quelque chose se lève et vient te chercher */
 let chaser=null,chaserAt=-1,heartT=0,dead=0;
@@ -613,9 +613,9 @@ function resetPlayer(arrive){
   for(let di=-2;di<=2;di++)for(let dj=-2;dj<=2;dj++)ensureCell(di,dj);
   pickTarget();
 }
-const MODES=[['obs','Observation'],['calm','Paisible'],['classic','Classique']];
+const MODES=[['obs','Observation'],['calm','Classique']];
 const MODED={obs:'Aucun objectif, aucun affichage. Tous les espaces sont ouverts : les touches 1 à 9 choisissent un espace du chapitre en cours, [ et ] les parcourent tous.',
-  calm:'Les objectifs, sans rien pour vous inquiéter.',classic:'Les objectifs, et vous n\'êtes pas tout à fait seul. Des bruits au loin, des ombres au coin de l\'œil.'};
+  calm:'Les objectifs. Et vous n\'êtes pas tout à fait seul : des ombres, au coin de l\'œil, qui ne sont plus là quand on se retourne.',classic:'Les objectifs, et vous n\'êtes pas tout à fait seul. Des bruits au loin, des ombres au coin de l\'œil.'};
 function spacesUI(){
   const el=document.getElementById('spaces');el.textContent='';
   WORLDS.forEach((w,k)=>{const ch=chOf(k),C=CHAPS[ch];
@@ -638,6 +638,7 @@ canvas.addEventListener('mousedown',()=>{dragging=true;});addEventListener('mous
 addEventListener('mousemove',e=>{if(paused)return;if(locked||dragging){yaw+=e.movementX*0.0022*SET.sens;pitch=Math.max(-1.5,Math.min(1.5,pitch-e.movementY*0.0022*SET.sens*(SET.inv?-1:1)));}});
 addEventListener('keydown',ev=>{
   if(typeof uiKeyCapture==='function'&&uiKeyCapture(ev))return;
+  if(ev.key&&ev.key.length===1&&!(ev.target&&ev.target.tagName==='INPUT')){cheatBuf=(cheatBuf+ev.key.toLowerCase()).slice(-8);if(cheatBuf.endsWith('finir')&&started&&!paused&&mode!=='obs'&&wakeT<=0){cheatBuf='';cheatWin();}}
   const e={code:canon(ev.code),repeat:ev.repeat,preventDefault:()=>ev.preventDefault()};
   if(ev.code==='Escape'&&started){if(paused)resume();else pause();return;}
   if(e.code==='KeyM'){toggleMusic();return;}
@@ -746,7 +747,11 @@ function updateLoops(){
   if(LOOPS.muzak)LOOPS.muzak.g.setTargetAtTime(GEN===16&&!paused?0.07:0,t,1.2);
   if(LOOPS.water)LOOPS.water.g.setTargetAtTime(swim?(walkV>0.5?1.6:0.9):0,t,0.2);
 }
+let cheatBuf='',cineOn=false;
+/* le code « finir » : tous les objectifs du lieu, d'un coup */
+function cheatWin(){shards=Math.max(shards,G.shards||0);summits=Math.max(summits,G.summits||0);for(const k in ex)if(G[k])ex[k]=Math.max(ex[k],G[k]);checkGoal();toast('Triche · objectifs accomplis',3);}
 function footstep(k){
+  if(wakeT>0)return;
   if(k<=1){const surf=WORLDS[W].step||'concrete';if(surf==='grass'&&play('grass',0.5,0.9+Math.random()*0.25,0.5))return;if(LOOPS[surf])return;}
   if(!ac||muted)return;const s=ac.createBufferSource();s.buffer=noiseBuf;const b=ac.createBiquadFilter();b.type='bandpass';b.frequency.value=700+Math.random()*500;b.Q.value=1.2;
   const g=ac.createGain(),t=ac.currentTime;g.gain.setValueAtTime(0.05*k,t);g.gain.exponentialRampToValueAtTime(0.0008,t+0.11);
@@ -892,6 +897,7 @@ function frame(now){
   if(!paused&&wakeT<=0){horror(dt);mobsTick(dt);}
   if(typeof coopTick==='function')coopTick(dt);
   if(typeof statTick==='function')statTick(dt);sitTalk();
+  if((wakeT>0)!==cineOn){cineOn=wakeT>0;document.body.classList.toggle('cine',cineOn);if(cineOn){for(const k in keys)keys[k]=false;}}
   if(paused||wakeT>0){updateTrains(dt);if(!started)yaw=Math.sin(time*0.05)*0.5;}
   updateStreaming();
   const WD=WORLDS[W];BENDV=WD.ring?[pos.x,RING_R,1]:[0,1,0];

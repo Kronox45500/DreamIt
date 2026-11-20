@@ -152,17 +152,15 @@ const GUIDE=[
   '<li>Au troisième chapitre, tu reviens toujours au même endroit entre deux lieux. Une porte allumée t\'indique où aller ensuite.</li>'+
   '<li>Le menu <b>Chapitres et modes</b> te laisse revenir à n\'importe quel lieu déjà ouvert.</li></ol>'+
   '<p class="hint">C\'est tout ce qu\'il faut savoir. Le reste, c\'est à toi de le découvrir.</p>'],
- ['modes','Modes et dangers',
-  '<ul><li><b>Paisible</b> : les objectifs, sans aucun danger. Idéal pour une première fois.</li>'+
-  '<li><b>Classique</b> : les mêmes objectifs, mais tu n\'es pas seul. Garde un œil derrière toi, surtout une fois le passage ouvert : ne traîne pas.</li>'+
-  '<li><b>Observation</b> : aucun objectif, tous les lieux ouverts, pour simplement se promener.</li></ul>'+
-  '<p class="hint">En Classique, si quelque chose t\'attrape, tu te réveilles en sursaut et le lieu recommence. Rien n\'est perdu ailleurs.</p>'],
+ ['modes','Modes',
+  '<ul><li><b>Classique</b> : les objectifs. Tu n\'es pas tout à fait seul : il arrive qu\'une ombre se tienne au coin de ton regard. Elle n\'est plus là quand tu te retournes.</li>'+
+  '<li><b>Observation</b> : aucun objectif, tous les lieux ouverts, pour simplement se promener.</li></ul>'],
  ['coop','Jouer à plusieurs',
   '<ol><li>Ouvre <b>Coop</b> et choisis ton pseudo.</li><li>Pour héberger : donne un nom à ton lobby, laisse-le <b>public</b> ou mets un <b>mot de passe</b>, puis <b>Créer le lobby</b>.</li>'+
   '<li>Pour rejoindre : la liste des <b>lobbies ouverts</b> se met à jour seule. Clique sur <b>Rejoindre</b> (avec le mot de passe s\'il y a un cadenas).</li>'+
   '<li>L\'hôte choisit le lieu dans <b>Chapitres et modes</b>, puis <b>Lancer la partie</b>. Les autres cliquent sur <b>Entrer dans la partie</b>.</li>'+
   '<li>Tout ce qu\'un joueur trouve compte pour l\'équipe. On sort ensemble : la sortie attend que tout le monde soit là.</li>'+
-  '<li>Un joueur attrapé en Classique peut être relevé : reste près de lui quelques secondes.</li></ol>'+
+  '</ol>'+
   '<p class="hint">Le jeu à plusieurs passe par Internet : il ne marche pas dans l\'aperçu Claude, seulement sur la version en ligne du jeu.</p>'],
  ['keys','Commandes',
   '<div id="gkeys"></div><p class="hint">Les touches se changent dans <b>Paramètres</b>. Échap met en pause. Sur écran tactile : glisse à gauche pour marcher, à droite pour regarder, touche brièvement la moitié droite pour sauter.</p>']
