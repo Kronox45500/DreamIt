@@ -594,7 +594,7 @@ function imgTex(src){const o={tex:gl.createTexture(),ready:false,asp:1};
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);o.asp=im.height/im.width;o.ready=true;}catch(e){}};
   im.src=src;return o;}
-const THIN=imgTex(THIN_IMG),MASK=imgTex(MASK_IMG),CHILD=imgTex(CHILD_IMG);
+const THIN=imgTex(THIN_IMG),MASK=imgTex(MASK_IMG),CHILD={ready:false};
 const STAR=imgTex(STAR_IMG),MAN=imgTex(MAN_IMG),LONG=imgTex(LONG_IMG),ANGEL=imgTex(ANGEL_IMG),EYES2=imgTex(EYES2_IMG),COAT=imgTex(COAT_IMG);
 
 /* ---------- post-traitement : occlusion ambiante, halo des lumières, anticrénelage, aberration légère ---------- */

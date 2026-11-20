@@ -992,7 +992,7 @@ function frame(now){
     gl.uniform3f(pMain.u.uOff,a.x,a.y,a.z);gl.uniform2f(pMain.u.uRot,Math.cos(an),Math.sin(an));gl.bindVertexArray(FIG.vao);gl.drawArrays(gl.TRIANGLES,0,FIG.count);}
   gl.uniform2f(pMain.u.uRot,1,0);gl.uniform3f(pMain.u.uOff,0,0,0);
   /* qui habite cet espace : yeux ailés, étoiles ailées (hôpital, parking, plage), homme-étoile (hôtel, aéroport) */
-  const ENT=GEN>=22&&CHILD.ready?CHILD:GEN>=15&&EYES2.ready?EYES2:(GEN===10||GEN===11||GEN===13)&&STAR.ready?STAR:(GEN===9||GEN===12)&&MAN.ready?MAN:SPR,isMan=ENT===MAN;
+  const ENT=GEN>=15&&EYES2.ready?EYES2:(GEN===10||GEN===11||GEN===13)&&STAR.ready?STAR:(GEN===9||GEN===12)&&MAN.ready?MAN:SPR,isMan=ENT===MAN;
   if(ENT.ready&&eyesL.length){
     gl.useProgram(pSpr.p);setPal(pSpr);gl.uniformMatrix4fv(pSpr.u.uVP,false,VP);gl.uniform3fv(pSpr.u.uCam,eye);gl.uniform3fv(pSpr.u.uRight,Rt);
     const sw=ENT===CHILD?0.42:ENT===STAR?0.95:ENT===EYES2?0.95:isMan?0.74:0.85;
