@@ -17,7 +17,8 @@ let ex={stations:0,talks:0,pearls:0,courses:0,car:0,notes:0,phones:0,souv:0},nea
 let lingerKey=null,lingerT=0,gps=false,liftCool=0,mode='calm',clipT=0,exitT=0,padExit=-9,ride=null,rideT=0;
 try{const m=localStorage.getItem('ether-mode');if(m==='obs'||m==='calm'||m==='classic')mode=m;}catch(e){}
 /* la sortie de chaque espace, une fois l'objectif rempli (indexé par générateur) */
-const PASSH=['sautez dans le vide','montez dans une rame et laissez-vous emporter','prenez un tremplin','restez sous l\'eau jusqu\'au bout','retournez à votre voiture','courez contre un mur','sautez de la galerie dans le vide central','balancez-vous','entrez dans une maison','prenez l\'ascenseur','montez dans le lit vide','fermez les yeux : accroupissez-vous (C) sans bouger','laissez-vous porter par un tapis roulant','nagez vers le large','montez dans le lit, jusqu\'à l\'oreiller, et ouvrez les yeux','passez la porte allumée','prenez l\'ascenseur de l\'aire de restauration','asseyez-vous au premier rang (C)','jouez la partie qui reste : la borne qui clignote','marchez jusqu\'aux quilles','descendez le grand toboggan, jusqu\'au fond','asseyez-vous sur sa chaise'];
+const PASSH=['sautez dans le vide','montez dans une rame et laissez-vous emporter','prenez un tremplin','restez sous l\'eau jusqu\'au bout','retournez à votre voiture','courez contre un mur','sautez de la galerie dans le vide central','balancez-vous','entrez dans une maison','prenez l\'ascenseur','montez dans le lit vide','fermez les yeux : accroupissez-vous (C) sans bouger','laissez-vous porter par un tapis roulant','nagez vers le large','montez dans le lit, jusqu\'à l\'oreiller, et ouvrez les yeux','passez la porte allumée','prenez l\'ascenseur de l\'aire de restauration','asseyez-vous au premier rang (C)','jouez la partie qui reste : la borne qui clignote','marchez jusqu\'aux quilles','descendez le grand toboggan, jusqu\'au fond','asseyez-vous sur sa chaise','sortez par la porte d\'entrée éclairée','allez au guichet','passez le rideau derrière l\'estrade','trouvez sa tombe','passez sous le rideau du quai','retrouvez la voiture et appuyez sur E','sortez par le portail'
+];
 /* le récit : un rêve, chaque lieu est un morceau de vie ; à la fin on croit se réveiller */
 const STORY=[
  /* chapitre 1 : le rêve. Une boucle de rêves et de cauchemars, dans le coma ; la vie s'y infiltre */
@@ -45,7 +46,14 @@ const STORY=[
  {t:'Les anniversaires',a:['Le bowling des anniversaires. Papa lançait de travers, exprès, pour te faire rire.','Les chaussures de location sentaient le désinfectant. Tu donnerais tout pour cette odeur.'],e:'Va jusqu\'au bout d\'une piste, là où tombent les quilles.'},
  {t:'Les étés',a:['Le parc aquatique a été vidé. Les toboggans descendent dans des bassins secs.','C\'est là qu\'il t\'a appris à nager. Tu te souviens de sa main sous ton ventre, et puis plus de main.'],e:'Descends le grand toboggan, jusqu\'au fond du bassin.'},
  {t:'Vendue',a:['Ce n\'est pas un rêve. Pas un souvenir. Pour la première fois depuis longtemps, tu es vraiment là.','La maison est vendue. Les nouveaux propriétaires arrivent lundi.','Il reste des cartons à fermer, ses affaires à rassembler, et les clés à prendre sur la table de la cuisine.'],e:'Ta chambre. Sa chaise y est encore.'},
-];
+ /* chapitre 4 : les cauchemars d'après. Il ne dort plus ; quand il dort, tout se déforme */
+ {t:'La maison qui ne finit pas',a:['Tu ne dors plus. Quand tu dors, tu reviens ici.','C\'est la maison, mais le couloir ne finit pas. À chaque tournant, la porte de sa chambre est entrouverte.','Tu les refermes, une par une. Elles ne restent jamais fermées.'],e:'La porte d\'entrée est éclairée, quelque part. Sors.'},
+ {t:'La salle d\'attente',a:['La nuit de l\'appel. On t\'a dit d\'attendre ici.','Des chaises vissées, des tickets, une télé qui grésille. Ton numéro ne passe jamais.','Quelque part, un téléphone vibre sur un siège vide.'],e:'Ton numéro s\'affiche. Va au guichet.'},
+ {t:'Le funérarium',a:['Des rangées de chaises, des fleurs, des gens debout qui ne disent rien.','Le cercueil est fermé. On t\'a conseillé de ne pas le rouvrir. Tu n\'as pas demandé pourquoi.','Quand tu ne les regardes pas, ils s\'approchent.'],e:'Derrière l\'estrade, le rideau est entrouvert. Passe.'},
+ {t:'Le cimetière sous la pluie',a:['Il pleut. Il a plu tout le mois de novembre.','Toutes les tombes portent le même nom. Tu les lis quand même, une par une.','La sienne est quelque part. La terre y est encore fraîche.'],e:'Trouve sa tombe.'},
+ {t:'L\'entrepôt des cartons',a:['Tout ce qu\'il possédait tient dans des cartons. Des milliers de cartons.','Il faut décider ce qu\'on garde. Tu voudrais tout garder, et ne plus jamais les ouvrir.','Certains sont marqués « À garder », de son écriture.'],e:'Le rideau du quai est à demi levé. Il fait jour, dehors.'},
+ {t:'La route de nuit',a:['La route. Celle de cette nuit-là, ou une autre. Elles se ressemblent toutes, la nuit.','Cette fois, c\'est toi qui as les clés. La place à côté de toi est vide.','Ne t\'endors pas. Surtout, ne t\'endors pas.'],e:'La voiture est là. Rentre.'},
+ {t:'Le matin',a:['Tu t\'es endormi, et pour une fois, tu as dormi sans rêver.','Il fait jour. Le cimetière est calme, l\'herbe est mouillée, les oiseaux sont revenus.','La petite voiture rouge est dans ta poche.'],e:'Tu peux partir, maintenant. Le portail est ouvert.'}];
 const END2=['Un bip. Puis un autre, plus rapide.','Le plafond blanc. Il est à la bonne distance, cette fois.','Sur la chaise, papa se réveille en sursaut. Il a vieilli de dix ans.','« Tu m\'entends ? »','Oui.','Il se met à pleurer. Il répète pardon, pardon, et tu ne sais pas encore pourquoi.'];
 const HUBL=[
  ['Six ans ont passé depuis le réveil. Tu marches de nouveau, sans canne.','Papa, lui, ne s\'est jamais réveillé de cette nuit-là. Il venait à tous tes rendez-vous, il souriait, et il ne se pardonnait rien.','Un matin de novembre, il n\'est pas descendu. Il avait laissé sur la table de la cuisine une lettre, et les clés de la maison.','Tu n\'as pas ouvert la lettre. Il faut vider la maison. Et la nuit, tu retournes dans les lieux qui ont fermé, chercher ce qui reste de lui.'],
@@ -54,7 +62,8 @@ const HUBL=[
  ['Le ticket gagnant. Thomas, si tu savais. Il faudrait lui écrire.','Papa aussi voulait t\'écrire. Il a écrit, à la fin. Une seule fois.'],
  ['La photo du gâteau. Il a de la crème jusqu\'au nez. Il rit.','Après l\'accident, il n\'a plus jamais ri comme ça. Tu l\'avais remarqué. Tu n\'avais rien dit.'],
  ['La serviette rayée. Elle sent encore le chlore et l\'été.','Il ne reste que la maison. Et la lettre, dans ta poche, toujours fermée.']];
-const END3=['Tu t\'assois sur la chaise. Elle a encore un peu la forme de quelqu\'un.','Pendant des mois, il a attendu ici que tu reviennes. Tu es revenu. Lui, il est resté sur le bord de cette route.','Tu ouvres enfin la lettre. Il n\'y a qu\'une ligne, de son écriture penchée :','« Pardon pour la route. »','Tu aurais voulu lui dire que tu ne lui en avais jamais voulu. Pas une seule fois.','Alors tu le dis, tout haut, dans la chambre vide.','Tu poses les clés sur le rebord de la fenêtre, à côté de la petite voiture rouge.','Ce n\'était pas ta faute, papa.','Si tu portes quelque chose de trop lourd, parle à quelqu\'un. En France, le 3114 répond jour et nuit.'];
+const END3=['Tu t\'assois sur la chaise. Elle a encore un peu la forme de quelqu\'un.','Pendant des mois, il a attendu ici que tu reviennes. Tu es revenu. Lui, il est resté sur le bord de cette route.','Tu ouvres enfin la lettre. Il n\'y a qu\'une ligne, de son écriture penchée :','« Pardon pour la route. »','Tu aurais voulu lui dire que tu ne lui en avais jamais voulu. Pas une seule fois.','Alors tu le dis, tout haut, dans la chambre vide.','Ce n\'était pas ta faute, papa.','Cette nuit-là, pour la première fois depuis novembre, tu t\'endors. Et les cauchemars commencent.'];
+const END4=['Tu passes le portail. Derrière toi, le cimetière reste au soleil.','On ne guérit pas de ça. Mais un jour ça pèse un peu moins lourd, et puis un autre jour encore.','Les cauchemars reviendront peut-être. Tu sais maintenant qu\'on peut se réveiller.','Il t\'a attendu pendant des mois, sur une chaise. À ton tour, tu attendras d\'aller mieux. Tu iras mieux.','Fin.','Si tu portes quelque chose de trop lourd, parle à quelqu\'un. En France, le 3114 répond jour et nuit.'];
 const WAKE=['Tu t\'endors à l\'arrière. La radio, très bas.','Papa bâille. Il ouvre la fenêtre pour se tenir éveillé.','« Dors. On arrive bientôt. »','Des phares. Beaucoup trop de phares.','…','Blanc.','Un bip. Tu dors encore. Mais ce n\'est plus le même sommeil.'];
 /* les silhouettes assises qui veillent : ce qu'on comprend en s'approchant (par générateur) */
 const SITL={3:['Il porte la veste de papa. Il ne se retourne pas.','« Je suis là. Je ne bouge pas. Nage, je te regarde. »'],
@@ -84,7 +93,7 @@ function nextWorld(){
     veil=1;veilHold=2.2;play('ascenseur',0.45);setTimeout(()=>play('ding',0.5),1900);loadWorld(nx,true);chapter();return;}
   const last=W===CHAPS[chOf(W)][1]-1;
   if(mode!=='obs'&&last){ /* fin de chapitre : faux réveil (1), vrai réveil (2) */
-    const L=chOf(W)?END2:WAKE;wakeKind=chOf(W);if(typeof statEnd==='function')statEnd(chOf(W));
+    const L=chOf(W)===3?END4:chOf(W)?END2:WAKE;wakeKind=chOf(W);if(typeof statEnd==='function')statEnd(chOf(W));
     veil=1;veilHold=L.length*5.2+1.5;wakeT=veilHold-0.4;chime();story(L,true);if(L===WAKE){setTimeout(()=>{try{play('impact',0.9);}catch(e){}},3*5200+300);}return;}
   veil=1;veilHold=1.2;chime();loadWorld(last?CHAPS[chOf(W)][0]:level+1,true);chapter();
 }
@@ -94,9 +103,11 @@ function wakeEnd(){
     loadWorld(9,true);chapter();return;}
   if(wakeKind===1&&mode!=='obs'){ /* des années plus tard : la pièce aux souvenirs */
     C3.clear();c3next=16;c3save();loadWorld(15,true);chapter();return;}
+  if(wakeKind===2&&mode!=='obs'){ /* la nuit d'après : les cauchemars */
+    loadWorld(22,true);chapter();return;}
   loadWorld(0);started=false;paused=true;showMenu('title');
   if(document.pointerLockElement)document.exitPointerLock();
-  document.getElementById('where').textContent=wakeKind===2?'Fin · Ce n\'était pas ta faute.':'Fin · tu t\'es réveillé.';
+  document.getElementById('where').textContent=wakeKind===3?'Fin · le matin est revenu.':wakeKind===2?'Fin · Ce n\'était pas ta faute.':'Fin · tu t\'es réveillé.';
 }
 const mobs=new Map(),noteTaken=new Set(),answered=new Set(),gone=new Set(),visited=new Set(),talked=new Set(),pearlTaken=new Set(),doneCourse=new Set();
 function val(k){return k==='summits'?summits:k==='shards'?shards:ex[k];}
@@ -122,7 +133,14 @@ const LINES=[
  ['Encore une pièce ? Allez, la dernière.','Thomas avait le meilleur score. Tu trichais un peu, je le savais.','Les écrans s\'éteignent un par un. Joue tant qu\'il en reste.','Je vous attendais dehors, sur le banc. J\'étais bien.','Si la lumière de sa lampe te touche, cours.'],
  ['Regarde, je lance de travers. Exprès. Tu ris ?','Joyeux anniversaire. Tous, je les ai tous gardés.','Les chaussures te faisaient mal. Tu ne disais rien.','Les statues avancent quand tu ne regardes pas. Comme le temps.','Fais un vœu. Même maintenant.'],
  ['Je te tiens. Je te tiens. Voilà, tu nages.','N\'aie pas peur du grand toboggan. Je t\'attends en bas.','Les bassins sont vides, mais on entend encore les cris de joie.','Mets ta serviette, tu vas attraper froid.','Tu n\'as plus peur de l\'eau. Je le savais.'],
- ['Ces gens mesurent les murs. Ils ne savent pas où tu as grandi.','Ta taille est encore marquée sur la porte de la cuisine.','Laisse les cartons. Garde ce qui pèse.','Ils te suivent. Ne les laisse pas te rattraper.','Ma chaise est dans ta chambre. Assieds-toi. Juste une fois.']
+ ['Ces gens mesurent les murs. Ils ne savent pas où tu as grandi.','Ta taille est encore marquée sur la porte de la cuisine.','Laisse les cartons. Garde ce qui pèse.','Ils te suivent. Ne les laisse pas te rattraper.','Ma chaise est dans ta chambre. Assieds-toi. Juste une fois.'],
+ ['Tu as fermé toutes les portes, sauf la sienne. Tu crois qu\'il t\'en veut ?','Ce n\'est pas toi qui l\'as laissé seul. Il était seul avant.','Tu peux pleurer, ici. Personne ne te voit. Même pas moi.'],
+ ['On attend quoi, au juste ? Il est déjà parti.','Tu aurais pu appeler plus souvent. Il aurait pu répondre plus souvent.','Les grandes personnes aussi ont peur du noir.'],
+ ['Ils ne savent pas qui il était. Toi, tu sais.','Tu n\'es pas obligé de parler. Pose juste les fleurs.','Ça ne s\'en va pas. Ça devient juste plus petit.'],
+ ['Tu cherches la bonne tombe. Moi, je cherche le bon souvenir.','Il ne t\'en voulait pas. Il s\'en voulait à lui.','La pluie ne s\'arrête pas. Mais on peut marcher dessous.'],
+ ['Garde ce qui pèse. Laisse le reste.','Un carton vide, c\'est aussi un souvenir.','Il gardait tout. Même ce qui faisait mal.'],
+ ['Ne t\'endors pas. Mais tu as le droit de te reposer.','Ce n\'était pas lui, cette nuit-là. C\'était la fatigue.','Tu peux t\'arrêter. Les panneaux le disent.'],
+ ['Il fait beau. Il aurait aimé.']
 ];
 /* position d'une silhouette à l'instant présent : x, y, z, lacet */
 function npcPos(n){
@@ -134,7 +152,7 @@ function npcPos(n){
 }
 function entityVoice(){if(!play('entity',0.55,0.88+Math.random()*0.22))murmur();}
 function talk(){
-  if(!nearNpc)return;const L=LINES[[0,1,2,3,7,4,5,6,8,9,10,11,12,13,14][GEN]]||LINES[0],line=L[Math.floor(Math.abs(nearNpc.seed)*97)%L.length];
+  if(!nearNpc)return;const L=(GEN<15?LINES[[0,1,2,3,7,4,5,6,8,9,10,11,12,13,14][GEN]]:LINES[GEN+1])||LINES[0],line=L[Math.floor(Math.abs(nearNpc.seed)*97)%L.length];
   entityVoice();
   if(!talked.has(nearNpc.key)){talked.add(nearNpc.key);ex.talks++;checkGoal();}
   if(!(passage&&toastT>4))toast('« '+line+' »',5.5);
@@ -150,7 +168,7 @@ function interact(){
   if(GEN===7&&!ride){ /* s'asseoir sur la balançoire la plus proche */
     for(const c of nearCells)for(const s of c.swings)if(Math.hypot(pos.x-s[0],pos.z-s[2])<1.9&&Math.abs(pos.y-(s[1]-2.95))<1.2){ride=s;rideT=0;return;}
   }
-  if(GEN===4&&passage&&carT&&Math.hypot(pos.x-carT[0],pos.z-carT[1])<3.2){nextWorld();return;}
+  if((GEN===4||GEN===27)&&passage&&carT&&Math.hypot(pos.x-carT[0],pos.z-carT[1])<3.2){nextWorld();return;}
   if(G.car&&!ex.car&&mode!=='obs'){beepT=time;beep();toast(carT?'Klaxon · '+Math.round(Math.hypot(carT[0]-pos.x,carT[1]-pos.z))+' m':'Pas de réponse, avancez encore',3);}
 }
 const keys={};let started=false,paused=true,locked=false,muted=false;
@@ -265,7 +283,7 @@ function checkGoal(){
   pickTarget();
 }
 function loadWorld(lv,arrive){sitSaid=-1;
-  level=lv;if(lv<9){if(lv>maxLevel)maxLevel=lv;}else if(lv<15){if(lv>max2)max2=lv;}else if(lv>max3)max3=lv;try{localStorage.setItem('ether-level',lv);localStorage.setItem('ether-max',maxLevel);localStorage.setItem('ether-max2',max2);localStorage.setItem('dream-max3',max3);}catch(e){}
+  level=lv;if(lv<9){if(lv>maxLevel)maxLevel=lv;}else if(lv<15){if(lv>max2)max2=lv;}else if(lv<22){if(lv>max3)max3=lv;}else if(lv>max4)max4=lv;try{localStorage.setItem('ether-level',lv);localStorage.setItem('ether-max',maxLevel);localStorage.setItem('ether-max2',max2);localStorage.setItem('dream-max3',max3);localStorage.setItem('dream-max4',max4);}catch(e){}
   applyWorld();worldMusic();infoCache.clear();ascCache.clear();megaCache.clear();
   for(const c of cells.values())freeCell(c);cells.clear();
   for(const m of megaMeshes.values())freeMesh(m);megaMeshes.clear();
@@ -301,7 +319,7 @@ const shades=[];
 function lookPan(x,z){const dx=x-pos.x,dz=z-pos.z,d=Math.hypot(dx,dz);return Math.max(-1,Math.min(1,(dx*Math.cos(yaw)+dz*Math.sin(yaw))/Math.max(d,1)));}
 function standable(x,z){const cr=crouch;crouch=false;const ok=!test(x,pos.y+0.05,z)&&(test(x,pos.y-0.6,z)||WORLDS[W].full);crouch=cr;return ok;}
 function horror(dt){
-  if(mode!=='classic'||GEN===21){shades.length=0;chaser=null;return;} /* la maison : on ne rêve plus, rien ne rôde */
+  if(mode!=='classic'||GEN===21||GEN===28){shades.length=0;chaser=null;return;} /* la maison : on ne rêve plus, rien ne rôde */
   chaserTick(dt);
   for(let k=shades.length-1;k>=0;k--){const a=shades[k],dx=a.x-pos.x,dz=a.z-pos.z,d=Math.hypot(dx,dz),fw=(dx*Math.sin(yaw)-dz*Math.cos(yaw))/Math.max(d,0.1);
     if(fw>0.88)a.seen+=dt;a.life-=dt;
@@ -381,7 +399,7 @@ function mobsTick(dt){
     if(m.kind==='statue'){const fw=(dx*Math.sin(yaw)-dz*Math.cos(yaw))/Math.max(d,0.1),seen=fw>0.42&&d<70;
       if(!seen&&d<38&&d>(classic?0:1.8)){const mv=navStep(m,classic?3.4:2.2,dt);m.moved+=mv;if(mv>0)m.y+=(pos.y-m.y)*Math.min(1,dt*3);}
       if(seen&&!m.seen&&m.moved>0.8&&d<26){grind(Math.max(-1,Math.min(1,(dx*Math.cos(yaw)+dz*Math.sin(yaw))/Math.max(d,1))),Math.min(0.35,4/(d+6)));m.moved=0;}
-      m.seen=seen;if(classic&&d<0.85&&Math.abs(m.y-pos.y)<1.6)mobKill(ANGEL_IMG);}
+      m.seen=seen;if(classic&&d<0.85&&Math.abs(m.y-pos.y)<1.6)mobKill(GEN>=22?MASK_IMG:ANGEL_IMG);}
     else if(m.kind==='guard'){
       if(!m.alert){const [x0,z0,x1,z1]=m.path,L=Math.max(1,Math.hypot(x1-x0,z1-z0));
         if(m.back){const tx=x0+(x1-x0)*m.p,tz=z0+(z1-z0)*m.p,ex=tx-m.x,ez=tz-m.z,el=Math.hypot(ex,ez);if(el<0.3)m.back=0;else{const s=Math.min(el,2.2*dt);m.x+=ex/el*s;m.z+=ez/el*s;m.fx=ex/el;m.fz=ez/el;}}
@@ -557,7 +575,7 @@ function physics(dt){
     else if(GEN===11){lieT=(crouch&&grounded&&walkV<0.4)?lieT+dt:0;go=lieT>3;}
     else if(GEN===12)go=beltT>6;
     else if(GEN===13)go=swim&&pos.z>CELL*3.4;
-    else if(GEN>=15){const R=GEN===20?3:GEN===16?1.8:GEN===19?1.2:GEN===17||GEN===18?1.0:0.9;for(const c of nearCells){const h=c.hdoors;for(let k=0;k<h.length;k+=2)if(Math.hypot(pos.x-h[k],pos.z-h[k+1])<R&&(GEN!==17||crouch)&&(GEN!==20||pos.y<-2))go=true;}}
+    else if(GEN>=15){const R=GEN>=22?1.4:GEN===20?3:GEN===16?1.8:GEN===19?1.2:GEN===17||GEN===18?1.0:0.9;for(const c of nearCells){const h=c.hdoors;for(let k=0;k<h.length;k+=2)if(Math.hypot(pos.x-h[k],pos.z-h[k+1])<R&&(GEN!==17||crouch)&&(GEN!==20||pos.y<-2))go=true;}}
     if(go&&typeof coopBlockExit==='function'&&coopBlockExit())go=false;
     if(go){exitT=0;clipT=0;padExit=-9;lieT=0;beltT=0;nextWorld();return;}
   }else if((GEN===9||GEN===16)&&mode!=='obs'&&time-elevT>6){for(const c of nearCells){const h=c.hdoors;for(let k=0;k<h.length;k+=2)if(Math.hypot(pos.x-h[k],pos.z-h[k+1])<1.1){elevT=time;toast('L\'ascenseur ne bouge pas. Pas encore.',3.5);}}}
@@ -602,7 +620,7 @@ function spacesUI(){
   const el=document.getElementById('spaces');el.textContent='';
   WORLDS.forEach((w,k)=>{const ch=chOf(k),C=CHAPS[ch];
     if(k===C[0]){const h=document.createElement('span');h.className='chl';h.textContent='Chapitre '+(ch+1)+' · '+C[2];el.appendChild(h);}
-    const b=document.createElement('button');b.type='button';b.textContent=(k-C[0]+1)+' · '+w.name;b.disabled=k>(ch===2?max3:ch?max2:maxLevel)&&mode!=='obs';
+    const b=document.createElement('button');b.type='button';b.textContent=(k-C[0]+1)+' · '+w.name;b.disabled=k>(ch===3?max4:ch===2?max3:ch?max2:maxLevel)&&mode!=='obs';
     b.setAttribute('aria-pressed',k===W?'true':'false');b.addEventListener('click',()=>{if(k===15){C3.clear();c3next=16;c3save();}else if(k>15)c3next=k;loadWorld(k);});el.appendChild(b);});
   document.getElementById('where').textContent='Chapitre '+(chOf(W)+1)+' · espace '+(W-CHAPS[chOf(W)][0]+1)+' · '+WORLDS[W].name;
   const md=document.getElementById('modes');md.textContent='';
@@ -653,7 +671,9 @@ const TRACKS=[['music/liminal-rest.mp3','Liminal Rest, lux-aeterna'],['music/ren
   ['music/dreamless-darkness.mp3','Dreamless Liminal Darkness, lux_aeterna_2026'],['music/liminal-glitch.mp3','Liminal Glitch, lux_aeterna_2026'],['music/liminal-sadness.mp3','Liminal Sadness Ambient, lux_aeterna_2026'],
   ['music/dark-liminal.mp3','Dark Liminal Ambient, lux_aeterna_2026'],['music/vast-void.mp3','Vast Liminal Void, lux_aeterna_2026'],['music/liminal-pigments.mp3','Liminal Pigments, lux-aeterna'],
   ['music/dissolve-in-emptiness.mp3','Dissolve in Emptiness, lux-aeterna'],['music/urban-abyss.mp3','Urban Abyss, lux-aeterna'],['music/you-are-shells.mp3','You Are Shells, lux-aeterna'],
-  ['music/sleepexe.mp3','sleep.exe, lux-aeterna'],['music/horror-backrooms.mp3','Horror Backrooms, arpmedia'],['music/dark-liminal-void.mp3','Dark Liminal Void, lux_aeterna_2026'],['music/dreamless.mp3','Dreamless, lux-aeterna']];
+  ['music/sleepexe.mp3','sleep.exe, lux-aeterna'],['music/horror-backrooms.mp3','Horror Backrooms, arpmedia'],['music/dark-liminal-void.mp3','Dark Liminal Void, lux_aeterna_2026'],['music/dreamless.mp3','Dreamless, lux-aeterna'],
+  ['music/station-3am.mp3','Station 3AM, lux-aeterna'],['music/nothing-is-permanent.mp3','Nothing Is Permanent (slowed), lux-aeterna'],['music/cant-you-see.mp3','Can\'t You See, logicallism'],
+  ['music/polar-opposite.mp3','Polar Opposite, logicallism'],['music/dark-feeling.mp3','Dark Feeling Ambient, lux_aeterna_2026'],['music/liminal-loop.mp3','Liminal Loop, lux-aeterna']];
 const music=new Audio();music.preload='auto';
 let trackIdx=WORLDS[W].music[0],musicOn=true,musicVol=0.6,musicReady=false;
 try{const v=localStorage.getItem('ether-vol');if(v!==null&&!isNaN(+v))musicVol=Math.max(0,Math.min(1,+v));if(localStorage.getItem('ether-mus')==='0')musicOn=false;}catch(e){}
@@ -779,7 +799,7 @@ function farHorror(){if(!ac)return;const keys=['scream','smiler','impact'].filte
   const pn=ac.createStereoPanner?ac.createStereoPanner():ac.createGain();if(pn.pan)pn.pan.value=Math.random()*1.6-0.8;const g=ac.createGain();g.gain.value=k==='impact'?0.16:0.1;
   const dl=ac.createDelay(1),fb=ac.createGain(),wet=ac.createGain();dl.delayTime.value=0.23+Math.random()*0.15;fb.gain.value=0.45;wet.gain.value=0.5;
   s.connect(lp);lp.connect(g);g.connect(pn);g.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(pn);pn.connect(master);s.start(t,0,k==='scream'?6+Math.random()*8:undefined);}
-function farTick(dt){if(mode!=='classic'||paused||!started||GEN===21)return;farT-=dt;if(farT<0){farT=35+Math.random()*50;farHorror();}}
+function farTick(dt){if(mode!=='classic'||paused||!started||GEN===21||GEN===28)return;farT-=dt;if(farT<0){farT=35+Math.random()*50;farHorror();}}
 function doorSfx(){
   if(!ac)return;const t=ac.currentTime;
   [880,660].forEach((f,i)=>{const o=ac.createOscillator();o.frequency.value=f;const g=ac.createGain();g.gain.setValueAtTime(0,t+i*0.22);g.gain.linearRampToValueAtTime(0.05,t+i*0.22+0.02);g.gain.exponentialRampToValueAtTime(0.0005,t+i*0.22+0.5);o.connect(g);g.connect(master);o.start(t);o.stop(t+1.1);});
@@ -812,6 +832,11 @@ function actSound(k){if(!ac)return;const t=ac.currentTime;
     const s=ac.createBufferSource();s.buffer=noiseBuf;const b=ac.createBiquadFilter();b.type='lowpass';b.frequency.value=220;const gg=ac.createGain();gg.gain.setValueAtTime(0.0001,t);gg.gain.exponentialRampToValueAtTime(0.35,t+0.4);gg.gain.setValueAtTime(0.35,t+2.2);gg.gain.exponentialRampToValueAtTime(0.0005,t+2.6);s.connect(b);b.connect(gg);gg.connect(master);s.start(t,0,2.7);
     for(let n=0;n<12;n++){const tt=t+2.5+Math.random()*0.5,o=ac.createOscillator();o.frequency.setValueAtTime(900+Math.random()*900,tt);o.frequency.exponentialRampToValueAtTime(300,tt+0.08);const g2=ac.createGain();g2.gain.setValueAtTime(0.08,tt);g2.gain.exponentialRampToValueAtTime(0.0005,tt+0.12);o.connect(g2);g2.connect(master);o.start(tt);o.stop(tt+0.13);}
     const s2=ac.createBufferSource();s2.buffer=noiseBuf;const b2=ac.createBiquadFilter();b2.type='bandpass';b2.frequency.value=1400;const g3=ac.createGain();g3.gain.setValueAtTime(0.3,t+2.5);g3.gain.exponentialRampToValueAtTime(0.0005,t+3.1);s2.connect(b2);b2.connect(g3);g3.connect(master);s2.start(t+2.5,0,0.7);}
+  else if(k==='door'){ /* une porte qu'on referme : le bois, puis le pêne */
+    const s=ac.createBufferSource();s.buffer=noiseBuf;const b=ac.createBiquadFilter();b.type='lowpass';b.frequency.value=180;const gg=ac.createGain();gg.gain.setValueAtTime(0.0001,t);gg.gain.exponentialRampToValueAtTime(0.5,t+0.02);gg.gain.exponentialRampToValueAtTime(0.001,t+0.35);s.connect(b);b.connect(gg);gg.connect(master);s.start(t,0,0.4);
+    const o=ac.createOscillator();o.type='square';o.frequency.value=1400;const g2=ac.createGain();g2.gain.setValueAtTime(0.0001,t+0.18);g2.gain.exponentialRampToValueAtTime(0.05,t+0.185);g2.gain.exponentialRampToValueAtTime(0.0001,t+0.22);o.connect(g2);g2.connect(master);o.start(t+0.17);o.stop(t+0.25);}
+  else if(k==='flower'||k==='toy'){ /* le papier des fleurs ; ou une petite voiture posée sur la pierre */
+    const s=ac.createBufferSource();s.buffer=noiseBuf;const b=ac.createBiquadFilter();b.type=k==='toy'?'bandpass':'highpass';b.frequency.value=k==='toy'?2600:3500;const gg=ac.createGain();gg.gain.setValueAtTime(0.0001,t);gg.gain.exponentialRampToValueAtTime(k==='toy'?0.25:0.12,t+0.03);gg.gain.exponentialRampToValueAtTime(0.0001,t+(k==='toy'?0.12:0.8));s.connect(b);b.connect(gg);gg.connect(master);s.start(t,0,0.9);}
   else{ /* le carton : un rabat, l'adhésif qui se déroule */
     const s=ac.createBufferSource();s.buffer=noiseBuf;const b=ac.createBiquadFilter();b.type='bandpass';b.frequency.setValueAtTime(900,t+0.3);b.frequency.linearRampToValueAtTime(2600,t+1.2);const gg=ac.createGain();
     gg.gain.setValueAtTime(0.0001,t+0.3);gg.gain.exponentialRampToValueAtTime(0.2,t+0.35);gg.gain.setValueAtTime(0.2,t+1.1);gg.gain.exponentialRampToValueAtTime(0.0005,t+1.3);s.connect(b);b.connect(gg);gg.connect(master);s.start(t+0.3,0,1.1);
@@ -958,13 +983,13 @@ function frame(now){
     gl.uniform3f(pMain.u.uOff,a.x,a.y,a.z);gl.uniform2f(pMain.u.uRot,Math.cos(an),Math.sin(an));gl.bindVertexArray(FIG.vao);gl.drawArrays(gl.TRIANGLES,0,FIG.count);}
   gl.uniform2f(pMain.u.uRot,1,0);gl.uniform3f(pMain.u.uOff,0,0,0);
   /* qui habite cet espace : yeux ailés, étoiles ailées (hôpital, parking, plage), homme-étoile (hôtel, aéroport) */
-  const ENT=GEN>=15&&EYES2.ready?EYES2:(GEN===10||GEN===11||GEN===13)&&STAR.ready?STAR:(GEN===9||GEN===12)&&MAN.ready?MAN:SPR,isMan=ENT===MAN;
+  const ENT=GEN>=22&&CHILD.ready?CHILD:GEN>=15&&EYES2.ready?EYES2:(GEN===10||GEN===11||GEN===13)&&STAR.ready?STAR:(GEN===9||GEN===12)&&MAN.ready?MAN:SPR,isMan=ENT===MAN;
   if(ENT.ready&&eyesL.length){
     gl.useProgram(pSpr.p);setPal(pSpr);gl.uniformMatrix4fv(pSpr.u.uVP,false,VP);gl.uniform3fv(pSpr.u.uCam,eye);gl.uniform3fv(pSpr.u.uRight,Rt);
-    const sw=ENT===STAR?0.95:ENT===EYES2?0.95:isMan?0.74:0.85;
+    const sw=ENT===CHILD?0.42:ENT===STAR?0.95:ENT===EYES2?0.95:isMan?0.74:0.85;
     gl.uniform2f(pSpr.u.uSize,sw,sw*ENT.asp);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,ENT.tex);gl.uniform1i(pSpr.u.uTex,2);gl.bindVertexArray(SPR.vao);
     for(let k=0;k<eyesL.length;k+=4){const ph=eyesL[k+3];
-      gl.uniform3f(pSpr.u.uPos,eyesL[k],eyesL[k+1]-(isMan?0.42:0)+(reduce?0:Math.sin(time*1.3+ph*9)*(isMan?0.03:0.10)),eyesL[k+2]);gl.uniform1f(pSpr.u.uFlap,reduce||isMan||ENT===EYES2?0:Math.sin(time*3.2+ph*20)*0.5+0.5);
+      gl.uniform3f(pSpr.u.uPos,eyesL[k],eyesL[k+1]-(ENT===CHILD?0.55:isMan?0.42:0)+(reduce||ENT===CHILD?0:Math.sin(time*1.3+ph*9)*(isMan?0.03:0.10)),eyesL[k+2]);gl.uniform1f(pSpr.u.uFlap,reduce||isMan||ENT===EYES2||ENT===CHILD?0:Math.sin(time*3.2+ph*20)*0.5+0.5);
       gl.drawArrays(gl.TRIANGLES,0,SPR.count);}
     gl.activeTexture(gl.TEXTURE0);
   }
@@ -975,26 +1000,27 @@ function frame(now){
     gl.uniform3f(pSpr.u.uPos,c.sit[0],c.sit[1]+h/2,c.sit[2]);gl.bindVertexArray(SPR.vao);gl.drawArrays(gl.TRIANGLES,0,SPR.count);gl.activeTexture(gl.TEXTURE0);
   }
   /* ombres du mode classique, et celle qui poursuit */
-  if(LONG.ready&&(chaser||shades.some(a=>!a.fig))){
+  const LG=GEN>=22&&THIN.ready?THIN:LONG;
+  if(LG.ready&&(chaser||shades.some(a=>!a.fig))){
     gl.useProgram(pSpr.p);setPal(pSpr);gl.uniformMatrix4fv(pSpr.u.uVP,false,VP);gl.uniform3fv(pSpr.u.uCam,eye);gl.uniform3fv(pSpr.u.uRight,Rt);gl.uniform1f(pSpr.u.uFlap,0);
-    gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,LONG.tex);gl.uniform1i(pSpr.u.uTex,2);gl.bindVertexArray(SPR.vao);
-    for(const a of shades)if(!a.fig){const h=2.3;gl.uniform2f(pSpr.u.uSize,h/LONG.asp/2,h/2);gl.uniform3f(pSpr.u.uPos,a.x,a.y+h/2,a.z);gl.drawArrays(gl.TRIANGLES,0,SPR.count);}
-    if(chaser){const h=2.55+Math.sin(time*7)*0.04,j=(Math.random()-0.5)*0.06;gl.uniform2f(pSpr.u.uSize,h/LONG.asp/2*(1+Math.abs(Math.sin(time*11))*0.08),h/2);
+    gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,LG.tex);gl.uniform1i(pSpr.u.uTex,2);gl.bindVertexArray(SPR.vao);
+    for(const a of shades)if(!a.fig){const h=2.3;gl.uniform2f(pSpr.u.uSize,h/LG.asp/2,h/2);gl.uniform3f(pSpr.u.uPos,a.x,a.y+h/2,a.z);gl.drawArrays(gl.TRIANGLES,0,SPR.count);}
+    if(chaser){const h=2.55+Math.sin(time*7)*0.04,j=(Math.random()-0.5)*0.06;gl.uniform2f(pSpr.u.uSize,h/LG.asp/2*(1+Math.abs(Math.sin(time*11))*0.08),h/2);
       gl.uniform3f(pSpr.u.uPos,chaser.x+j,chaser.y+h/2,chaser.z);gl.drawArrays(gl.TRIANGLES,0,SPR.count);}
     gl.activeTexture(gl.TEXTURE0);}
   if(mobs.size){gl.useProgram(pSpr.p);setPal(pSpr);gl.uniformMatrix4fv(pSpr.u.uVP,false,VP);gl.uniform3fv(pSpr.u.uCam,eye);gl.uniform3fv(pSpr.u.uRight,Rt);gl.uniform1f(pSpr.u.uFlap,0);
     gl.activeTexture(gl.TEXTURE2);gl.uniform1i(pSpr.u.uTex,2);gl.bindVertexArray(SPR.vao);let bt=null;
-    for(const m of mobs.values()){const T=m.kind==='statue'?ANGEL:COAT;if(!T.ready)continue;if(bt!==T){gl.bindTexture(gl.TEXTURE_2D,T.tex);bt=T;}
-      const h=m.kind==='statue'?2.15:m.kind==='guard'?1.95:1.88;gl.uniform2f(pSpr.u.uSize,h/T.asp/2,h/2);gl.uniform3f(pSpr.u.uPos,m.x,m.y+h/2,m.z);gl.drawArrays(gl.TRIANGLES,0,SPR.count);}
+    for(const m of mobs.values()){const T=m.kind==='statue'?(GEN>=22&&MASK.ready?MASK:ANGEL):COAT;if(!T.ready)continue;if(bt!==T){gl.bindTexture(gl.TEXTURE_2D,T.tex);bt=T;}
+      const h=m.kind==='statue'?(GEN>=22?2.0:2.15):m.kind==='guard'?1.95:1.88;gl.uniform2f(pSpr.u.uSize,h/T.asp/2,h/2);gl.uniform3f(pSpr.u.uPos,m.x,m.y+h/2,m.z);gl.drawArrays(gl.TRIANGLES,0,SPR.count);}
     gl.activeTexture(gl.TEXTURE0);}
   /* la longue silhouette : elle se tient au bout du couloir, et n'y est plus quand on arrive */
-  if(LONG.ready){let bound=false;
+  if(LG.ready){let bound=false;
     for(const c of cells.values()){const w=c.watch;if(!w||!w.length||Math.abs(c.i-ci)>4||Math.abs(c.j-cj)>4)continue;
       for(let k=0;k<w.length;k+=3){const key=c.i+','+c.j+','+k;if(gone.has(key))continue;
         const d=Math.hypot(w[k]-eye[0],w[k+2]-eye[2]);if(d<14){gone.add(key);if(mode==='classic')scareSound(0,0);continue;}
-        const h=2.65,hw=h/LONG.asp/2;
+        const h=2.65,hw=h/LG.asp/2;
         if(!bound){bound=true;gl.useProgram(pSpr.p);setPal(pSpr);gl.uniformMatrix4fv(pSpr.u.uVP,false,VP);gl.uniform3fv(pSpr.u.uCam,eye);gl.uniform3fv(pSpr.u.uRight,Rt);
-          gl.uniform2f(pSpr.u.uSize,hw,h/2);gl.uniform1f(pSpr.u.uFlap,0);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,LONG.tex);gl.uniform1i(pSpr.u.uTex,2);gl.bindVertexArray(SPR.vao);}
+          gl.uniform2f(pSpr.u.uSize,hw,h/2);gl.uniform1f(pSpr.u.uFlap,0);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,LG.tex);gl.uniform1i(pSpr.u.uTex,2);gl.bindVertexArray(SPR.vao);}
         gl.uniform3f(pSpr.u.uPos,w[k],w[k+1]+h/2,w[k+2]);gl.drawArrays(gl.TRIANGLES,0,SPR.count);}}
     if(bound)gl.activeTexture(gl.TEXTURE0);}
 
@@ -1080,11 +1106,11 @@ function frame(now){
       if(GEN===2)for(const c of cells.values()){const p=c.pads;for(let k=0;k<p.length;k+=4)L.push([p[k],p[k+1],p[k+2],'tremplin']);}
       else if(GEN===3){for(const c of cells.values())for(const w of c.wat)if(w[4]-w[5]>1)L.push([(w[0]+w[2])/2,w[4],(w[1]+w[3])/2,'bassin profond']);}
       else if(GEN===7)for(const c of cells.values())for(const s of c.swings)L.push([s[0],s[1]-2.3,s[2],'balançoire']);
-      else if(GEN===4&&carT)L.push([carT[0],0,carT[1],'voiture']);
+      else if((GEN===4||GEN===27)&&carT)L.push([carT[0],0,carT[1],'voiture']);
       else if(GEN===9||GEN===10||GEN===14)for(const c of cells.values()){const h=c.hdoors;for(let k=0;k<h.length;k+=2)L.push([h[k],GEN===14?9:GEN===10?0.5:0,h[k+1],GEN===9?'ascenseur':GEN===10?'lit vide':'lit']);}
       else if(GEN===12)for(const c of cells.values())for(const b of c.conv)L.push([Math.max(b[0],Math.min(b[2],pos.x)),b[4],(b[1]+b[3])/2,'tapis roulant']);
       else if(GEN===13)L.push([pos.x,0,CELL*3.5,'le large']);
-      else if(GEN>=15)for(const c of cells.values()){const h=c.hdoors;for(let k=0;k<h.length;k+=2)L.push([h[k],GEN===20?-4.3:0,h[k+1],['porte','ascenseur','premier rang','la borne qui clignote','quilles','fond du bassin','sa chaise'][GEN-15]]);}
+      else if(GEN>=15)for(const c of cells.values()){const h=c.hdoors;for(let k=0;k<h.length;k+=2)L.push([h[k],GEN===20?-4.3:0,h[k+1],['porte','ascenseur','premier rang','la borne qui clignote','quilles','fond du bassin','sa chaise','porte d\'entrée','guichet','rideau','sa tombe','quai','voiture','portail'][GEN-15]]);}
       let bd=1e9;for(const q of L){const d=(q[0]-pos.x)**2+(q[2]-pos.z)**2;if(d<bd){bd=d;hint=q;}}
     }
     if(mode!=='obs'&&!target&&!passage){

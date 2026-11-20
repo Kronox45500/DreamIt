@@ -79,7 +79,7 @@ let resetArm=0;const rb=$('reset');
 rb.addEventListener('click',()=>{
   if(performance.now()-resetArm>5000){resetArm=performance.now();rb.textContent='Confirmer : tout effacer';$('reseto').textContent='Clique encore pour confirmer.';
     setTimeout(()=>{if(performance.now()-resetArm>=4900){rb.textContent='Tout recommencer';$('reseto').textContent='';}},5000);return;}
-  try{for(const k of ['ether-level','ether-max','ether-max2','dream-max3','dream-c3','dream-c3next','ether-ch1','dream-stats'])localStorage.removeItem(k);}catch(e){}
+  try{for(const k of ['ether-level','ether-max','ether-max2','dream-max3','dream-c3','dream-c3next','ether-ch1','dream-stats','dream-max4'])localStorage.removeItem(k);}catch(e){}
   STATS.time=-1e9; /* empêche une dernière sauvegarde */
   location.reload();
 });
@@ -147,7 +147,7 @@ const GUIDE=[
   '<ul><li>La consigne reste affichée tant que tu n\'es pas sorti.</li><li>Tu peux continuer d\'explorer avant de partir : rien ne disparaît.</li>'+
   '<li>Si tu es coincé, <b>Recommencer ce lieu</b> (dans la pause) te ramène au départ du lieu.</li></ul>'],
  ['end','Finir le jeu',
-  '<ol><li>Le jeu compte <b>trois chapitres</b>. Chacun est une suite de lieux à traverser dans l\'ordre.</li>'+
+  '<ol><li>Le jeu compte <b>quatre chapitres</b>. Chacun est une suite de lieux à traverser dans l\'ordre.</li>'+
   '<li>À la fin d\'un chapitre, laisse le texte défiler : le chapitre suivant s\'ouvre tout seul.</li>'+
   '<li>Au troisième chapitre, tu reviens toujours au même endroit entre deux lieux. Une porte allumée t\'indique où aller ensuite.</li>'+
   '<li>Le menu <b>Chapitres et modes</b> te laisse revenir à n\'importe quel lieu déjà ouvert.</li></ol>'+

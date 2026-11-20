@@ -143,10 +143,50 @@ const WORLDS=[
   pal:{sun:[0.3,0.85,0.4],zen:[.50,.58,.68],mid:[.62,.66,.70],hor:[.80,.74,.66],seaC:[.80,.74,.66],ambUp:[.62,.58,.54],ambDn:[.44,.40,.36],sunC:[0,0,0],
        indoor:[.42,.38,.34],fogD:70,cl0:[.3,.3,.3],cl1:[.5,.5,.5],se0:[.3,.3,.3],se1:[.4,.4,.4],accent:[.62,.52,.42],glow:[0,0,0],
        water:0,night:0,stripe:[0,0],cloud:.2,lampC:[1.0,.75,.48],lampP:[8,8,2.5,3.6],lampO:[4,4],ground:null}},
+ /* ===== chapitre 4 : les cauchemars d'après ===== */
+ {name:'La maison qui ne finit pas',gen:22,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{phones:3,notes:3,talks:1},music:[22],spawn:[0,0,3],
+  notes:{L:'Ses affaires',s:'une de ses affaires',c:[1.0,0.86,0.6],t:['Ses clés de voiture. Il ne conduisait plus, après. Il les gardait quand même dans sa poche.','Un post-it sur le frigo, de sa main : « Rappeler le docteur ». Il ne l\'a jamais rappelé.','Sa tasse. Le café est encore tiède. Ça n\'a aucun sens.']},
+  acts:{L:'Portes',s:'porte entrouverte',verb:'E · refermer la porte',snd:'door',lines:['Tu refermes la porte. Derrière toi, elle grince et se rouvre de deux doigts.','Tu tires la poignée. Elle est froide. De l\'autre côté, quelqu\'un tient la porte, doucement.','La porte se ferme enfin. Tu attends le bruit de pas. Il ne vient pas.']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.05,.04,.05],mid:[.05,.04,.05],hor:[.05,.04,.05],seaC:[.05,.04,.05],ambUp:[.40,.34,.30],ambDn:[.30,.25,.22],sunC:[0,0,0],
+       indoor:[.30,.25,.21],fogD:38,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.7,.5,.3],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.95,.62,.32],lampP:[8,8,2.2,2.5],lampO:[4,4],ground:null}},
+ {name:'La salle d\'attente',gen:23,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{phones:3,notes:3,talks:1},music:[20],spawn:[0,0,8],
+  notes:{L:'Tickets',s:'ticket',c:[0.95,0.95,1.0],t:['Ticket n° 214. Temps d\'attente estimé : —.','Ticket n° 214. Merci de patienter. Votre attente est importante pour nous.','Ticket n° 214. Au dos, au stylo, ton écriture d\'enfant : « papa ? »']},
+  calls:['« Allô ? Oui, c\'est son fils… Non. Non, je ne suis pas assis. »','« Vous pouvez venir maintenant ? Prenez un taxi. Ne conduisez pas. »','« Il n\'y a pas de bonne façon de vous le dire. »','« … il n\'a pas laissé de message ? Si. Sur la table de la cuisine. »','« Votre numéro va être appelé. Restez dans la salle. »'],
+  pal:{sun:[0.3,0.85,0.4],zen:[.10,.12,.13],mid:[.10,.12,.13],hor:[.09,.11,.12],seaC:[.09,.11,.12],ambUp:[.42,.46,.46],ambDn:[.34,.38,.38],sunC:[0,0,0],
+       indoor:[.36,.40,.40],fogD:60,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.2,.6,.75],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.78,.86,.88],lampP:[8,8,3.0,3.2],lampO:[0,0],ground:null}},
+ {name:'Le funérarium',gen:24,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{phones:2,notes:2,talks:1},music:[23],spawn:[0,0,10],
+  notes:{L:'Registre',s:'registre des condoléances',c:[1.0,0.9,0.75],t:['Registre · « Toutes nos condoléances. » Douze fois la même phrase, douze écritures différentes.','Registre · Une seule ligne au crayon, sans signature : « Il en parlait tout le temps, de toi. »']},
+  acts:{L:'Fleurs',s:'bouquet',verb:'E · poser les fleurs',snd:'flower',lines:['Tu poses les fleurs. Tout le monde se retourne. Personne n\'a de visage.','Les fleurs sont déjà fanées quand tu les poses. Elles l\'étaient peut-être déjà.']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.03,.02,.02],mid:[.03,.02,.02],hor:[.03,.02,.02],seaC:[.03,.02,.02],ambUp:[.42,.34,.28],ambDn:[.30,.24,.20],sunC:[0,0,0],
+       indoor:[.30,.24,.20],fogD:46,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.7,.45,.25],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[1.0,.70,.40],lampP:[10,10,3.6,4.2],lampO:[0,0],ground:null}},
+ {name:'Le cimetière sous la pluie',gen:25,full:true,megas:false,cloudY:-1000,goal:{notes:3,talks:1,shards:3},music:[21],spawn:[0,0,0],
+  notes:{L:'Mots',s:'mot laissé sur une tombe',c:[0.9,0.95,1.0],t:['Un mot, sous une pierre, détrempé : « Pardon de ne pas être venu plus tôt. »','Un mot, plié en quatre : « On a toujours une dernière chose à dire. »','Un mot, de ton écriture : « Je ne t\'en voulais pas. » Tu ne te souviens pas de l\'avoir écrit.']},
+  pal:{sun:[0.40,0.62,0.55],zen:[.010,.016,.030],mid:[.026,.036,.060],hor:[.070,.080,.110],seaC:[.070,.080,.110],ambUp:[.090,.105,.140],ambDn:[.060,.068,.090],sunC:[.06,.07,.10],
+       indoor:[.034,.037,.050],fogD:70,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.5,.6,.8],glow:[.75,.82,1],
+       water:0,night:1,stripe:[0,0],cloud:.35,lampC:[.9,.85,.7],lampP:[48,48,3,3.6],lampO:[2,2],ground:[.03,.035,.04]}},
+ {name:'L\'entrepôt des cartons',gen:26,full:true,megas:false,inside:true,step:'hall',cloudY:-1000,goal:{phones:3,notes:2,talks:1},music:[24],spawn:[0,0,0],
+  notes:{L:'Étiquettes',s:'étiquette',c:[1.0,0.85,0.55],t:['Étiquette · « CUISINE — FRAGILE ». Dessous, à moitié effacé : « Ne pas jeter ».','Étiquette · « DIVERS ». Toute une vie, et le dernier carton s\'appelle « Divers ».']},
+  acts:{L:'À garder',s:'carton « À garder »',verb:'E · ouvrir le carton',snd:'box',lines:['Dedans, tes dessins d\'enfant. Il les avait tous gardés, rangés par année.','Dedans, ses lettres à la banque, à l\'hôpital. Et une, jamais envoyée, adressée à toi.','Dedans, rien. Un carton vide, soigneusement fermé, marqué « À garder ».']},
+  pal:{sun:[0.3,0.85,0.4],zen:[.06,.06,.07],mid:[.06,.06,.07],hor:[.06,.06,.07],seaC:[.06,.06,.07],ambUp:[.34,.33,.30],ambDn:[.25,.24,.22],sunC:[0,0,0],
+       indoor:[.24,.23,.21],fogD:55,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.95,.5,.1],glow:[0,0,0],
+       water:0,night:0,stripe:[0,0],cloud:.2,lampC:[.92,.86,.70],lampP:[12,12,7.7,8.2],lampO:[6,6],ground:null}},
+ {name:'La route de nuit',gen:27,full:true,megas:false,cloudY:-1000,goal:{notes:2,talks:1,car:1},music:[18],spawn:[0,0,0],
+  notes:{L:'Panneaux',s:'panneau',c:[0.75,1.0,0.8],t:['Panneau · « Pause. Toutes les deux heures. » Il ne s\'arrêtait jamais.','Panneau · « Prochaine sortie : maison ». La flèche montre le bas-côté.']},
+  pal:{sun:[0.40,0.62,0.55],zen:[.006,.010,.030],mid:[.020,.028,.070],hor:[.060,.068,.120],seaC:[.060,.068,.120],ambUp:[.080,.092,.140],ambDn:[.055,.060,.090],sunC:[.07,.085,.13],
+       indoor:[.034,.037,.050],fogD:220,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.9,.16,.14],glow:[.75,.82,1],
+       water:0,night:1,stripe:[0,0],cloud:.25,lampC:[1.0,.58,.22],lampP:[24,48,7,12],lampO:[12,0],ground:[.03,.034,.04]}},
+ {name:'Le matin',gen:28,full:true,megas:false,cloudY:-1000,goal:{phones:1},music:[25],spawn:[0,0,17],
+  acts:{L:'Sa tombe',s:'sa tombe',verb:'E · poser la petite voiture rouge',snd:'toy',lines:['Tu poses la petite voiture rouge sur la pierre. Une roue grince encore. Tu souris, pour la première fois depuis longtemps.']},
+  pal:{sun:[0.45,0.70,0.40],zen:[.42,.56,.76],mid:[.66,.74,.84],hor:[.92,.86,.76],seaC:[.92,.86,.76],ambUp:[.70,.70,.72],ambDn:[.52,.50,.48],sunC:[.60,.52,.40],
+       indoor:[.5,.5,.5],fogD:160,cl0:[.2,.2,.2],cl1:[.3,.3,.3],se0:[.2,.2,.2],se1:[.3,.3,.3],accent:[.9,.7,.4],glow:[1,.96,.86],
+       water:0,night:0,stripe:[0,0],cloud:.35,lampC:[0,0,0],lampP:[1,1,0,0],lampO:[0,0],ground:null}},
 ];
 /* les chapitres : tranches de la liste des espaces */
-const CHAPS=[[0,9,'Le rêve'],[9,15,'Les dernières vacances'],[15,22,'Ce qu\'on a perdu']];
-function chOf(w){return w>=CHAPS[2][0]?2:w>=CHAPS[1][0]?1:0;}
+const CHAPS=[[0,9,'Le rêve'],[9,15,'Les dernières vacances'],[15,22,'Ce qu\'on a perdu'],[22,29,'Les cauchemars d\'après']];
+function chOf(w){return w>=CHAPS[3][0]?3:w>=CHAPS[2][0]?2:w>=CHAPS[1][0]?1:0;}
 /* chapitre 3 : les souvenirs rapportés dans la pièce (niveaux 16 à 20), gardés d'une partie à l'autre */
 const C3=new Set((()=>{try{return JSON.parse(localStorage.getItem('dream-c3')||'[]');}catch(e){return [];}})());
 let c3next=(()=>{try{return Math.min(21,Math.max(16,parseInt(localStorage.getItem('dream-c3next'))||16));}catch(e){return 16;}})();
@@ -159,9 +199,9 @@ function HF(x,z){
   return 0;
 }
 let SUN=[0,1,0],PAL=null,W=0,WSALT=0,level=0,maxLevel=0,GEN=0;
-let max2=CHAPS[1][0],max3=CHAPS[2][0];
+let max2=CHAPS[1][0],max3=CHAPS[2][0],max4=CHAPS[3][0];
 try{level=Math.max(0,parseInt(localStorage.getItem('ether-level'))||0);if(level>=WORLDS.length)level=0;maxLevel=Math.min(8,Math.max(level<9?level:0,parseInt(localStorage.getItem('ether-max'))||0));max2=Math.min(14,Math.max(9,level<15?level:9,parseInt(localStorage.getItem('ether-max2'))||0));}catch(e){}
-try{max3=Math.min(21,Math.max(15,parseInt(localStorage.getItem('dream-max3'))||15));}catch(e){}
+try{max3=Math.min(21,Math.max(15,parseInt(localStorage.getItem('dream-max3'))||15));max4=Math.min(28,Math.max(22,parseInt(localStorage.getItem('dream-max4'))||22));}catch(e){}
 function applyWorld(){W=level%WORLDS.length;WSALT=level*977;PAL=WORLDS[W].pal;SUN=norm(PAL.sun);GEN=WORLDS[W].gen;}
 applyWorld();
 
@@ -351,6 +391,8 @@ const TYPES=[
   [[.06,0],[.42,1],[.56,2],[.66,3],[.78,4],[.86,5],[1.01,6]],
   [[.06,0],[.36,1],[.52,2],[.62,3],[.74,4],[.86,5],[1.01,6]],
   [[.06,0],[.30,1],[.48,2],[.64,3],[.78,4],[.90,5],[1.01,6]],
+  [[.25,1],[.5,2],[.75,3],[.9,4],[1.01,5]],[[.25,1],[.5,2],[.75,3],[.9,4],[1.01,5]],[[.25,1],[.5,2],[.75,3],[.9,4],[1.01,5]],
+  [[.25,1],[.5,2],[.75,3],[.9,4],[1.01,5]],[[.25,1],[.5,2],[.75,3],[.9,4],[1.01,5]],[[1.01,1]],[[1.01,1]],
 ];
 /* monde-anneau : le lotissement se répète tous les RING_N îlots et se referme au-dessus de vous */
 const RING_N=48,RING_R=RING_N*48/(2*Math.PI);
